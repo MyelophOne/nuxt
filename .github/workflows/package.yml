@@ -31,7 +31,7 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install && yarn postinstall
+        run: yarn install && yarn prepare
 
       - name: Bootstrap version tag
         shell: bash
