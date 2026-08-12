@@ -1,3 +1,7 @@
+## 📦 Release 0.4.2 (2026-08-12)
+### 🐛 Bug Fixes
+- update github actions
+
 ## 📦 Release 0.4.1 (2026-08-12)
 ### ⏳ Work in progress
 - initial commit
