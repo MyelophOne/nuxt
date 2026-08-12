@@ -1,3 +1,9 @@
+## 📦 Release 0.4.5 (2026-08-12)
+### ⏳ Work in progress
+- initial commit
+### 🐛 Bug Fixes
+- add public to package publishConfig- remove --no-webstorage- update github action- update github action- update github actions
+
 ## 📦 Release 0.4.4 (2026-08-12)
 ### 🐛 Bug Fixes
 - update github action
