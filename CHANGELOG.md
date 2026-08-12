@@ -1,3 +1,7 @@
+## 📦 Release 0.4.3 (2026-08-12)
+### 🐛 Bug Fixes
+- add public to package publishConfig
+
 ## 📦 Release 0.4.2 (2026-08-12)
 ### 🐛 Bug Fixes
 - update github actions
