@@ -1,3 +1,9 @@
+## 📦 Release 0.4.1 (2026-08-12)
+### ⏳ Work in progress
+- initial commit
+### 🐛 Bug Fixes
+- remove --no-webstorage
+
 # @myelophone/nuxt
 
 Copyright (c) 2026 Aliaksandr Ivanou | PolyForm Noncommercial License 1.0.0
