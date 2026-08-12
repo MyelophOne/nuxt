@@ -1,0 +1,6 @@
+layouts/foo.vue
+layouts/*-ignore.vue
+pages/bar.vue
+pages/ignore/*.vue
+middleware/foo/*.js
+!middleware/foo/bar.js

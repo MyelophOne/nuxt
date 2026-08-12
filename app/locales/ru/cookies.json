@@ -1,0 +1,182 @@
+{
+  "weUseCookies": "Мы используем куки для работы сайта и аналитики.",
+  "cookies": "куки",
+  "accept": "Принять",
+  "acceptAll": "Принять все",
+  "decline": "Отказаться",
+  "declineAll": "Отклонить все",
+  "changePrefs": "Настроить предпочтения",
+  "setPrefs": "Настроить куки",
+  "savePrefs": "Сохранить предпочтения",
+  "contentHidden": "Контент скрыт",
+  "toUse": "Для использования",
+  "toSee": "Для просмотра этого контента необходимо разрешить",
+  "actionRequired": "Требуется действие",
+  "selectCategories": "Пожалуйста, примите необходимые категории куки в появившемся окне.",
+  "needToAccept": "необходимо разрешить",
+  "alwaysOn": "(Всегда включено)",
+  "necessary": "необходимые",
+  "analytics": "аналитические",
+  "marketing": "маркетинговые",
+  "preferences": "функциональные",
+  "functional": "функциональные",
+  "usedServices": "Используемые сервисы",
+  "usedNotServices": "Сервисы в этой категории сейчас не используются.",
+  "necessaryTitle": "Необходимые файлы cookie",
+  "necessaryDesc": "Эти файлы строго необходимы для работы сайта (авторизация, безопасность). Их нельзя отключить.",
+  "analyticsTitle": "Аналитика и статистика",
+  "analyticsDesc": "Помогают нам улучшать сайт, собирая информацию об использовании (посещаемость, популярные страницы).",
+  "marketingTitle": "Маркетинг и реклама",
+  "marketingDesc": "Используются для отображения персонализированной рекламы и интеграции с соцсетями (YouTube, Pixel).",
+  "functionalTitle": "Функциональные",
+  "functionalDesc": "Необходимы для работы дополнительных функций, таких как онлайн-чат или интерактивные карты.",
+  "cookieNote": "Мы используем файлы cookie для улучшения вашего опыта. Вы можете выбрать, какие категории вы хотите разрешить.",
+  "cookiesList": "Список сохраненных браузером файлов",
+  "emptyList": "Список пуст.",
+  "privacyTitle": "Настройки конфиденциальности",
+  "googleTagManager": {
+    "name": "Google Tag Manager",
+    "description": "Управляет аналитическими, рекламными и функциональными тегами с учетом согласия пользователя."
+  },
+  "googleAnalytics4": {
+    "name": "Google Analytics 4",
+    "description": "Измеряет посещаемость, события и поведение пользователей на сайте."
+  },
+  "googleAds": {
+    "name": "Google Ads",
+    "description": "Измеряет рекламные конверсии и включает ремаркетинг."
+  },
+  "metaPixel": {
+    "name": "Meta Pixel",
+    "description": "Измеряет рекламные конверсии и включает ретаргетинг на платформах Meta."
+  },
+  "yandexMetrica": {
+    "name": "Яндекс Метрика",
+    "description": "Измеряет посещаемость, конверсии и поведение пользователей на сайте."
+  },
+  "vkPixel": {
+    "name": "VK Pixel",
+    "description": "Измеряет конверсии VK Рекламы и включает аудитории ретаргетинга."
+  },
+  "myTargetTopMailRu": {
+    "name": "myTarget / Top.Mail.Ru",
+    "description": "Измеряет рекламные кампании и аудитории ремаркетинга в экосистемах VK и Mail.ru."
+  },
+  "baiduTongji": {
+    "name": "Baidu Tongji",
+    "description": "Измеряет посещаемость и поведение пользователей для сайтов, ориентированных на Китай."
+  },
+  "matomo": {
+    "name": "Matomo",
+    "description": "Измеряет веб-аналитику через собственный или облачный трекер Matomo."
+  },
+  "plausible": {
+    "name": "Plausible Analytics",
+    "description": "Предоставляет приватную веб-аналитику посещаемости сайта."
+  },
+  "umami": {
+    "name": "Umami",
+    "description": "Предоставляет приватную веб-аналитику без рекламного трекинга.",
+    "legal": {
+      "purpose": "Мы используем Umami, чтобы понимать агрегированное использование сайта и улучшать контент и удобство интерфейса.",
+      "cookiesDescription": "Umami настроен как cookieless-аналитика и в этой конфигурации не требует аналитических cookies.",
+      "notes": "Umami используется как privacy-friendly аналитика. Мы не используем его для рекламы, межсайтового профилирования или ретаргетинга.",
+      "data": {
+        "pageViews": "Просмотры страниц и посещённые URL",
+        "referrer": "Информация об источнике перехода",
+        "browser": "Информация о браузере и операционной системе",
+        "device": "Тип устройства и приблизительные технические данные"
+      }
+    }
+  },
+  "hotjar": {
+    "name": "Hotjar",
+    "description": "Записывает тепловые карты, воронки, опросы и аналитику поведения."
+  },
+  "microsoftClarity": {
+    "name": "Microsoft Clarity",
+    "description": "Измеряет поведение пользователей с помощью тепловых карт и записей сессий."
+  },
+  "adobeAnalytics": {
+    "name": "Adobe Analytics",
+    "description": "Измеряет корпоративную аналитику, атрибуцию и эффективность цифрового опыта."
+  },
+  "hubspot": {
+    "name": "HubSpot",
+    "description": "Загружает трекинг HubSpot, формы, чат и маркетинговые инструменты."
+  },
+  "bitrix24": {
+    "name": "Битрикс24",
+    "description": "Загружает CRM-виджеты Битрикс24, кнопки сайта, формы и чат."
+  },
+  "amoCrm": {
+    "name": "amoCRM",
+    "description": "Загружает виджеты amoCRM для чата и захвата лидов."
+  },
+  "salesforcePardot": {
+    "name": "Salesforce Account Engagement",
+    "description": "Измеряет маркетинговую автоматизацию и атрибуцию лидов."
+  },
+  "mailchimp": {
+    "name": "Mailchimp",
+    "description": "Загружает формы, попапы и маркетинговые виджеты Mailchimp."
+  },
+  "linkedInInsight": {
+    "name": "LinkedIn Insight Tag",
+    "description": "Измеряет эффективность рекламы LinkedIn и аудитории ретаргетинга."
+  },
+  "tiktokPixel": {
+    "name": "TikTok Pixel",
+    "description": "Измеряет конверсии рекламы TikTok и включает ретаргетинг."
+  },
+  "pinterestTag": {
+    "name": "Pinterest Tag",
+    "description": "Измеряет конверсии рекламы Pinterest и ретаргетинг."
+  },
+  "xPixel": {
+    "name": "X Pixel",
+    "description": "Измеряет рекламные конверсии и ретаргетинг X."
+  },
+  "intercom": {
+    "name": "Intercom",
+    "description": "Предоставляет чат, поддержку и сообщения для клиентов."
+  },
+  "zendeskChat": {
+    "name": "Zendesk Chat",
+    "description": "Предоставляет чат и инструменты клиентской поддержки."
+  },
+  "crispChat": {
+    "name": "Crisp Chat",
+    "description": "Предоставляет чат и инструменты клиентской поддержки."
+  },
+  "tawkTo": {
+    "name": "Tawk.to",
+    "description": "Предоставляет онлайн-чат, мониторинг посетителей и поддержку."
+  },
+  "jivoSite": {
+    "name": "JivoSite",
+    "description": "Предоставляет онлайн-чат, обратные звонки и инструменты коммуникации с клиентами."
+  },
+  "liveChat": {
+    "name": "LiveChat",
+    "description": "Предоставляет онлайн-чат и клиентскую поддержку."
+  },
+  "tidio": {
+    "name": "Tidio",
+    "description": "Предоставляет онлайн-чат, чат-бота и сообщения для клиентов."
+  },
+  "chatwoot": {
+    "name": "Chatwoot",
+    "description": "Предоставляет онлайн-чат, омниканальные inbox-разделы поддержки и сообщения для клиентов."
+  },
+  "chatra": {
+    "name": "Chatra",
+    "description": "Предоставляет онлайн-чат и сообщения для клиентов."
+  },
+  "recaptcha": {
+    "name": "Google reCAPTCHA",
+    "description": "Защищает формы от спама и злоупотреблений."
+  },
+  "cookielessTitle": "Privacy-friendly analytics",
+  "cookielessDesc": "We use the following GDPR-compatible cookieless analytics tools for aggregated statistics. They are not used for advertising, retargeting, or cross-site profiling."
+}

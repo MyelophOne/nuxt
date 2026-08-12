@@ -1,0 +1,71 @@
+name: Create package
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    name: Release package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          registry-url: "https://npm.pkg.github.com"
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install && yarn postinstall
+
+      - name: Bootstrap version tag
+        shell: bash
+        run: |
+          git fetch origin --tags --force
+
+          if git tag --list 'v*' | grep -q .; then
+            echo "Release tag already exists; bootstrap skipped."
+            exit 0
+          fi
+
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          BASE_TAG="v${PACKAGE_VERSION}"
+
+          WORKFLOW_COMMIT="$(
+            git log \
+              --reverse \
+              --format='%H' \
+              -- .github/workflows/package.yml |
+            head -n 1
+          )"
+
+          if [ -n "$WORKFLOW_COMMIT" ] &&
+             git rev-parse "${WORKFLOW_COMMIT}^" >/dev/null 2>&1; then
+            BASE_COMMIT="$(git rev-parse "${WORKFLOW_COMMIT}^")"
+          else
+            BASE_COMMIT="$(git rev-list --max-parents=0 HEAD)"
+          fi
+
+          echo "Creating baseline tag: ${BASE_TAG}"
+          echo "Baseline commit: ${BASE_COMMIT}"
+
+          git tag "$BASE_TAG" "$BASE_COMMIT"
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: yarn semantic-release --repository-url "https://github.com/${{ github.repository }}.git"

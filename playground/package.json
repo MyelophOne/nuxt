@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "name": "@myelophone/nuxt-playground",
+  "type": "module"
+}

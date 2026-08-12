@@ -1,0 +1,17 @@
+{
+  "expand": "Expand",
+  "collapse": "Collapse",
+  "close": "Close",
+  "readMore": "Read more",
+  "goMore": "Go more",
+  "goHome": "Go Home",
+  "goHomeFull": "Go to Homepage",
+  "pageNotFound": "Oops! Page not found.",
+  "pageNotFoundText": "The page you are looking for may have been removed or never existed.",
+  "pageNotFoundDescription": "Page not found. Please check the URL.",
+  "serverError": "Server Error",
+  "somethingWentWrong": "An unexpected error occurred on the server. We are already working on fixing this issue. Please try again later.",
+  "updatePage": "Refresh Page",
+  "noGoogleMapAddress": "No address or Place ID provided",
+  "nodata": "No data"
+}

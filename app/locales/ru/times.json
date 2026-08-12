@@ -1,0 +1,18 @@
+{
+  "day1": "день",
+  "day2": "дня",
+  "day5": "дней",
+  "hour1": "час",
+  "hour2": "часа",
+  "hour5": "часов",
+  "minute1": "минута",
+  "minute2": "минуты",
+  "minute5": "минут",
+  "second1": "секунда",
+  "second2": "секунды",
+  "second5": "секунд",
+  "secondshort": "с",
+  "minuteshort": "м",
+  "hourshort": "ч",
+  "dayshort": "д"
+}

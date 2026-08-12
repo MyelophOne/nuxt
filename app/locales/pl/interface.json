@@ -1,0 +1,17 @@
+{
+  "expand": "Zwiększać",
+  "collapse": "Zawalić się",
+  "close": "Zamknąć",
+  "readMore": "Przeczytaj więcej",
+  "goMore": "Idź dalej",
+  "goHome": "Do strony głównej",
+  "goHomeFull": "Przejdź do strony głównej",
+  "pageNotFound": "Ups! Strona nie została znaleziona.",
+  "pageNotFoundText": "Strona, której szukasz mogła zostać usunięta lub nigdy nie istniała.",
+  "pageNotFoundDescription": "Strona nie została znaleziona. Sprawdź adres URL.",
+  "serverError": "Błąd serwera",
+  "somethingWentWrong": "Wystąpił nieoczekiwany błąd na serwerze. Pracujemy już nad rozwiązaniem tego problemu. Spróbuj ponownie później.",
+  "updatePage": "Odśwież stronę",
+  "noGoogleMapAddress": "Nie podano adresu ani identyfikatora miejsca",
+  "nodata": "Brak danych"
+}

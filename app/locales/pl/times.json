@@ -1,0 +1,18 @@
+{
+  "day1": "dzień",
+  "day2": "dni",
+  "day5": "dni",
+  "hour1": "godzina",
+  "hour2": "godziny",
+  "hour5": "godzin",
+  "minute1": "minuta",
+  "minute2": "minuty",
+  "minute5": "minut",
+  "second1": "sekunda",
+  "second2": "sekundy",
+  "second5": "sekund",
+  "secondshort": "s",
+  "minuteshort": "m",
+  "hourshort": "g",
+  "dayshort": "d"
+}

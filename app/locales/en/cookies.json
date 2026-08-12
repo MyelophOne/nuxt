@@ -1,0 +1,182 @@
+{
+  "weUseCookies": "We use cookies for website functionality and analytics.",
+  "cookies": "cookies",
+  "accept": "Accept",
+  "acceptAll": "Accept all",
+  "decline": "Decline",
+  "declineAll": "Decline all",
+  "changePrefs": "Manage preferences",
+  "setPrefs": "Cookie settings",
+  "savePrefs": "Save preferences",
+  "contentHidden": "Content hidden",
+  "toUse": "To use",
+  "toSee": "To view this content, you must allow",
+  "actionRequired": "Action required",
+  "selectCategories": "Please accept the required cookie categories in the pop-up window.",
+  "needToAccept": "must allow",
+  "alwaysOn": "(Always enabled)",
+  "necessary": "necessary",
+  "analytics": "analytics",
+  "marketing": "marketing",
+  "preferences": "preferences",
+  "functional": "functional",
+  "usedServices": "Services used",
+  "usedNotServices": "No services are currently used in this category.",
+  "necessaryTitle": "Strictly Necessary Cookies",
+  "necessaryDesc": "Essential cookies for the website to function (e.g., authorization, security). Cannot be disabled.",
+  "analyticsTitle": "Analytics & Statistics",
+  "analyticsDesc": "These help us improve our website by collecting information on usage (traffic, popular pages, etc.).",
+  "marketingTitle": "Marketing & Advertising",
+  "marketingDesc": "Used to display personalized ads and integrate with social media (e.g., YouTube, Pixel).",
+  "functionalTitle": "Functional Cookies",
+  "functionalDesc": "Required for additional features to work, such as live chat or interactive maps.",
+  "cookieNote": "We use cookies to improve your experience. You can choose which categories you want to allow.",
+  "cookiesList": "List of cookies saved by the browser",
+  "emptyList": "The list is empty.",
+  "privacyTitle": "Privacy Settings",
+  "googleTagManager": {
+    "name": "Google Tag Manager",
+    "description": "Manages analytics, advertising, and functional tags with consent-aware settings."
+  },
+  "googleAnalytics4": {
+    "name": "Google Analytics 4",
+    "description": "Measures traffic, events, and user behavior on the website."
+  },
+  "googleAds": {
+    "name": "Google Ads",
+    "description": "Measures advertising conversions and enables remarketing."
+  },
+  "metaPixel": {
+    "name": "Meta Pixel",
+    "description": "Measures ad conversions and enables retargeting on Meta platforms."
+  },
+  "yandexMetrica": {
+    "name": "Yandex Metrica",
+    "description": "Measures traffic, conversions, and website behavior analytics."
+  },
+  "vkPixel": {
+    "name": "VK Pixel",
+    "description": "Measures VK Ads conversions and enables retargeting audiences."
+  },
+  "myTargetTopMailRu": {
+    "name": "myTarget / Top.Mail.Ru",
+    "description": "Measures advertising campaigns and remarketing audiences in VK and Mail.ru ecosystems."
+  },
+  "baiduTongji": {
+    "name": "Baidu Tongji",
+    "description": "Measures traffic and visitor behavior for websites targeting China."
+  },
+  "matomo": {
+    "name": "Matomo",
+    "description": "Measures website analytics through a self-hosted or cloud Matomo tracker."
+  },
+  "plausible": {
+    "name": "Plausible Analytics",
+    "description": "Provides privacy-friendly website traffic analytics."
+  },
+  "umami": {
+    "name": "Umami",
+    "description": "Provides privacy-friendly website analytics without advertising tracking.",
+    "legal": {
+      "purpose": "We use Umami to understand aggregated website usage and improve content and usability.",
+      "cookiesDescription": "Umami is configured as cookieless analytics and does not require analytics cookies for this setup.",
+      "notes": "Umami is used as privacy-friendly analytics. It is not used for advertising, cross-site profiling, or retargeting.",
+      "data": {
+        "pageViews": "Page views and visited URLs",
+        "referrer": "Referrer information",
+        "browser": "Browser and operating system information",
+        "device": "Device type and approximate technical metadata"
+      }
+    }
+  },
+  "hotjar": {
+    "name": "Hotjar",
+    "description": "Records heatmaps, funnels, surveys, and behavior analytics."
+  },
+  "microsoftClarity": {
+    "name": "Microsoft Clarity",
+    "description": "Measures user behavior with heatmaps and session recordings."
+  },
+  "adobeAnalytics": {
+    "name": "Adobe Analytics",
+    "description": "Measures enterprise analytics, attribution, and digital experience performance."
+  },
+  "hubspot": {
+    "name": "HubSpot",
+    "description": "Loads HubSpot tracking, forms, chat, and marketing tools."
+  },
+  "bitrix24": {
+    "name": "Bitrix24",
+    "description": "Loads Bitrix24 CRM widgets, site buttons, forms, and chat tools."
+  },
+  "amoCrm": {
+    "name": "amoCRM",
+    "description": "Loads amoCRM chat and lead capture widgets."
+  },
+  "salesforcePardot": {
+    "name": "Salesforce Account Engagement",
+    "description": "Measures marketing automation activity and lead attribution."
+  },
+  "mailchimp": {
+    "name": "Mailchimp",
+    "description": "Loads Mailchimp forms, popups, and marketing automation widgets."
+  },
+  "linkedInInsight": {
+    "name": "LinkedIn Insight Tag",
+    "description": "Measures LinkedIn ad performance and retargeting audiences."
+  },
+  "tiktokPixel": {
+    "name": "TikTok Pixel",
+    "description": "Measures TikTok ad conversions and enables retargeting."
+  },
+  "pinterestTag": {
+    "name": "Pinterest Tag",
+    "description": "Measures Pinterest ad conversions and retargeting."
+  },
+  "xPixel": {
+    "name": "X Pixel",
+    "description": "Measures X advertising conversions and retargeting."
+  },
+  "intercom": {
+    "name": "Intercom",
+    "description": "Provides customer chat, support, and messaging functionality."
+  },
+  "zendeskChat": {
+    "name": "Zendesk Chat",
+    "description": "Provides customer chat and support functionality."
+  },
+  "crispChat": {
+    "name": "Crisp Chat",
+    "description": "Provides customer chat and support functionality."
+  },
+  "tawkTo": {
+    "name": "Tawk.to",
+    "description": "Provides live chat, visitor monitoring, and support functionality."
+  },
+  "jivoSite": {
+    "name": "JivoSite",
+    "description": "Provides live chat, callbacks, and customer communication tools."
+  },
+  "liveChat": {
+    "name": "LiveChat",
+    "description": "Provides live chat and customer support functionality."
+  },
+  "tidio": {
+    "name": "Tidio",
+    "description": "Provides live chat, chatbot, and customer messaging functionality."
+  },
+  "chatwoot": {
+    "name": "Chatwoot",
+    "description": "Provides live chat, support inboxes, and customer messaging functionality."
+  },
+  "chatra": {
+    "name": "Chatra",
+    "description": "Provides live chat and customer messaging functionality."
+  },
+  "recaptcha": {
+    "name": "Google reCAPTCHA",
+    "description": "Protects forms from spam and abuse."
+  },
+  "cookielessTitle": "Privacy-friendly analytics",
+  "cookielessDesc": "We use the following GDPR-compatible cookieless analytics tools for aggregated statistics. They are not used for advertising, retargeting, or cross-site profiling."
+}
