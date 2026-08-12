@@ -91,6 +91,7 @@
     "url": "git+https://github.com/myelophone/nuxt.git"
   },
   "publishConfig": {
+    "access": "public",
     "registry": "https://npm.pkg.github.com"
   }
 }
