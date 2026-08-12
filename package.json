@@ -34,7 +34,7 @@
     "lock-update": "yarn dedupe --strategy highest"
   },
   "dependencies": {
-	  "nuxt": "^4.5.2"
+    "nuxt": "^4.5.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
@@ -76,6 +76,7 @@
     "pinia": "^4.0.2",
     "postcss": "^8.5.26",
     "postcss-no-important": "^11.0.0",
+    "rolldown": "^1.2.3",
     "semantic-release": "^25.0.9",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",

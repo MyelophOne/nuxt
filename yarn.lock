@@ -1612,6 +1612,7 @@ __metadata:
     pinia: "npm:^4.0.2"
     postcss: "npm:^8.5.26"
     postcss-no-important: "npm:^11.0.0"
+    rolldown: "npm:^1.2.3"
     semantic-release: "npm:^25.0.9"
     tailwindcss: "npm:^4.3.3"
     typescript: "npm:^6.0.3"
@@ -11211,7 +11212,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rolldown@npm:~1.2.1":
+"rolldown@npm:^1.2.3, rolldown@npm:~1.2.1":
   version: 1.2.3
   resolution: "rolldown@npm:1.2.3"
   dependencies:
