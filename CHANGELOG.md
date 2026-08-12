@@ -1,3 +1,7 @@
+## 📦 Release 0.4.6 (2026-08-12)
+### 🐛 Bug Fixes
+- move nuxt to dependencies
+
 ## 📦 Release 0.4.5 (2026-08-12)
 ### ⏳ Work in progress
 - initial commit

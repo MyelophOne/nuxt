@@ -1,6 +1,6 @@
 {
   "name": "@myelophone/nuxt",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "type": "module",
   "author": "Aliaksandr Ivanou <aleksivanov.me@gmail.com> (https://github.com/aleksivanou)",
   "maintainers": [
@@ -34,7 +34,7 @@
     "lock-update": "yarn dedupe --strategy highest"
   },
   "dependencies": {
-	  "nuxt": "^4.5.2"
+    "nuxt": "^4.5.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
