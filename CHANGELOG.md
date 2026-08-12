@@ -1,3 +1,7 @@
+## 📦 Release 0.4.8 (2026-08-12)
+### 🐛 Bug Fixes
+- postinstall to prepare
+
 ## 📦 Release 0.4.7 (2026-08-12)
 ### 🐛 Bug Fixes
 - add dev dependencies
