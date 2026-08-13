@@ -34,20 +34,22 @@ export function useMultiLang(namespaces: string | string[]) {
 		process.env.PROD_DIST === 'true' ||
 		import.meta.env.PROD_DIST === 'true';
 
-	const allLocalesFull = import.meta.glob([
-		'#myelophone-nuxt-locales/*/**/*.json',
-		'../locales/*/**/*.json',
-		'~/locales/*/**/*.json',
-		'~/../playground/locales/*/**/*.json',
-		'~/../app/locales/*/**/*.json',
-	]);
+	const localesAlias = import.meta.glob('#myelophone-nuxt-locales/**/*.json');
+	const localesPlayground = import.meta.glob(
+		'~/../playground/locales/**/*.json',
+	);
+	const localesApp = import.meta.glob('~/locales/**/*.json');
 
-	const allLocalesShort = import.meta.glob([
-		'#myelophone-nuxt-locales/*/**/*.json',
-		'../locales/*/**/*.json',
-		'~/locales/*/**/*.json',
-		'~/../app/locales/*/**/*.json',
-	]);
+	const allLocalesShort = {
+		...localesAlias,
+		...localesApp,
+	};
+
+	const allLocalesFull = {
+		...localesAlias,
+		...localesApp,
+		...localesPlayground,
+	};
 
 	const allLocales = isProdDist ? allLocalesShort : allLocalesFull;
 

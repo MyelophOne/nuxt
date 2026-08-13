@@ -6,7 +6,7 @@ const nuxtApp = useNuxtApp();
 nuxtApp.hook("app:mounted", () => {
 	console.info(
 		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright (c) 2026 Aliaksandr Ivanou.\nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
-		"font-size: 14px; color: #00075",
+		"font-size:14px",
 	);
 });
 
