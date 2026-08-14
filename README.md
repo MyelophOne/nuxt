@@ -1,4 +1,4 @@
-# @mywlophone-nuxt
+# @myelophone/nuxt
 
 Production-oriented Nuxt 4 + Tailwind CSS 4 application framework and Nuxt layer with SSR/SSG, multilingual routing, consent-aware integrations, Pinia stores, SEO, security headers, performance tooling, and reusable responsive components library.
 
