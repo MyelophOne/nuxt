@@ -1,3 +1,7 @@
+## 📦 Release 0.4.11 (2026-08-14)
+### 🐛 Bug Fixes
+- typos in readme
+
 ## 📦 Release 0.4.10 (2026-08-14)
 ### 🐛 Bug Fixes
 - added docs
