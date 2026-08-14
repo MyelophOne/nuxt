@@ -1,3 +1,7 @@
+## 📦 Release 0.4.10 (2026-08-14)
+### 🐛 Bug Fixes
+- added docs
+
 ## 📦 Release 0.4.9 (2026-08-13)
 ### 🐛 Bug Fixes
 - re-run github action- update usemultilang
