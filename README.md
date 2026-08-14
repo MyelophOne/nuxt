@@ -911,7 +911,7 @@ The release workflow updates `CHANGELOG.md` and `package.json`, publishes to Git
 ### Ownership
 
 Maintained by [MyelophOne](https://github.com/MyelophOne).<br>
-Author: [Aliaksandr Ivanou](https://github.com/aleksivanou) — `aleksivanov.me@gmail.com`.
+Author: [Aliaksandr Ivanou](https://github.com/aleksivanou).
 
 ## License
 
