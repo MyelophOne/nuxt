@@ -32,8 +32,8 @@ const emit = defineEmits<{
 	(e: "update:modelValue", value: Value | Value[] | null): void;
 }>();
 
-const value = computed({
-	get: () => props.modelValue,
+const value = computed<Value | Value[] | null>({
+	get: () => props.modelValue ?? null,
 	set: (v) => emit("update:modelValue", v),
 });
 

@@ -25,12 +25,12 @@ The layer includes:
 
 - Nuxt 4 and Vue 3 with TypeScript;
 - Tailwind CSS 4 and a light/dark CSS-variable theme;
-- SSR and static generation modes;
+- SSR builds with Nitro's `node-cluster` preset by default, plus an explicit static generation mode;
 - localized routes and lazy namespace-based translations without external dependencies;
 - SEO metadata, canonical URLs, alternate-language links, robots, OG images, breadcrumbs JSON-LD, and FAQ JSON-LD;
 - cookie consent with necessary, analytics, marketing, and functional categories;
 - presets for 30+ analytics, advertising, CRM, chat, and form providers;
-- optional user and cart stores with persistence and cross-tab synchronization;
+- built-in cross-tab synchronization for theme and consent settings, optional user and cart stores, and selected fields from custom Pinia stores;
 - currency conversion and an exchange-rate proxy;
 - reusable UI, layout, media, navigation, and content components;
 - CSP and security headers, request size limits, rate limiting, URL normalization, compression, asset caching, CSS cleanup, and build-time i18n tree shaking;
@@ -193,13 +193,28 @@ yarn build
 yarn server
 ```
 
-The default production preset is `node-cluster`. HTML responses are compressed with Brotli/Gzip, public assets are precompressed, and hashed `/_nuxt/**` assets receive a one-year immutable cache header.
+> [!IMPORTANT]
+> A regular production build uses Nitro's `node-cluster` preset by default. Running `yarn build` without `NUXT_STATIC` or `NITRO_PRESET` therefore produces a clustered Node.js server build.
 
-For containers or platforms that manage their own process model, select their Nitro preset:
+The effective preset selection is:
+
+```ts
+process.env.NUXT_STATIC === "true"
+	? "static"
+	: process.env.NITRO_PRESET || "node-cluster";
+```
+
+Start the generated cluster build with `yarn server`, which runs `playground/.output/server/index.mjs` in this repository. In an application based on `@myelophone/nuxt-template`, run its corresponding production server command.
+
+The default cluster preset lets Nitro run the application through Node's cluster model. This is the ready-to-use default for a dedicated Node.js host or container where the application owns its process model. HTML responses are compressed with Brotli/Gzip, public assets are precompressed, and hashed `/_nuxt/**` assets receive a one-year immutable cache header.
+
+No configuration is required to keep `node-cluster`. Set `NITRO_PRESET` only when the deployment platform expects another Nitro target. For example, use a single Node server when Kubernetes, Docker orchestration, systemd, PM2, or the hosting platform manages process replication externally:
 
 ```bash
 NITRO_PRESET=node-server yarn build
 ```
+
+`NUXT_STATIC=true` takes precedence over `NITRO_PRESET` and selects the static preset instead of a Node server build.
 
 ### Static generation
 
@@ -768,6 +783,87 @@ preferences.remove();
 ```
 
 `useStorage` supports `local`, `session`, and `cookie` backends, custom serializers, expiry/path, default writes, fallback storage, persistence predicates, storage events, and BroadcastChannel synchronization.
+
+### Cross-tab synchronization
+
+Open tabs from the same origin stay consistent without polling or a page reload. Synchronization starts on the client after Nuxt is ready and uses `BroadcastChannel`; local-storage-backed values also react to the browser `storage` event.
+
+The application shell synchronizes these fields automatically:
+
+| State | Synchronized fields | Availability |
+| ----- | ------------------- | ------------ |
+| Theme | `settings.theme` and the applied `data-theme`/theme class | Always enabled |
+| Cookie preferences | `settings.cookiePreferences`, `settings.isCookieBannerVisible` | Always enabled |
+| Cart | `items`, `coupon`, `meta`, `currency` | When `public.stores.cart` is `true` |
+| User | `profile`, `session`, `status`, `error`, `lastAuthenticatedAt` | When `public.stores.user` is `true` |
+
+For example, adding an item or applying a coupon in one tab updates the other open tabs. Changing the theme updates both the Pinia state and the rendered document theme. Logging in, refreshing a session, updating a profile, or logging out is reflected across tabs when the user store is enabled.
+
+Cart exchange rates, calculation strategies, hooks, and store configuration are not broadcast. User-store configuration and the session-extender callback are also local to each tab. Only the fields listed above are synchronized.
+
+#### Synchronize selected fields from another Pinia store
+
+Cross-tab synchronization is built in and can be added to any Pinia store with one `useStoreBroadcast` call. Pass the store and list the state fields that should be shared; no custom `BroadcastChannel`, message protocol, watchers, or loop prevention is required.
+
+`useStoreBroadcast` accepts a store, an explicit key allowlist, and an optional channel name:
+
+```ts
+const filters = useCatalogFiltersStore();
+
+const stopSync = useStoreBroadcast(filters, {
+	keys: ['query', 'sort', 'selectedCategories'],
+	channel: 'catalog-filters',
+});
+
+// Synchronization is now active for the component's lifetime.
+// Cleanup is automatic; call stopSync() only to stop it earlier.
+```
+
+To synchronize another field later, add its state key to the same allowlist:
+
+```ts
+useStoreBroadcast(filters, {
+	keys: ['query', 'sort', 'selectedCategories', 'viewMode'],
+});
+```
+
+Without `channel`, the channel name is `pinia:<store-id>`. Nested changes are watched deeply. Incoming values are applied with `$patch`, and source identifiers prevent a received update from being broadcast back in a loop.
+
+Broadcast values must be serializable state composed of strings, numbers, booleans, `null`, arrays, and plain objects. Dates are transmitted as ISO strings. Functions, symbols, unsupported values, and circular references are converted to `null` and should not be included in the key list.
+
+#### Synchronize standalone persisted state
+
+`useStorage` enables tab synchronization by default. Set `syncTabs: false` for state that must remain isolated:
+
+```ts
+const sharedFilters = useStorage(
+	'catalog-filters',
+	{ query: '', categories: [] as string[] },
+	{
+		storage: 'local',
+		syncTabs: true,
+		deep: true,
+	},
+);
+
+sharedFilters.value.value.query = 'headphones';
+```
+
+Updates and `remove()` calls are propagated through a key-specific `BroadcastChannel`. For local storage, the native `storage` event provides an additional synchronization path.
+
+#### Theme synchronization
+
+Theme changes can be broadcast directly when a custom theme control does not use the settings store:
+
+```ts
+const { applyTheme } = useThemeSync();
+
+applyTheme('dark');
+```
+
+`applyTheme()` updates `data-theme`, the `light`/`dark` class, and persistent theme storage, then broadcasts the change through the `nuxt-theme-sync` channel. The settings store's `setTheme()` and `toggleTheme()` actions already use this mechanism.
+
+Cross-tab synchronization is browser-local and same-origin. It does not synchronize different browsers, devices, users, server workers, or replicas; use backend persistence and realtime infrastructure when those scopes are required. Browsers without `BroadcastChannel` retain local state but cannot use `useStoreBroadcast` for live tab updates.
 
 ### Other composables
 
