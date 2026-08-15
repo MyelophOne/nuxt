@@ -651,29 +651,502 @@ useCommand({
 
 ## Layout system
 
-Components are auto-imported with their directory prefixes.
+The components in `components/grid` form a mobile-first, 12-column layout system. They are auto-imported with the `Grid` prefix, so no local imports are required.
+
+Use them in this order for most pages:
+
+```text
+GridStack      optional full-width section or background layer
+└─ GridContainer  content width and horizontal page padding
+   └─ GridRow     wrapping flex row, alignment, and gaps
+      └─ GridCol  responsive 12-column content blocks
+```
+
+### Quick start
 
 ```vue
-<GridContainer size="boxed" py="12">
-	<GridRow align="center" justify="between" :equal-height="true">
-		<GridCol :span="7" :sm-span="12">
-			<UiHeading :level="1">Product title</UiHeading>
+<template>
+	<GridContainer size="boxed" class="py-12 md:py-20">
+		<GridRow class="gap-y-8 md:-mx-4" align="center">
+			<GridCol :span="7" class="md:px-4">
+				<UiHeading :level="1">Product title</UiHeading>
+				<p class="mt-4 text-lg text-gray-600">
+					A production-ready page section built with the 12-column grid.
+				</p>
+				<UiButton to="/contact" class="mt-6">Get started</UiButton>
+			</GridCol>
+
+			<GridCol :span="5" sm-order="first" class="md:px-4">
+				<SafeNuxtImg
+					src="/images/product.webp"
+					alt="Product interface"
+					class="w-full rounded-2xl"
+				/>
+			</GridCol>
+		</GridRow>
+	</GridContainer>
+</template>
+```
+
+`GridRow` wraps automatically. Columns without `sm-span` occupy the full width below `768px`; `span` controls their width from `768px` upward. In the example, the image appears first on mobile because of `sm-order="first"`, while the source order is restored on desktop.
+
+### Components and props
+
+| Component       | Responsibility | Main props |
+| --------------- | -------------- | ---------- |
+| `GridContainer` | Centers content, limits its maximum width, and adds default horizontal page padding. | `size`, `py`, `my`, `mdPy`, `mdMy`, visibility and background props |
+| `GridRow`       | Creates a wrapping flex row and controls cross-axis and horizontal alignment. | `size`, `align`, `justify`, `equalHeight`, spacing, visibility, and background props |
+| `GridCol`       | Places content on the responsive 12-column grid. | `span`, `smSpan`, `mdSpan`, `smOrder`, visibility, and background props |
+| `GridStack`     | Creates a full-width vertical wrapper for sections and layered backgrounds. | `as`, visibility and background props |
+
+All components accept `id` and `class`. Use `class` for gaps, horizontal gutters, typography, borders, and any layout detail not represented by a dedicated prop.
+
+#### `GridStack`
+
+`GridStack` is an optional outer wrapper for a full-width page section. It arranges its children vertically and provides the common background image, gradient, local video, and YouTube background API.
+
+The optional `as` prop changes the root HTML tag and defaults to `div`. Use a semantic tag such as `section`, `article`, `header`, `main`, or `footer` when the wrapper represents a meaningful part of the page.
+
+```vue
+<GridStack
+	as="section"
+	id="features"
+	class="h-[640px] text-white"
+	bg-image="/images/features-desktop.webp"
+	bg-image-sm="/images/features-mobile.webp"
+	bg-gradient="linear-gradient(90deg, rgba(2,6,23,.9), rgba(2,6,23,.25))"
+>
+	<GridContainer size="content" class="h-full justify-center">
+		<UiHeading :level="2">Everything needed to ship</UiHeading>
+		<p class="mt-4 max-w-xl text-white/80">
+			The section tag, responsive background, and content width are controlled independently.
+		</p>
+	</GridContainer>
+</GridStack>
+```
+
+Main props:
+
+| Prop | Values/default | Purpose |
+| ---- | -------------- | ------- |
+| `as` | Any HTML tag, default `div` | Root element |
+| `hideOnMobile` | `boolean` | Hide below `768px` |
+| `hideOnDesktop` | `boolean` | Hide from `768px` upward |
+| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Full wrapper background |
+
+`GridStack` fills the available parent height by default. Give it an explicit Tailwind `h-*` class when the section needs a fixed, viewport-based, or responsive height.
+
+#### `GridContainer`
+
+`GridContainer` centers page content, applies a maximum width selected with `size`, and adds safe horizontal padding for every size except `fullwidth`. It is a vertical flex container, so utilities such as `justify-center` and `items-center` can position its children.
+
+```vue
+<GridContainer
+	size="text"
+	id="article-introduction"
+	class="py-12 md:py-20"
+>
+	<UiHeading :level="1">Article title</UiHeading>
+	<p class="mt-5 text-lg leading-8 text-gray-600">
+		A readable text column centered within the page.
+	</p>
+</GridContainer>
+```
+
+Main props:
+
+| Prop | Values/default | Purpose |
+| ---- | -------------- | ------- |
+| `size` | `fullwidth`, `full`, `boxed`, `laptop`, `content`, `medium`, `text`, `tablet`, `mobile`; default `content` | Maximum content width |
+| `py`, `my` | Tailwind spacing suffix | Vertical padding or margin |
+| `mdPy`, `mdMy` | Tailwind spacing suffix | Vertical padding or margin from `768px` |
+| `hideOnMobile`, `hideOnDesktop` | `boolean` | Responsive visibility |
+| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Container background |
+
+`GridContainer` always renders a `div`; choose `GridStack as="..."` when a semantic outer element is required.
+
+#### `GridRow`
+
+`GridRow` is a full-width wrapping flex row. It groups `GridCol` components, controls their alignment, and can optionally constrain and center itself with `size`.
+
+```vue
+<GridContainer size="content">
+	<GridRow
+		align="center"
+		justify="between"
+		class="gap-y-8 md:-mx-4"
+	>
+		<GridCol :span="8" class="md:px-4">
+			<UiHeading :level="2">Primary content</UiHeading>
 		</GridCol>
-		<GridCol :span="5" :sm-span="12" sm-order="first">
-			<SafeNuxtImg src="/hero.webp" alt="Product" />
+
+		<GridCol :span="4" class="md:px-4">
+			<UiButton to="/details" block>View details</UiButton>
 		</GridCol>
 	</GridRow>
 </GridContainer>
 ```
 
-| Component       | Main API                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------- |
-| `GridContainer` | `size: fullwidth                                                                            | boxed | content | narrow | text`, responsive margin/padding props, hide flags, background color/image/gradient/video/YouTube with mobile overrides. |
-| `GridRow`       | Same backgrounds/spacing plus `align`, `justify`, `equalHeight`, optional container `size`. |
-| `GridCol`       | 12-column `span`, `smSpan`, `mdSpan`, mobile order, hide flags, and responsive backgrounds. |
-| `GridStack`     | Dynamic `as` element with full-width stacked content and responsive backgrounds/media.      |
+Main props:
 
-For background media, use `bg-image`, `bg-image-sm`, `bg-video`, `bg-video-sm`, `bg-youtube`, posters, gradients, and `bg-size`. The string `none` explicitly disables an inherited mobile media source.
+| Prop | Values/default | Purpose |
+| ---- | -------------- | ------- |
+| `size` | Any container size | Optional centered maximum width for the row |
+| `align` | `start`, `center`, `end`, `stretch`; default `start` | Cross-axis column alignment |
+| `justify` | `start`, `center`, `end`, `between`, `around`, `evenly`; default `start` | Horizontal distribution |
+| `equalHeight` | `boolean`, default `false` | Stretch sibling columns equally on desktop |
+| `py`, `my`, `mdPy`, `mdMy` | Tailwind spacing suffix | Responsive vertical spacing |
+| Visibility and background props | Shared grid API | Responsive visibility and row background |
+
+#### `GridCol`
+
+`GridCol` is a vertical flex column placed on the 12-column grid. It is full width on mobile unless `smSpan` is provided, while `span` controls its desktop width.
+
+```vue
+<GridRow class="gap-y-6 md:-mx-3">
+	<GridCol :span="8" :sm-span="12" class="md:px-3">
+		<article>Main content</article>
+	</GridCol>
+
+	<GridCol
+		:span="4"
+		:sm-span="12"
+		sm-order="first"
+		class="md:px-3"
+	>
+		<aside>Shown above the article on mobile and on the right on desktop.</aside>
+	</GridCol>
+</GridRow>
+```
+
+Main props:
+
+| Prop | Values/default | Purpose |
+| ---- | -------------- | ------- |
+| `span` | `1`–`12`, default `12` | Desktop width in twelfths |
+| `smSpan` | `1`–`12` | Mobile width in twelfths; defaults to full width |
+| `mdSpan` | `1`–`12` | Explicit desktop width override |
+| `smOrder` | `1`–`12`, `first`, `last`, `none` | Mobile order, reset on desktop |
+| `hideOnMobile`, `hideOnDesktop` | `boolean` | Responsive visibility |
+| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Column background |
+
+#### Container sizes
+
+`GridContainer` defaults to `content`. `GridRow` can also receive `size` when a row needs its own centered maximum width.
+
+| `size` value | Maximum width | Typical use |
+| ------------ | ------------- | ----------- |
+| `fullwidth`  | `100%`, without automatic horizontal padding | Edge-to-edge sections |
+| `full`       | `100%` | Full-width content with page padding |
+| `boxed`      | The smaller of `90%` and `1500px` | Wide landing pages and dashboards |
+| `laptop`     | `1367px` | Wide application layouts |
+| `content`    | `1080px` | Default pages and marketing sections |
+| `medium`     | `920px` | Forms, feature content, and compact pages |
+| `text`       | `728px` | Articles and long-form copy |
+| `tablet`     | `600px` | Narrow forms and dialogs presented as pages |
+| `mobile`     | `480px` | Authentication and single-column flows |
+
+Every size except `fullwidth` includes `px-4 md:px-0`. Use `full` when content must stay full width but still needs safe mobile page padding.
+
+#### Responsive columns
+
+| Prop | Values | Behaviour |
+| ---- | ------ | --------- |
+| `span` | `1`–`12`, default `12` | Column width from the `md` breakpoint (`768px`) upward |
+| `smSpan` | `1`–`12` | Column width below `768px`; without it the column is full width |
+| `mdSpan` | `1`–`12` | Explicit desktop width override |
+| `smOrder` | `1`–`12`, `first`, `last`, `none` | Mobile order; normal source order is restored from `768px` |
+
+Think in twelfths: `6 + 6` gives two equal columns, `8 + 4` gives content plus a sidebar, and `3 + 3 + 3 + 3` gives four desktop cards. A row wraps when its columns exceed 12.
+
+To add gutters, put a negative horizontal margin on the row and matching padding on each column. Vertical gaps can be applied directly to the wrapping row:
+
+```vue
+<GridRow class="gap-y-6 md:-mx-3">
+	<GridCol :span="4" :sm-span="6" class="md:px-3">...</GridCol>
+	<GridCol :span="4" :sm-span="6" class="md:px-3">...</GridCol>
+	<GridCol :span="4" :sm-span="12" class="md:px-3">...</GridCol>
+</GridRow>
+```
+
+This layout is one column on small phones, two plus one full-width column when `smSpan` is used, and three equal columns on desktop.
+
+#### Row alignment
+
+`align` accepts `start`, `center`, `end`, or `stretch`. `justify` accepts `start`, `center`, `end`, `between`, `around`, or `evenly`.
+
+Set `equal-height` when cards in the same desktop row must stretch to the height of the tallest column:
+
+```vue
+<GridContainer size="content" class="py-16">
+	<GridRow :equal-height="true" class="gap-y-6 md:-mx-3">
+		<GridCol
+			v-for="plan in plans"
+			:key="plan.name"
+			:span="4"
+			class="md:px-3"
+		>
+			<UiCard class="h-full">
+				<template #header>
+					<UiHeading :level="2">{{ plan.name }}</UiHeading>
+				</template>
+
+				<p>{{ plan.description }}</p>
+
+				<template #footer>
+					<UiButton :to="plan.to" block>Choose plan</UiButton>
+				</template>
+			</UiCard>
+		</GridCol>
+	</GridRow>
+</GridContainer>
+```
+
+`equalHeight` applies from the desktop breakpoint. Add `h-full` to the card or inner wrapper when that element must fill the stretched column.
+
+#### Spacing and visibility
+
+`GridContainer` and `GridRow` provide these optional spacing shortcuts:
+
+| Prop | Generated utility |
+| ---- | ----------------- |
+| `py="12"` | `py-12` |
+| `my="8"` | `my-8` |
+| `md-py="20"` | `md:py-20` |
+| `md-my="12"` | `md:my-12` |
+
+The values are Tailwind spacing scale suffixes. Regular Tailwind classes remain available for asymmetric or breakpoint-specific spacing.
+
+All four grid components support `hide-on-mobile` and `hide-on-desktop`:
+
+```vue
+<GridRow>
+	<GridCol :span="8">
+		<!-- Shared main content -->
+	</GridCol>
+
+	<GridCol :span="4" hide-on-mobile>
+		<!-- Desktop sidebar -->
+	</GridCol>
+
+	<GridCol hide-on-desktop>
+		<!-- Compact mobile actions -->
+	</GridCol>
+</GridRow>
+```
+
+`hideOnMobile` hides below `768px`; `hideOnDesktop` hides from `768px` upward.
+
+### Ready-to-use layouts
+
+#### Full-width hero with constrained content
+
+Place the background on `GridStack` and the readable content inside `GridContainer`. This keeps the media edge to edge without losing consistent content alignment.
+
+```vue
+<GridStack
+	class="h-[min(760px,100dvh)] text-white"
+	bg-color="#111827"
+	bg-image="/images/hero-desktop.webp"
+	bg-image-sm="/images/hero-mobile.webp"
+	bg-gradient="linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.15))"
+	bg-gradient-sm="linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.9))"
+>
+	<GridContainer size="boxed" class="h-full justify-center">
+		<GridRow align="center">
+			<GridCol :span="7">
+				<p class="mb-3 text-sm font-semibold uppercase tracking-widest">
+					New release
+				</p>
+				<UiHeading :level="1" class="text-4xl md:text-7xl">
+					Build the next product faster
+				</UiHeading>
+				<p class="mt-6 max-w-2xl text-lg text-white/80">
+					A concise value proposition that remains readable over the image.
+				</p>
+				<div class="mt-8 flex flex-wrap gap-3">
+					<UiButton to="/start">Start now</UiButton>
+					<UiButton to="/docs" variant="outline">Documentation</UiButton>
+				</div>
+			</GridCol>
+		</GridRow>
+	</GridContainer>
+</GridStack>
+```
+
+#### Content with a sticky sidebar
+
+```vue
+<GridContainer size="content" class="py-12 md:py-20">
+	<GridRow align="start" class="gap-y-10 md:-mx-5">
+		<GridCol :span="8" class="md:px-5">
+			<article class="prose max-w-none">
+				<h1>Guide title</h1>
+				<!-- Article content -->
+			</article>
+		</GridCol>
+
+		<GridCol :span="4" class="md:px-5">
+			<aside class="md:sticky md:top-24">
+				<UiCard>
+					<strong>On this page</strong>
+					<!-- Navigation -->
+				</UiCard>
+			</aside>
+		</GridCol>
+	</GridRow>
+</GridContainer>
+```
+
+#### Alternating feature rows
+
+Keep the semantic source order consistent and change only the mobile presentation with `smOrder`:
+
+```vue
+<GridContainer size="content" class="py-16">
+	<GridRow align="center" class="gap-y-8 md:-mx-6">
+		<GridCol :span="6" class="md:px-6">
+			<UiHeading :level="2">Analytics without extra setup</UiHeading>
+			<p class="mt-4 text-gray-600">
+				Explain the feature, its outcome, and the next action.
+			</p>
+		</GridCol>
+
+		<GridCol :span="6" sm-order="first" class="md:px-6">
+			<SafeNuxtImg
+				src="/images/analytics.webp"
+				alt="Analytics dashboard"
+				class="w-full rounded-2xl"
+			/>
+		</GridCol>
+	</GridRow>
+</GridContainer>
+```
+
+#### Responsive application shell
+
+```vue
+<GridContainer size="boxed" class="py-6">
+	<GridRow align="start" class="gap-y-6 md:-mx-3">
+		<GridCol :span="3" hide-on-mobile class="md:px-3">
+			<nav class="sticky top-6 rounded-xl border p-4">
+				<!-- Desktop navigation -->
+			</nav>
+		</GridCol>
+
+		<GridCol :span="9" class="md:px-3">
+			<main class="min-w-0">
+				<!-- Dashboard or application page -->
+			</main>
+		</GridCol>
+	</GridRow>
+</GridContainer>
+```
+
+### Backgrounds, gradients, and media
+
+Background props are available on `GridStack`, `GridContainer`, `GridRow`, and `GridCol`.
+
+| Desktop/default prop | Mobile override | Purpose |
+| -------------------- | --------------- | ------- |
+| `bgColor` | — | Any CSS background color |
+| `bgImage` | `bgImageSm` | Image URL |
+| `bgGradient` | `bgGradientSm` | CSS gradient placed over the image or video |
+| `bgSize` | `bgSizeSm` | CSS background size; defaults to `cover` |
+| `bgVideo` | `bgVideoSm` | Muted, looping local background video |
+| `bgVideoPoster` | `bgVideoPosterSm` | Poster shown while a local video loads |
+| `bgYoutube` | `bgYoutubeSm` | YouTube video ID or URL used as a background |
+
+Mobile overrides apply below `768px`. If an image, gradient, size, or poster override is omitted, its desktop value is reused. Set `bg-image-sm="none"` to remove a desktop background image on mobile.
+
+When several media props are supplied for the same breakpoint, YouTube is rendered before local video. For the static background/poster layer, `bgImage` takes precedence over the generated YouTube poster, which takes precedence over `bgVideoPoster`.
+
+#### Local background video with responsive sources
+
+Always provide posters so the section has a useful first frame while video loads or when playback is unavailable.
+
+```vue
+<GridStack
+	class="h-[680px] text-white"
+	bg-video="/video/launch-desktop.mp4"
+	bg-video-sm="/video/launch-mobile.mp4"
+	bg-video-poster="/images/launch-desktop.webp"
+	bg-video-poster-sm="/images/launch-mobile.webp"
+	bg-gradient="linear-gradient(90deg, rgba(2,6,23,.85), rgba(2,6,23,.2))"
+>
+	<GridContainer size="content" class="h-full justify-end py-12">
+		<GridRow>
+			<GridCol :span="7">
+				<UiHeading :level="1">Launch campaign</UiHeading>
+				<p class="mt-4 max-w-xl text-white/80">
+					Foreground content stays above the video and gradient automatically.
+				</p>
+			</GridCol>
+		</GridRow>
+	</GridContainer>
+</GridStack>
+```
+
+#### Background image on a single column
+
+The same API can be used for a card, banner, or one side of a split layout:
+
+```vue
+<GridContainer size="content" class="py-16">
+	<GridRow :equal-height="true" class="overflow-hidden rounded-2xl bg-gray-50">
+		<GridCol
+			:span="5"
+			class="min-h-80"
+			bg-color="#0f172a"
+			bg-image="/images/team-desktop.webp"
+			bg-image-sm="/images/team-mobile.webp"
+			bg-gradient="linear-gradient(180deg, transparent 35%, rgba(2,6,23,.9))"
+		>
+			<div class="mt-auto p-6 text-white">
+				<p class="text-sm uppercase tracking-wider text-white/70">Our team</p>
+				<UiHeading :level="2">Built by product engineers</UiHeading>
+			</div>
+		</GridCol>
+
+		<GridCol :span="7">
+			<div class="flex h-full flex-col justify-center p-8 md:p-12">
+				<UiHeading :level="2">A complete split section</UiHeading>
+				<p class="mt-4 text-gray-600">
+					The image column becomes a full-width visual above the copy on mobile.
+				</p>
+			</div>
+		</GridCol>
+	</GridRow>
+</GridContainer>
+```
+
+#### YouTube background
+
+```vue
+<GridStack
+	class="h-[640px] text-white"
+	bg-youtube="https://www.youtube.com/watch?v=VIDEO_ID"
+	bg-youtube-sm="MOBILE_VIDEO_ID"
+	bg-gradient="linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.72))"
+>
+	<GridContainer size="text" class="h-full items-center justify-center text-center">
+		<UiHeading :level="1">Campaign headline</UiHeading>
+		<p class="mt-4 text-lg text-white/80">Supporting campaign message.</p>
+	</GridContainer>
+</GridStack>
+```
+
+Background videos are decorative, muted, looping, non-interactive media. Use a normal video player or `ConsentYoutube` when users need playback controls, captions, or consent-gated YouTube content.
+
+### Practical rules
+
+- Start sections with `GridContainer size="content"`; switch to `boxed` for wide layouts and wrap everything in `GridStack` for edge-to-edge backgrounds.
+- Keep each desktop row at 12 columns unless intentional wrapping is part of the design.
+- Use `smSpan` only when a multi-column mobile layout is genuinely readable; the full-width mobile default is safer for forms and text.
+- Keep meaningful DOM order for accessibility. Use `smOrder` for visual presentation, not to repair an illogical source order.
+- Put row gutters in `class` (`md:-mx-*` on the row and `md:px-*` on its columns) so nested content remains aligned.
+- Give background sections an explicit height or enough vertical padding, descriptive foreground content, and sufficient gradient contrast.
+- Prefer local background video for decorative motion. Use `ConsentYoutube` for user-controlled YouTube embeds.
 
 ## Component reference
 
@@ -693,6 +1166,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiCheckbox`         | Checkbox group with `v-model`, options, legend, disabled state, and dividers.                                       |
 | `UiChip`             | Positioned or standalone indicator; text, color, size, inset, visibility, and ping animation.                       |
 | `UiCommandPalette`   | Global route/command search opened with `Ctrl/Cmd+K`.                                                               |
+| `UiCursorCreative`   | Optional animated desktop cursor; disables itself for coarse pointers and reduced motion.                           |
 | `UiFeatureAccordion` | Feature list synchronized with an image; side/mobile ordering and optional links.                                   |
 | `UiGeoDependent`     | Show slot using country whitelist/blacklist and optional pre-resolved `geoData`.                                    |
 | `UiHeading`          | Semantic `h1`–`h6` with default typography and custom class.                                                        |
@@ -753,6 +1227,35 @@ const rows = ref([{ id: 1, profile: { name: "Ada" } }]);
 </template>
 ```
 
+Additional component examples:
+
+```vue
+<UiAlert variant="success" title="Saved" description="Your changes are live." closable />
+<UiBadge label="New" color="blue" variant="soft" />
+<UiBanner title="Scheduled maintenance" description="Sunday at 02:00 UTC" closable />
+<UiChip text="3" color="red"><UiAvatar name="Ada Lovelace" /></UiChip>
+<UiCommandPalette />
+<UiCursorCreative />
+<UiFeatureAccordion :items="features" default-image="/images/feature.webp" />
+<UiIcon8 icon="github" type="color" :size="48" />
+<UiLightBox :images="['/gallery/one.webp', '/gallery/two.webp']" />
+<UiLocalTime timezone="Europe/Warsaw" label="Warsaw" show-date />
+<UiPopup id="welcome-offer" title="Welcome" trigger-delay="1500" />
+<UiRelativeTime :date="publishedAt" />
+<UiScheduledContent from="2026-12-01T00:00:00Z" to="2026-12-31T23:59:59Z">Holiday offer</UiScheduledContent>
+<UiScrollToTop />
+<UiSegmentedControl v-model="period" :options="periodOptions" />
+<UiSmartContrast src="/images/cover.webp" height="70vh"><UiHeading :level="1">Readable cover</UiHeading></UiSmartContrast>
+<UiSnapContainer direction="vertical"><UiSnapSection id="intro" bg-image="/images/intro.webp">Intro</UiSnapSection></UiSnapContainer>
+<UiSplitSection image-src="/images/team.webp" image-alt="Our team"><template #text>Team story</template></UiSplitSection>
+<UiStickyWrapper :offset="96">Sticky navigation</UiStickyWrapper>
+<UiTextarea v-model="message" id="message" label="Message" buttons-position="outside" @save="submit" />
+<UiTextColumn text-size-class="text-lg">Long-form readable content</UiTextColumn>
+<UiToggler v-model="enabled" label="Enable notifications" />
+<UiTruncateText :mobile-limit="120" :desktop-limit="300">Long text to truncate…</UiTruncateText>
+<UiViewportSpacer size="20" mobile-size="12" />
+```
+
 ### Content and view components
 
 | Component             | Purpose and principal props/events                                                                      |
@@ -801,6 +1304,31 @@ const tally = ref<{ open: () => void }>();
 </template>
 ```
 
+Additional view examples:
+
+```vue
+<ViewAnnouncementBar title="Version 2 is available" sticky closable />
+<ViewAvatarGroup :max="4"><UiAvatar v-for="person in team" :key="person.id" :src="person.avatar" /></ViewAvatarGroup>
+<ViewContentWithToc><article><h2>Installation</h2><p>...</p></article></ViewContentWithToc>
+<ViewCopyright owner="MyelophOne" :start-year="2024" />
+<ViewCountdownTimer target-date="2027-01-01T00:00:00Z" timezone="UTC" />
+<ViewCreativeCTA title="Start building" primary-text="Get started" primary-link="/start" />
+<ViewCurrencySelect />
+<ViewFeatureBoxGrid :items="features" :columns="3" />
+<ViewHorizontalMenu :items="[{ label: 'Overview', path: '/' }, { label: 'Docs', path: '/docs' }]" />
+<ViewImageCompare before-image="/before.webp" after-image="/after.webp" before-label="Before" after-label="After" />
+<ViewImgSlider :media="slides" :auto-scroll="true" :auto-scroll-interval="5000" />
+<ViewInfiniteMarquee :items="['Nuxt', 'Vue', 'Tailwind']" :duration="24" />
+<ViewInfoBar :items="contactItems" :actions="contactActions" />
+<ViewLogoGrid title="Trusted by teams" :items="logos" />
+<ViewLogoSlider :logos="logos" :speed="30" grayscale />
+<ViewQuoteBig text="A product-defining result." author-name="Ada Lovelace" />
+<ViewResponsiveMenu :items="navigation" />
+<ViewReviewsSlider :items="reviews" />
+<ViewSocialBar :items="socialLinks" variant="rounded" size="lg" />
+<ViewWarningOutdated />
+```
+
 ### Safe media, consent, SEO, and shell components
 
 | Component                              | Purpose                                                                                        |
@@ -817,6 +1345,18 @@ const tally = ref<{ open: () => void }>();
 | `SeoNoIndex` / `SeoContentNoIndex`     | Page and content indexing controls.                                                            |
 | `PagePreloader`                        | Route-loading overlay driven by the settings store.                                            |
 | `MyelophoneWelcome`                    | Default framework playground landing page.                                                     |
+| `MyelophoneCopyright`                  | Server-rendered copyright island used by the framework welcome screen.                          |
+
+```vue
+<SafeEmail user="hello" domain="example" tld="com" subject="Website enquiry" />
+<SafeImgWithLoader src="/images/product.webp" alt="Product" width="1200" height="800" />
+<SafeNuxtPicture src="/images/hero.webp" alt="Hero" sizes="100vw md:1080px" />
+<CookieBanner />
+<CookieSettingsModal />
+<PagePreloader />
+<MyelophoneWelcome />
+<NuxtIsland name="MyelophoneCopyright" />
+```
 
 ## Utility functions
 
