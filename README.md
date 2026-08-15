@@ -263,7 +263,11 @@ Supported style arguments include `slide`, `fade`, and `zoom`; modifiers are `fa
 
 ## Internationalization
 
-Configure supported languages and the unprefixed default language:
+The built-in `multi18n` module provides localized routes, lazy namespace loading, interpolation, pluralization, compact numbers, locale-aware links and visibility, language switching, fallback translations, SEO integration, and build-time removal of unused keys. No separate i18n module is required.
+
+### Configuration
+
+Configure the supported languages and the unprefixed default language:
 
 ```ts
 export default defineNuxtConfig({
@@ -274,7 +278,35 @@ export default defineNuxtConfig({
 });
 ```
 
-For a page such as `/about`, the module creates `/pl/about` and `/ru/about`. `/en/about` is redirected permanently to `/about`. Set `definePageMeta({ i18n: false })` to prevent localized copies of an individual page.
+`defaultLocale` defaults to `en`; `locales` defaults to `['en']`. Duplicate locale values are removed in public runtime configuration. Use lowercase two-letter locale codes such as `en`, `pl`, and `ru` for consistent route and SEO handling.
+
+### Localized routes
+
+Every regular Nuxt page receives a route for each non-default locale:
+
+| Source page | English, the default locale | Polish | Russian |
+| ----------- | --------------------------- | ------ | ------- |
+| `/` | `/` | `/pl` | `/ru` |
+| `/about` | `/about` | `/pl/about` | `/ru/about` |
+| `/products/[slug]` | `/products/:slug` | `/pl/products/:slug` | `/ru/products/:slug` |
+
+The default language never needs a URL prefix. A prefixed default-language URL such as `/en/about` is permanently redirected to `/about`.
+
+Exclude a page from route localization when it must have only one URL:
+
+```vue
+<script setup lang="ts">
+definePageMeta({
+	i18n: false,
+});
+</script>
+```
+
+Catch-all pages such as `[...all].vue` are not duplicated. An explicitly defined localized path is also preserved instead of being generated a second time.
+
+The active locale is resolved from the first URL segment during SSR and updated after client navigation. The framework synchronizes `settingsStore.currentLocale` and the document's `<html lang>` attribute with that route.
+
+### Translation files and namespaces
 
 Translation files use namespace paths:
 
@@ -285,40 +317,118 @@ app/locales/en/products.json
 app/locales/pl/products.json
 ```
 
-Consumer locale files override layer values when the same namespace/key is loaded. Nested JSON and dotted keys are both supported.
+The filename is the namespace: `products.json` is loaded with `useMultiLang('products')`, and its keys are addressed as `products.*`. Namespace paths can also be nested, for example `locales/en/account/profile.json` → `account/profile.*`.
+
+Translation files are discovered in both the framework and application locale directories. Keep application-specific translations in their own namespaces. Inside a loaded JSON file, nested objects and dotted keys are expanded and can be mixed:
 
 ```json
 {
- "title": "Products",
- "hello": "Hello, {name}!",
- "items_one": "{count} item",
- "items_other": "{count} items"
+	"title": "Products",
+	"hello": "Hello, {name}!",
+	"filters.empty": "No matching products",
+	"cart": {
+		"title": "Your cart"
+	},
+	"items_zero": "No items",
+	"items_one": "{count} item",
+	"items_other": "{count} items"
 }
 ```
+
+### Loading and translating namespaces
 
 ```vue
 <script setup lang="ts">
 const { t, tn, loadPromise, refresh } = useMultiLang(["products"]);
+
+// `loadPromise` is the reactive pending state returned by useAsyncData.
+// Call refresh() when translation files must be reloaded explicitly.
 </script>
 
 <template>
- <h1>{{ t("products.title") }}</h1>
- <p>{{ t("products.hello", { name: "Ada" }) }}</p>
- <p>{{ t("products.items", 12) }}</p>
- <p>{{ tn("products.items", 12500) }}</p>
+	<div :aria-busy="loadPromise">
+		<h1>{{ t("products.title") }}</h1>
+		<p>{{ t("products.hello", { name: "Ada" }) }}</p>
+		<p>{{ t("products.items", 0) }}</p>
+		<p>{{ t("products.items", 12) }}</p>
+		<p>{{ tn("products.items", 12500) }}</p>
+	</div>
 </template>
 ```
 
-`t` supports interpolation and `Intl.PluralRules`; `tn` uses compact number formatting for large counts. Missing active-language keys fall back to the default locale, then to the key itself.
+`useMultiLang` accepts one namespace or an array and returns:
+
+| Member | Purpose |
+| ------ | ------- |
+| `t(key)` | Translate a string |
+| `t(key, params)` | Replace `{placeholder}` values |
+| `t(key, count)` | Select a plural form and format `{count}` |
+| `t(key, params, count)` | Combine interpolation and pluralization |
+| `t(key, params, count, rule)` | Force a plural suffix such as `few` or `many` |
+| `tn(key, count, params?)` | Use compact number formatting such as `12K` for large counts |
+| `loadPromise` | Reactive namespace-loading state |
+| `refresh()` | Reload the selected namespaces through Nuxt async data |
+
+Plural keys use the suffixes returned by `Intl.PluralRules`, such as `_one`, `_few`, `_many`, and `_other`. For zero, `_zero` is checked first. `_other` is the final plural fallback.
+
+```ts
+const { t, tn } = useMultiLang('products');
+
+t('products.hello', { name: 'Ada' });
+t('products.items', 0); // products.items_zero
+t('products.items', { category: 'books' }, 3);
+t('products.items', {}, 3, 'few'); // explicitly use products.items_few
+tn('products.items', 12_500); // compact, locale-aware {count}
+```
+
+Missing active-locale translations fall back to the default locale when that namespace is available, and unresolved values return the full translation key. Interpolated numbers use locale-aware `Intl.NumberFormat` formatting.
+
+Namespaces are loaded lazily with `import.meta.glob`, cached in shared Nuxt state, loaded again when the active locale changes, and SSR-serialized for hydration. Set `public.bundleTranslations: false` to group translation assets into separate per-locale chunks; keep it `true` to use the normal bundle grouping.
+
+### Dynamic keys and tree shaking
+
+Production builds scan `.vue`, `.ts`, `.js`, and `.mjs` sources for literal keys used by `t()`, `tn()`, and `$t()`. Unused JSON entries are removed, while all plural variants belonging to a used base key are retained.
 
 Dynamic translation keys cannot always be found statically. Preserve them with either method:
 
 ```ts
 // @i18n-keep products.dynamic_title
-useSafeList(configDrivenContent);
+
+useSafeList(
+	{
+		titleKey: 'products.dynamic_title',
+		emptyStateKeys: [
+			'products.empty.search',
+			'products.empty.category',
+		],
+		sections: [
+			{ headingKey: 'products.sections.featured' },
+		],
+	},
+	{ safelistPath: 'i18n-safelist.json' },
+);
 ```
 
-Builds write discovered dynamic keys to `.nuxt/i18n-safelist.generated.json`; an optional root `i18n-safelist.json` can hold manually maintained keys.
+`useSafeList` recursively collects:
+
+- direct translation-key strings;
+- object properties whose names end in `Key`, except `loadKey`;
+- arrays stored in properties whose names end in `Keys`;
+- matching values inside nested arrays and objects.
+
+It is intended for server/build-time code because it uses the Node filesystem. Without options it writes sorted keys to `.nuxt/i18n-safelist.generated.json`. To feed collected keys directly into the configured tree-shaker, set `safelistPath: 'i18n-safelist.json'` as above. The same root file can also be maintained manually:
+
+```json
+[
+	"products.dynamic_title",
+	"products.empty.search",
+	"products.empty.category"
+]
+```
+
+Literal calls, `@i18n-keep` comments, the configured root safelist, and keys registered by built-in framework configuration are combined during the build.
+
+### Locale-aware navigation and content
 
 Language-aware components:
 
@@ -328,6 +438,53 @@ Language-aware components:
 <UiLangVisible only="pl">Polish-only content</UiLangVisible>
 <UiLangVisible :except="['pl', 'ru']">All other languages</UiLangVisible>
 ```
+
+`UiLanguageSelect` lists configured locales, keeps the current path, query, and hash when switching, removes the prefix for the default locale, and automatically opens upward or right-aligned when viewport space is limited. Use its slots and class props for a custom presentation:
+
+```vue
+<UiLanguageSelect
+	show-full
+	container-class="relative"
+	trigger-class="rounded-lg px-4 py-2"
+	dropdown-class="rounded-lg"
+	option-class="text-sm"
+>
+	<template #trigger>
+		<span class="uppercase">Choose language</span>
+	</template>
+</UiLanguageSelect>
+```
+
+Full language names use keys such as `common.en`, `common.pl`, and `common.ru`. Add them to every configured locale's `common.json` when `show-full` is enabled.
+
+`UiLangLink` accepts `to`, `exact`, and `replace`. It prefixes internal paths only when the active locale is not the default and avoids adding the same prefix twice:
+
+```vue
+<UiLangLink to="/products">Products</UiLangLink>
+<UiLangLink to="/checkout" replace>Checkout</UiLangLink>
+```
+
+`UiLangVisible` accepts a locale string or array through either `only` or `except`. If both are omitted, its slot is always rendered.
+
+The settings store can also drive language changes directly:
+
+```vue
+<script setup lang="ts">
+const settings = useSettingsStore();
+
+const selectPolish = () => settings.setLocale('pl');
+</script>
+
+<template>
+	<UiButton @click="selectPolish">Polski</UiButton>
+</template>
+```
+
+`setLocale()` ignores unsupported locale values and navigates to the equivalent localized route while retaining the current query and hash.
+
+### i18n and SEO
+
+For localized pages, the application shell updates `<html lang>`, creates alternate `hreflang` links and an `x-default` link, and keeps localized breadcrumb paths and labels in sync. Set `runtimeConfig.public.siteUrl` to the canonical production origin so SSR can produce absolute URLs.
 
 ## SEO and URL behavior
 
