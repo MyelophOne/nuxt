@@ -1676,6 +1676,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiCommandPalette`   | Global route/command search opened with `Ctrl/Cmd+K`.                                                               |
 | `UiCursorCreative`   | Optional animated desktop cursor; disables itself for coarse pointers and reduced motion.                           |
 | `UiFeatureAccordion` | Feature list synchronized with an image; side/mobile ordering and optional links.                                   |
+| `UiFileUpload`       | Native/FormData-compatible file picker and dropzone; single/multiple files, validation, previews, removal, slots.   |
 | `UiGeoDependent`     | Show slot using country whitelist/blacklist and optional pre-resolved `geoData`.                                    |
 | `UiHeading`          | Semantic `h1`–`h6` with independent `xs`–`display` visual size and custom class.                                    |
 | `UiIcon`             | Server component fetching Iconify SVG by `prefix:name`; accepts `size` and class.                                   |
@@ -1717,6 +1718,115 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 ```
 
 Numeric dimensions are pixels; strings accept any CSS length. The default skeleton is decorative and hidden from assistive technology. Set `aria-label="Loading profile"` when it should be announced as a status. Set `:animated="false"` for a static placeholder. Its color is derived from `--ui-bg` and `--ui-text`, and pulse animation is automatically disabled by `prefers-reduced-motion`.
+
+#### UiFileUpload
+
+`UiFileUpload` uses the same `v-model` pattern as the other form controls. A single field returns `File | null`; `multiple` returns `File[]`. Its native input retains `name`, `required`, `accept`, `capture`, and `disabled`, and is synchronized so `new FormData(form)` includes the current files.
+
+Complete multiple-file form example:
+
+```vue
+<script setup lang="ts">
+const attachments = ref<File[]>([]);
+const uploadError = ref("");
+
+const rejectFiles = (items: Array<{ file: File; reasons: string[] }>) => {
+ uploadError.value = items
+  .map(({ file, reasons }) => `${file.name}: ${reasons.join(", ")}`)
+  .join("; ");
+};
+
+const submit = async (event: Event) => {
+ const form = event.currentTarget as HTMLFormElement;
+ await useApi().post("/contact", new FormData(form));
+};
+</script>
+
+<template>
+ <form @submit.prevent="submit">
+  <UiFileUpload
+   v-model="attachments"
+   name="attachments[]"
+   label="Attachments"
+   description="PDF or images, up to 5 MB each"
+   accept="application/pdf,image/*"
+   :max-size="5 * 1024 * 1024"
+   :max-files="4"
+   :error="uploadError"
+   multiple
+   required
+   @reject="rejectFiles"
+  />
+  <UiButton type="submit">Send</UiButton>
+ </form>
+</template>
+```
+
+For a single file, use `const avatar = ref<File | null>(null)` and omit `multiple`.
+
+Props:
+
+| Prop | Type | Default | Purpose |
+| ---- | ---- | ------- | ------- |
+| `modelValue` | `File \| File[] \| null` | `null` | Selected file for a single field or files for `multiple`; normally bound with `v-model` |
+| `id` | `string` | Generated | Native input id and base for accessible description/error ids |
+| `name` | `string` | — | Native form field name; use a server-compatible name such as `attachments[]` for multiple files |
+| `accept` | `string` | — | Comma-separated MIME types, wildcards, or extensions, for example `image/*,.pdf` |
+| `multiple` | `boolean` | `false` | Switch the model and native input to multiple-file mode |
+| `required` | `boolean` | `false` | Apply native required-field validation |
+| `disabled` | `boolean` | `false` | Disable selection, dropping, removal, and keyboard interaction |
+| `capture` | `boolean \| user \| environment` | — | Pass the native mobile capture hint to the file input |
+| `dropzone` | `boolean` | `true` | Enable drag-and-drop; `false` also renders the picker in its compact form |
+| `interactive` | `boolean` | `true` | Make the whole picker clickable and keyboard-operable; the actions button remains available when `false` |
+| `preview` | `boolean` | `true` | Render selected files and image object-URL thumbnails |
+| `append` | `boolean` | `true` | Append new selections in multiple mode; set `false` to replace the array |
+| `maxSize` | `number` | — | Maximum size of each file in bytes |
+| `maxFiles` | `number` | — | Maximum accepted file count in multiple mode |
+| `label` | `string` | `Upload files` | Main picker label |
+| `description` | `string` | Empty | Supporting instructions; linked to the native input with `aria-describedby` |
+| `selectText` | `string` | `Select files` | Default action text |
+| `emptyText` | `string` | `or drag and drop them here` | Default dropzone hint when no custom description is provided |
+| `layout` | `list \| grid` | `list` | Selected-file presentation; `grid` is useful for image previews |
+| `error` | `boolean \| string` | `false` | Invalid styling; a string is also rendered as an accessible error message |
+
+Events:
+
+| Event | Payload | When it fires |
+| ----- | ------- | ------------- |
+| `update:modelValue` | `File \| File[] \| null` | Selection, removal, clear, or native form reset updates the model |
+| `change` | `File \| File[] \| null` | The committed value changes, including clear and form reset |
+| `reject` | `Array<{ file: File; reasons: Reason[] }>` | One or more incoming files fail validation |
+| `remove` | `file: File, index: number` | A specific selected file is removed |
+| `clear` | None | `clear()` or `removeFile()` without an index clears a non-empty selection |
+
+`Reason` is one of `type`, `size`, `count`, or `duplicate`. Valid files in a mixed selection are still accepted; rejected files are reported separately.
+
+Scoped slots:
+
+| Slot | Scope | Purpose |
+| ---- | ----- | ------- |
+| `default` | `{ files, open, removeFile, clear, dragging }` | Replace the entire visible picker/dropzone content |
+| `leading` | — | Replace the default upload icon |
+| `label` | — | Replace the label markup |
+| `description` | — | Replace instructions or file constraints |
+| `actions` | `{ files, open, removeFile }` | Replace the select-file action |
+| `files-top` | `{ files, removeFile, clear }` | Insert content above the selected-file collection |
+| `files` | `{ files, removeFile, clear }` | Replace the complete selected-file collection |
+| `file` | `{ file, index, removeFile, previewUrl }` | Replace one selected-file row/card; `previewUrl` exists for supported images |
+| `files-bottom` | `{ files, removeFile, clear }` | Insert controls or status below the selected-file collection |
+
+Exposed methods and refs:
+
+| Member | Signature/value | Purpose |
+| ------ | --------------- | ------- |
+| `open` | `() => void` | Open the native file chooser |
+| `removeFile` | `(index?: number) => void` | Remove a file by index, or clear all when omitted |
+| `clear` | `() => void` | Clear all selected files |
+| `input` | Native input template ref | Access the underlying `<input type="file">` when integration code requires it |
+
+The picker listens to its parent form's native `reset` event and clears the model automatically. Image preview object URLs are revoked when files are removed or the component unmounts. Colors come from `--ui-bg` and `--ui-text`, while validation uses `--ui-error` with a fallback. Motion transitions are disabled under `prefers-reduced-motion`.
+
+`useApi().post()` and `useApi().put()` accept the resulting `FormData`. The request helper removes its JSON content type for `FormData`, allowing the browser to generate the required multipart boundary. Do not set `Content-Type` manually for these requests.
 
 Example form and virtual table:
 

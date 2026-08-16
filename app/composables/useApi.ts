@@ -16,11 +16,20 @@ export const useApi = () => {
 		retry: 3,
 		retryDelay: 1000,
 		onRequest({ options }) {
-			if (token.value) {
-				const headers = new Headers(options.headers);
-				headers.set('Authorization', `Bearer ${token.value}`);
-				options.headers = headers;
+			const headers = new Headers(options.headers);
+
+			if (
+				typeof FormData !== 'undefined' &&
+				options.body instanceof FormData
+			) {
+				headers.delete('Content-Type');
 			}
+
+			if (token.value) {
+				headers.set('Authorization', `Bearer ${token.value}`);
+			}
+
+			options.headers = headers;
 		},
 		onResponseError({ response }) {
 			const message = response.statusText || `Error: ${response.status}`;
