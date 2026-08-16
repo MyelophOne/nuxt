@@ -13,7 +13,7 @@ Production-oriented Nuxt 4 + Tailwind CSS application framework and Nuxt layer w
 > cd my-frontend
 > ```
 
-## What is this
+## What is @myelophone/nuxt
 
 @myelophone/nuxt is an extendable Nuxt framework layer that supplies application shell behavior, modules, components, composables, stores, styles, middleware, server routes, and build optimizations.
 
@@ -1674,6 +1674,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiCheckbox`         | Checkbox group with `v-model`, options, legend, disabled state, and dividers.                                       |
 | `UiChip`             | Positioned or standalone indicator; text, color, size, inset, visibility, and ping animation.                       |
 | `UiCommandPalette`   | Global route/command search opened with `Ctrl/Cmd+K`.                                                               |
+| `UiConsole`          | Responsive animated console with delayed/removable lines, highlighted segments, looping, slots, and controls.       |
 | `UiCursorCreative`   | Optional animated desktop cursor; disables itself for coarse pointers and reduced motion.                           |
 | `UiFeatureAccordion` | Feature list synchronized with an image; side/mobile ordering and optional links.                                   |
 | `UiFileUpload`       | Native/FormData-compatible file picker and dropzone; single/multiple files, validation, previews, removal, slots.   |
@@ -1707,6 +1708,75 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                  |
 | `UiTruncateText`     | Responsive character limits with localized expand/collapse controls. Text-only slot.                                |
 | `UiViewportSpacer`   | Responsive `vh/dvh` or `vw/dvw` spacer.                                                                             |
+
+#### UiConsole
+
+`UiConsole` renders plain strings or structured lines. All timing values are milliseconds. A line's `delay` is the wait after the preceding line appears; when omitted, `lineDelay` is used (the first line appears immediately). `hideAfter` removes that line after the specified time, which can be used for temporary status messages or line replacement.
+
+```vue
+<script setup lang="ts">
+const output = [
+ {
+  prefix: "$",
+  segments: [{ text: "npx telemetry " }, { text: "init", tone: "primary" }],
+ },
+ {
+  prefix: "→",
+  text: "Scanning service topology...",
+  tone: "muted",
+  delay: 500,
+  hideAfter: 900,
+ },
+ {
+  prefix: "→",
+  delay: 1000,
+  segments: [
+   { text: "Found ", tone: "muted" },
+   { text: "23 services", highlight: true },
+  ],
+ },
+ { prefix: "✓", text: "Deployment complete", tone: "success" },
+];
+</script>
+
+<template>
+ <UiConsole
+  :lines="output"
+  :line-delay="350"
+  :start-delay="200"
+  title="deploy"
+  cursor
+  @complete="onComplete"
+ />
+</template>
+```
+
+Line and segment tones are `default`, `muted`, `primary`, `info`, `success`, `warning`, and `error`. Set `highlight: true` for a subtle background highlight. Content is rendered as text rather than HTML; for custom markup use the scoped `line` slot, which receives `{ line, index }`. The `prefix` slot receives the same scope.
+
+Principal props:
+
+| Prop                      | Type                           | Default           | Purpose                                                                  |
+| ------------------------- | ------------------------------ | ----------------- | ------------------------------------------------------------------------ |
+| `lines`                   | `Array<string \| ConsoleLine>` | Required          | Console output in display order                                          |
+| `autoplay`                | `boolean`                      | `true`            | Animate the sequence after mount; when false, show all lines immediately |
+| `lineDelay`               | `number`                       | `400`             | Default wait before each line after the first                            |
+| `startDelay`              | `number`                       | `0`               | Wait before starting the sequence                                        |
+| `loop` / `loopDelay`      | `boolean` / `number`           | `false` / `1200`  | Replay the sequence and wait between runs                                |
+| `chrome`                  | `boolean`                      | `true`            | Show the console header and window controls                              |
+| `title`                   | `string`                       | Empty             | Optional centered header title                                           |
+| `cursor`                  | `boolean`                      | `false`           | Show a blinking cursor while the sequence is running                     |
+| `autoScroll`              | `boolean`                      | `true`            | Keep the newest output visible when the body overflows                   |
+| `minHeight` / `maxHeight` | CSS length                     | `12rem` / `32rem` | Responsive body height limits                                            |
+| `ariaLabel`               | `string`                       | `Console output`  | Accessible name for the live log                                         |
+| `ui`                      | `object`                       | `{}`              | Classes for `root`, `header`, `body`, `line`, and `cursor`               |
+
+Events are `line-show(line, index)`, `line-hide(line, index)`, and `complete`. Exposed methods are `play()`, `reset()`, `showAll()`, and `scrollToLatest()`.
+
+SSR always renders the complete final output. Crawlers, no-JS clients, and the original HTML therefore receive every console line. When the existing early head script changes `html.nojs` to `html.js`, CSS hides every pending line except the first without removing anything from the document. After mount, the component starts its client-side timeline and controls visibility reactively. This avoids a hydration mismatch while keeping the complete semantic HTML available for SEO.
+
+When `cursor` is enabled, it occupies its own new line and remains visible after the sequence completes, ready for the next simulated command.
+
+The default palette follows GitHub's light and dark code colors and switches using the project theme. Individual colors can be overridden with `--ui-console-bg`, `--ui-console-header-bg`, `--ui-console-text`, `--ui-console-muted`, `--ui-console-border`, `--ui-console-primary`, `--ui-console-info`, `--ui-console-success`, `--ui-console-warning`, and `--ui-console-error`. Visual transitions and cursor blinking are disabled by `prefers-reduced-motion`.
 
 `UiSkeleton` can be sized with Tailwind classes like `USkeleton`, or with its `width` and `height` props:
 
