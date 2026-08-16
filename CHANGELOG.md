@@ -1,3 +1,9 @@
+## 📦 Release 0.5.0 (2026-08-16)
+### ✨ Features
+- add ready page functionality
+### 🐛 Bug Fixes
+- update dependencies
+
 ## 📦 Release 0.4.14 (2026-08-15)
 ### 🐛 Bug Fixes
 - useThemeSync memory overflow
