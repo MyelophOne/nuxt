@@ -200,8 +200,8 @@ The effective preset selection is:
 
 ```ts
 process.env.NUXT_STATIC === "true"
-	? "static"
-	: process.env.NITRO_PRESET || "node-cluster";
+ ? "static"
+ : process.env.NITRO_PRESET || "node-cluster";
 ```
 
 Start the generated cluster build with `yarn server`, which runs `playground/.output/server/index.mjs` in this repository. In an application based on `@myelophone/nuxt-template`, run its corresponding production server command.
@@ -262,7 +262,274 @@ const settings = useSettingsStore();
 
 The choice is stored locally, synchronized across tabs, reflected in the browser theme color, and initialized before paint to reduce theme flashing.
 
-### Reveal animations
+## Ready page components
+
+A ready page component is a complete, reusable page composition built from the layer's grid, UI, view, media, and content components. It owns its default content, markup, and visual preset, so a Nuxt page can render a finished page with a single component:
+
+```vue
+<template>
+ <ReadyProductPage />
+</template>
+```
+
+Keep ready page components in `app/components/ready/`. Nuxt derives the component name from the directory and filename: `components/ready/ProductPage.vue` becomes `<ReadyProductPage />`.
+
+Ready components should contain only page-specific concerns:
+
+- the content contract and other page-specific TypeScript interfaces;
+- complete default content for every supported locale;
+- the composition of existing components;
+- named slots that are useful for exceptional site-specific replacements;
+- the page's default CSS variables and the selectors that consume them.
+
+Reusable behavior belongs to the layer rather than an individual ready component:
+
+| API                   | Responsibility                                                                                                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useReadyPage()`      | Resolves configured locales, applies fallbacks and overrides, stays reactive, and updates title, description, Open Graph title, and Open Graph description for the active language. |
+| `mergeReadyContent()` | Deeply merges objects without mutating the defaults. Arrays are replaced as complete collections.                                                                                   |
+| `readyCssVariables()` | Converts a typed appearance object into inheritable `--ready-*` CSS variables.                                                                                                      |
+| `PageReadyLocalized`  | Renders the resolved language variant through `UiLangVisible`.                                                                                                                      |
+
+Marketing and editorial content belongs in the ready component, not in locale JSON files. Keep JSON namespaces for shared interface or service strings used by independent components, such as email, telephone, consent, navigation controls, validation messages, and common actions.
+
+### Minimal ready component
+
+The following is a complete minimal `app/components/ready/ProductPage.vue`. Its specific types stay in the SFC and can be imported by a consuming page when type annotations are useful.
+
+```vue
+<script lang="ts">
+import type {
+ DeepPartial,
+ ReadyContentByLocale,
+} from "../../composables/useReadyPage";
+
+export interface ProductPageContent {
+ seo: {
+  title: string;
+  description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+ };
+ brand: string;
+ hero: {
+  title: string;
+  description: string;
+  actionLabel: string;
+  actionTo: string;
+ };
+}
+
+export interface ProductPageAppearance {
+ background: string;
+ text: string;
+ primary: string;
+ primaryContrast: string;
+ buttonRadius: string;
+}
+
+export type ProductPageContentOverride = DeepPartial<ProductPageContent>;
+export type ProductPageContentByLocale =
+ ReadyContentByLocale<ProductPageContent>;
+export type ProductPageAppearanceOverride = DeepPartial<ProductPageAppearance>;
+</script>
+
+<script setup lang="ts">
+import {
+ mergeReadyContent,
+ readyCssVariables,
+ useReadyPage,
+} from "../../composables/useReadyPage";
+
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(
+ defineProps<{
+  content?: ProductPageContentOverride;
+  contentByLocale?: ProductPageContentByLocale;
+  appearance?: ProductPageAppearanceOverride;
+ }>(),
+ {
+  content: () => ({}),
+  contentByLocale: () => ({}),
+  appearance: () => ({}),
+ },
+);
+
+const english: ProductPageContent = {
+ seo: {
+  title: "Acme — a clearer way to work",
+  description: "A short description of the complete product page.",
+ },
+ brand: "Acme",
+ hero: {
+  title: "A complete page from one component",
+  description: "The component provides useful content and layout immediately.",
+  actionLabel: "Get started",
+  actionTo: "/contact",
+ },
+};
+
+const defaultContentByLocale: Record<string, ProductPageContent> = {
+ en: english,
+ pl: mergeReadyContent(english, {
+  seo: {
+   title: "Acme — prostszy sposób pracy",
+   description: "Krótki opis kompletnej strony produktu.",
+  },
+  hero: {
+   title: "Kompletna strona z jednego komponentu",
+   description: "Komponent od razu udostępnia treść i układ.",
+   actionLabel: "Zacznij",
+  },
+ }),
+};
+
+const defaultAppearance: ProductPageAppearance = {
+ background: "var(--ui-bg)",
+ text: "var(--ui-text)",
+ primary: "#526dff",
+ primaryContrast: "#ffffff",
+ buttonRadius: "0.75rem",
+};
+
+const appearance = computed(() =>
+ mergeReadyContent(defaultAppearance, props.appearance),
+);
+const rootStyle = computed(() => readyCssVariables(appearance.value));
+
+const { resolvedContentByLocale } = useReadyPage({
+ contentByLocale: defaultContentByLocale,
+ content: () => props.content,
+ overridesByLocale: () => props.contentByLocale,
+ fallbackLocale: "en",
+});
+</script>
+
+<template>
+ <PageReadyLocalized
+  v-slot="{ content: page }"
+  :content-by-locale="resolvedContentByLocale"
+ >
+  <section
+   v-bind="$attrs"
+   :style="[rootStyle, $attrs.style]"
+   class="ready-product-page"
+  >
+   <GridContainer size="boxed" class="py-20">
+    <p>{{ page.brand }}</p>
+    <UiHeading :level="1">{{ page.hero.title }}</UiHeading>
+    <p>{{ page.hero.description }}</p>
+    <UiButton
+     as="nuxt-link"
+     :to="page.hero.actionTo"
+     :label="page.hero.actionLabel"
+     class="ready-product-page__button"
+    />
+   </GridContainer>
+  </section>
+ </PageReadyLocalized>
+</template>
+
+<style scoped>
+.ready-product-page {
+ background: var(--ready-background);
+ color: var(--ready-text);
+ min-height: 100dvh;
+}
+
+.ready-product-page :deep(.ready-product-page__button) {
+ background: var(--ready-primary);
+ border-color: var(--ready-primary);
+ border-radius: var(--ready-button-radius);
+ color: var(--ready-primary-contrast);
+}
+</style>
+```
+
+`useReadyPage()` reads the active language used by the built-in multi-language system. `PageReadyLocalized` delegates visible content to `UiLangVisible`; ready components should not manually inspect the route or duplicate locale-selection logic.
+
+Each locale entry must describe a complete usable page after merging with its fallback. The example creates Polish content by deeply overriding the English fallback. Because arrays represent ordered page collections, `mergeReadyContent()` replaces an overridden array instead of merging items by index.
+
+### Use and customize a ready page
+
+No props are required when the defaults are suitable. A concrete site can change any nested value without editing or copying the ready component:
+
+```vue
+<script setup lang="ts">
+import type { ProductPageContentByLocale } from "~/components/ready/ProductPage.vue";
+
+const contentByLocale: ProductPageContentByLocale = {
+ en: {
+  brand: "Example Cloud",
+  hero: {
+   title: "Infrastructure without busywork",
+  },
+ },
+ pl: {
+  brand: "Example Cloud",
+  hero: {
+   title: "Infrastruktura bez zbędnej pracy",
+  },
+ },
+};
+</script>
+
+<template>
+ <ReadyProductPage
+  :content="{
+   hero: {
+    actionTo: 'mailto:hello@example.com',
+   },
+  }"
+  :content-by-locale="contentByLocale"
+  :appearance="{
+   primary: '#7c3aed',
+   buttonRadius: '999px',
+  }"
+  class="site-product-page"
+ />
+</template>
+```
+
+Overrides are applied in this order:
+
+1. the ready component's fallback content;
+2. the ready component's content for the active language;
+3. common site overrides from `content`;
+4. active-language site overrides from `contentByLocale`.
+
+Use `content` for values shared by every language, such as URLs, email addresses, feature flags, IDs, and asset paths. Use `contentByLocale` for language-dependent editorial content. Both objects are reactive, so replacing either prop updates the rendered page and its SEO metadata.
+
+The `appearance` prop exposes the variables intentionally supported by that ready component. Normal root attributes are also forwarded. This permits site-specific classes, `data-*`, `aria-*`, and additional or emergency CSS-variable overrides:
+
+```vue
+<ReadyProductPage
+ data-campaign="autumn"
+ style="--ready-primary: #e11d48; --ready-button-radius: 0.4rem"
+/>
+```
+
+Define every documented appearance variable on the ready component's root and consume it inside the component with `var(--ready-...)`. CSS custom properties inherit through nested Vue components, while `:deep()` lets scoped ready styles target the roots of reused UI components. Prefer `appearance` for the stable public styling API and direct `style` variables for exceptional additions.
+
+### Ready component checklist
+
+When adding another complete page or large ready page fragment:
+
+1. Create a descriptive file under `app/components/ready/`.
+2. Keep its content and appearance interfaces in that `.vue` file; do not add ready-specific contracts to the global `app/types/` directory.
+3. Provide a complete fallback locale and all useful built-in locale variants inside the component.
+4. Include `seo.title` and `seo.description`; add localized `ogTitle` and `ogDescription` only when they should differ.
+5. Accept `content`, `contentByLocale`, and `appearance` as deep partial overrides.
+6. Call `useReadyPage()` instead of implementing merging, locale selection, fallback, or SEO again.
+7. Render the result through `PageReadyLocalized` so visibility continues to use `UiLangVisible`.
+8. Put visual defaults in a typed appearance object, convert it with `readyCssVariables()`, and bind the result to the root element.
+9. Forward `$attrs` and merge `$attrs.style` after the default root variables.
+10. Add named slots only where arbitrary site markup is genuinely useful; prefer typed content overrides for normal changes.
+11. Add a separate route under `playground/pages/` for development. Do not replace framework or application pages merely to demonstrate the component.
+12. Run type checking and a production build before considering the ready component complete.
+
+## Reveal animations
 
 `v-reveal` uses IntersectionObserver and automatically disables motion for bots, slow connections, low battery, old browsers, and `prefers-reduced-motion` users.
 
@@ -299,11 +566,11 @@ export default defineNuxtConfig({
 
 Every regular Nuxt page receives a route for each non-default locale:
 
-| Source page | English, the default locale | Polish | Russian |
-| ----------- | --------------------------- | ------ | ------- |
-| `/` | `/` | `/pl` | `/ru` |
-| `/about` | `/about` | `/pl/about` | `/ru/about` |
-| `/products/[slug]` | `/products/:slug` | `/pl/products/:slug` | `/ru/products/:slug` |
+| Source page        | English, the default locale | Polish               | Russian              |
+| ------------------ | --------------------------- | -------------------- | -------------------- |
+| `/`                | `/`                         | `/pl`                | `/ru`                |
+| `/about`           | `/about`                    | `/pl/about`          | `/ru/about`          |
+| `/products/[slug]` | `/products/:slug`           | `/pl/products/:slug` | `/ru/products/:slug` |
 
 The default language never needs a URL prefix. A prefixed default-language URL such as `/en/about` is permanently redirected to `/about`.
 
@@ -312,7 +579,7 @@ Exclude a page from route localization when it must have only one URL:
 ```vue
 <script setup lang="ts">
 definePageMeta({
-	i18n: false,
+ i18n: false,
 });
 </script>
 ```
@@ -338,15 +605,15 @@ Translation files are discovered in both the framework and application locale di
 
 ```json
 {
-	"title": "Products",
-	"hello": "Hello, {name}!",
-	"filters.empty": "No matching products",
-	"cart": {
-		"title": "Your cart"
-	},
-	"items_zero": "No items",
-	"items_one": "{count} item",
-	"items_other": "{count} items"
+ "title": "Products",
+ "hello": "Hello, {name}!",
+ "filters.empty": "No matching products",
+ "cart": {
+  "title": "Your cart"
+ },
+ "items_zero": "No items",
+ "items_one": "{count} item",
+ "items_other": "{count} items"
 }
 ```
 
@@ -361,39 +628,39 @@ const { t, tn, loadPromise, refresh } = useMultiLang(["products"]);
 </script>
 
 <template>
-	<div :aria-busy="loadPromise">
-		<h1>{{ t("products.title") }}</h1>
-		<p>{{ t("products.hello", { name: "Ada" }) }}</p>
-		<p>{{ t("products.items", 0) }}</p>
-		<p>{{ t("products.items", 12) }}</p>
-		<p>{{ tn("products.items", 12500) }}</p>
-	</div>
+ <div :aria-busy="loadPromise">
+  <h1>{{ t("products.title") }}</h1>
+  <p>{{ t("products.hello", { name: "Ada" }) }}</p>
+  <p>{{ t("products.items", 0) }}</p>
+  <p>{{ t("products.items", 12) }}</p>
+  <p>{{ tn("products.items", 12500) }}</p>
+ </div>
 </template>
 ```
 
 `useMultiLang` accepts one namespace or an array and returns:
 
-| Member | Purpose |
-| ------ | ------- |
-| `t(key)` | Translate a string |
-| `t(key, params)` | Replace `{placeholder}` values |
-| `t(key, count)` | Select a plural form and format `{count}` |
-| `t(key, params, count)` | Combine interpolation and pluralization |
-| `t(key, params, count, rule)` | Force a plural suffix such as `few` or `many` |
-| `tn(key, count, params?)` | Use compact number formatting such as `12K` for large counts |
-| `loadPromise` | Reactive namespace-loading state |
-| `refresh()` | Reload the selected namespaces through Nuxt async data |
+| Member                        | Purpose                                                      |
+| ----------------------------- | ------------------------------------------------------------ |
+| `t(key)`                      | Translate a string                                           |
+| `t(key, params)`              | Replace `{placeholder}` values                               |
+| `t(key, count)`               | Select a plural form and format `{count}`                    |
+| `t(key, params, count)`       | Combine interpolation and pluralization                      |
+| `t(key, params, count, rule)` | Force a plural suffix such as `few` or `many`                |
+| `tn(key, count, params?)`     | Use compact number formatting such as `12K` for large counts |
+| `loadPromise`                 | Reactive namespace-loading state                             |
+| `refresh()`                   | Reload the selected namespaces through Nuxt async data       |
 
 Plural keys use the suffixes returned by `Intl.PluralRules`, such as `_one`, `_few`, `_many`, and `_other`. For zero, `_zero` is checked first. `_other` is the final plural fallback.
 
 ```ts
-const { t, tn } = useMultiLang('products');
+const { t, tn } = useMultiLang("products");
 
-t('products.hello', { name: 'Ada' });
-t('products.items', 0); // products.items_zero
-t('products.items', { category: 'books' }, 3);
-t('products.items', {}, 3, 'few'); // explicitly use products.items_few
-tn('products.items', 12_500); // compact, locale-aware {count}
+t("products.hello", { name: "Ada" });
+t("products.items", 0); // products.items_zero
+t("products.items", { category: "books" }, 3);
+t("products.items", {}, 3, "few"); // explicitly use products.items_few
+tn("products.items", 12_500); // compact, locale-aware {count}
 ```
 
 Missing active-locale translations fall back to the default locale when that namespace is available, and unresolved values return the full translation key. Interpolated numbers use locale-aware `Intl.NumberFormat` formatting.
@@ -410,17 +677,12 @@ Dynamic translation keys cannot always be found statically. Preserve them with e
 // @i18n-keep products.dynamic_title
 
 useSafeList(
-	{
-		titleKey: 'products.dynamic_title',
-		emptyStateKeys: [
-			'products.empty.search',
-			'products.empty.category',
-		],
-		sections: [
-			{ headingKey: 'products.sections.featured' },
-		],
-	},
-	{ safelistPath: 'i18n-safelist.json' },
+ {
+  titleKey: "products.dynamic_title",
+  emptyStateKeys: ["products.empty.search", "products.empty.category"],
+  sections: [{ headingKey: "products.sections.featured" }],
+ },
+ { safelistPath: "i18n-safelist.json" },
 );
 ```
 
@@ -434,11 +696,7 @@ useSafeList(
 It is intended for server/build-time code because it uses the Node filesystem. Without options it writes sorted keys to `.nuxt/i18n-safelist.generated.json`. To feed collected keys directly into the configured tree-shaker, set `safelistPath: 'i18n-safelist.json'` as above. The same root file can also be maintained manually:
 
 ```json
-[
-	"products.dynamic_title",
-	"products.empty.search",
-	"products.empty.category"
-]
+["products.dynamic_title", "products.empty.search", "products.empty.category"]
 ```
 
 Literal calls, `@i18n-keep` comments, the configured root safelist, and keys registered by built-in framework configuration are combined during the build.
@@ -458,11 +716,11 @@ Language-aware components:
 
 ```vue
 <UiLanguageSelect
-	show-full
-	container-class="relative"
-	trigger-class="rounded-lg px-4 py-2"
-	dropdown-class="rounded-lg"
-	option-class="text-sm"
+ show-full
+ container-class="relative"
+ trigger-class="rounded-lg px-4 py-2"
+ dropdown-class="rounded-lg"
+ option-class="text-sm"
 >
 	<template #trigger>
 		<span class="uppercase">Choose language</span>
@@ -487,11 +745,11 @@ The settings store can also drive language changes directly:
 <script setup lang="ts">
 const settings = useSettingsStore();
 
-const selectPolish = () => settings.setLocale('pl');
+const selectPolish = () => settings.setLocale("pl");
 </script>
 
 <template>
-	<UiButton @click="selectPolish">Polski</UiButton>
+ <UiButton @click="selectPolish">Polski</UiButton>
 </template>
 ```
 
@@ -790,12 +1048,12 @@ Open tabs from the same origin stay consistent without polling or a page reload.
 
 The application shell synchronizes these fields automatically:
 
-| State | Synchronized fields | Availability |
-| ----- | ------------------- | ------------ |
-| Theme | `settings.theme` and the applied `data-theme`/theme class | Always enabled |
-| Cookie preferences | `settings.cookiePreferences`, `settings.isCookieBannerVisible` | Always enabled |
-| Cart | `items`, `coupon`, `meta`, `currency` | When `public.stores.cart` is `true` |
-| User | `profile`, `session`, `status`, `error`, `lastAuthenticatedAt` | When `public.stores.user` is `true` |
+| State              | Synchronized fields                                            | Availability                        |
+| ------------------ | -------------------------------------------------------------- | ----------------------------------- |
+| Theme              | `settings.theme` and the applied `data-theme`/theme class      | Always enabled                      |
+| Cookie preferences | `settings.cookiePreferences`, `settings.isCookieBannerVisible` | Always enabled                      |
+| Cart               | `items`, `coupon`, `meta`, `currency`                          | When `public.stores.cart` is `true` |
+| User               | `profile`, `session`, `status`, `error`, `lastAuthenticatedAt` | When `public.stores.user` is `true` |
 
 For example, adding an item or applying a coupon in one tab updates the other open tabs. Changing the theme updates both the Pinia state and the rendered document theme. Logging in, refreshing a session, updating a profile, or logging out is reflected across tabs when the user store is enabled.
 
@@ -811,8 +1069,8 @@ Cross-tab synchronization is built in and can be added to any Pinia store with o
 const filters = useCatalogFiltersStore();
 
 const stopSync = useStoreBroadcast(filters, {
-	keys: ['query', 'sort', 'selectedCategories'],
-	channel: 'catalog-filters',
+ keys: ["query", "sort", "selectedCategories"],
+ channel: "catalog-filters",
 });
 
 // Synchronization is now active for the component's lifetime.
@@ -823,7 +1081,7 @@ To synchronize another field later, add its state key to the same allowlist:
 
 ```ts
 useStoreBroadcast(filters, {
-	keys: ['query', 'sort', 'selectedCategories', 'viewMode'],
+ keys: ["query", "sort", "selectedCategories", "viewMode"],
 });
 ```
 
@@ -837,16 +1095,16 @@ Broadcast values must be serializable state composed of strings, numbers, boolea
 
 ```ts
 const sharedFilters = useStorage(
-	'catalog-filters',
-	{ query: '', categories: [] as string[] },
-	{
-		storage: 'local',
-		syncTabs: true,
-		deep: true,
-	},
+ "catalog-filters",
+ { query: "", categories: [] as string[] },
+ {
+  storage: "local",
+  syncTabs: true,
+  deep: true,
+ },
 );
 
-sharedFilters.value.value.query = 'headphones';
+sharedFilters.value.value.query = "headphones";
 ```
 
 Updates and `remove()` calls are propagated through a key-specific `BroadcastChannel`. For local storage, the native `storage` event provides an additional synchronization path.
@@ -858,7 +1116,7 @@ Theme changes can be broadcast directly when a custom theme control does not use
 ```ts
 const { applyTheme } = useThemeSync();
 
-applyTheme('dark');
+applyTheme("dark");
 ```
 
 `applyTheme()` updates `data-theme`, the `light`/`dark` class, and persistent theme storage, then broadcasts the change through the `nuxt-theme-sync` channel. The settings store's `setTheme()` and `toggleTheme()` actions already use this mechanism.
@@ -919,25 +1177,25 @@ GridStack      optional full-width section or background layer
 
 ```vue
 <template>
-	<GridContainer size="boxed" class="py-12 md:py-20">
-		<GridRow class="gap-y-8 md:-mx-4" align="center">
-			<GridCol :span="7" class="md:px-4">
-				<UiHeading :level="1">Product title</UiHeading>
-				<p class="mt-4 text-lg text-gray-600">
-					A production-ready page section built with the 12-column grid.
-				</p>
-				<UiButton to="/contact" class="mt-6">Get started</UiButton>
-			</GridCol>
+ <GridContainer size="boxed" class="py-12 md:py-20">
+  <GridRow class="gap-y-8 md:-mx-4" align="center">
+   <GridCol :span="7" class="md:px-4">
+    <UiHeading :level="1">Product title</UiHeading>
+    <p class="mt-4 text-lg text-gray-600">
+     A production-ready page section built with the 12-column grid.
+    </p>
+    <UiButton to="/contact" class="mt-6">Get started</UiButton>
+   </GridCol>
 
-			<GridCol :span="5" sm-order="first" class="md:px-4">
-				<SafeNuxtImg
-					src="/images/product.webp"
-					alt="Product interface"
-					class="w-full rounded-2xl"
-				/>
-			</GridCol>
-		</GridRow>
-	</GridContainer>
+   <GridCol :span="5" sm-order="first" class="md:px-4">
+    <SafeNuxtImg
+     src="/images/product.webp"
+     alt="Product interface"
+     class="w-full rounded-2xl"
+    />
+   </GridCol>
+  </GridRow>
+ </GridContainer>
 </template>
 ```
 
@@ -945,12 +1203,12 @@ GridStack      optional full-width section or background layer
 
 ### Components and props
 
-| Component       | Responsibility | Main props |
-| --------------- | -------------- | ---------- |
-| `GridContainer` | Centers content, limits its maximum width, and adds default horizontal page padding. | `size`, `py`, `my`, `mdPy`, `mdMy`, visibility and background props |
-| `GridRow`       | Creates a wrapping flex row and controls cross-axis and horizontal alignment. | `size`, `align`, `justify`, `equalHeight`, spacing, visibility, and background props |
-| `GridCol`       | Places content on the responsive 12-column grid. | `span`, `smSpan`, `mdSpan`, `smOrder`, visibility, and background props |
-| `GridStack`     | Creates a full-width vertical wrapper for sections and layered backgrounds. | `as`, visibility and background props |
+| Component       | Responsibility                                                                       | Main props                                                                           |
+| --------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `GridContainer` | Centers content, limits its maximum width, and adds default horizontal page padding. | `size`, `py`, `my`, `mdPy`, `mdMy`, visibility and background props                  |
+| `GridRow`       | Creates a wrapping flex row and controls cross-axis and horizontal alignment.        | `size`, `align`, `justify`, `equalHeight`, spacing, visibility, and background props |
+| `GridCol`       | Places content on the responsive 12-column grid.                                     | `span`, `smSpan`, `mdSpan`, `smOrder`, visibility, and background props              |
+| `GridStack`     | Creates a full-width vertical wrapper for sections and layered backgrounds.          | `as`, visibility and background props                                                |
 
 All components accept `id` and `class`. Use `class` for gaps, horizontal gutters, typography, borders, and any layout detail not represented by a dedicated prop.
 
@@ -962,12 +1220,12 @@ The optional `as` prop changes the root HTML tag and defaults to `div`. Use a se
 
 ```vue
 <GridStack
-	as="section"
-	id="features"
-	class="h-[640px] text-white"
-	bg-image="/images/features-desktop.webp"
-	bg-image-sm="/images/features-mobile.webp"
-	bg-gradient="linear-gradient(90deg, rgba(2,6,23,.9), rgba(2,6,23,.25))"
+ as="section"
+ id="features"
+ class="h-[640px] text-white"
+ bg-image="/images/features-desktop.webp"
+ bg-image-sm="/images/features-mobile.webp"
+ bg-gradient="linear-gradient(90deg, rgba(2,6,23,.9), rgba(2,6,23,.25))"
 >
 	<GridContainer size="content" class="h-full justify-center">
 		<UiHeading :level="2">Everything needed to ship</UiHeading>
@@ -980,12 +1238,12 @@ The optional `as` prop changes the root HTML tag and defaults to `div`. Use a se
 
 Main props:
 
-| Prop | Values/default | Purpose |
-| ---- | -------------- | ------- |
-| `as` | Any HTML tag, default `div` | Root element |
-| `hideOnMobile` | `boolean` | Hide below `768px` |
-| `hideOnDesktop` | `boolean` | Hide from `768px` upward |
-| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Full wrapper background |
+| Prop             | Values/default                                                            | Purpose                  |
+| ---------------- | ------------------------------------------------------------------------- | ------------------------ |
+| `as`             | Any HTML tag, default `div`                                               | Root element             |
+| `hideOnMobile`   | `boolean`                                                                 | Hide below `768px`       |
+| `hideOnDesktop`  | `boolean`                                                                 | Hide from `768px` upward |
+| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Full wrapper background  |
 
 `GridStack` fills the available parent height by default. Give it an explicit Tailwind `h-*` class when the section needs a fixed, viewport-based, or responsive height.
 
@@ -994,11 +1252,7 @@ Main props:
 `GridContainer` centers page content, applies a maximum width selected with `size`, and adds safe horizontal padding for every size except `fullwidth`. It is a vertical flex container, so utilities such as `justify-center` and `items-center` can position its children.
 
 ```vue
-<GridContainer
-	size="text"
-	id="article-introduction"
-	class="py-12 md:py-20"
->
+<GridContainer size="text" id="article-introduction" class="py-12 md:py-20">
 	<UiHeading :level="1">Article title</UiHeading>
 	<p class="mt-5 text-lg leading-8 text-gray-600">
 		A readable text column centered within the page.
@@ -1008,13 +1262,13 @@ Main props:
 
 Main props:
 
-| Prop | Values/default | Purpose |
-| ---- | -------------- | ------- |
-| `size` | `fullwidth`, `full`, `boxed`, `laptop`, `content`, `medium`, `text`, `tablet`, `mobile`; default `content` | Maximum content width |
-| `py`, `my` | Tailwind spacing suffix | Vertical padding or margin |
-| `mdPy`, `mdMy` | Tailwind spacing suffix | Vertical padding or margin from `768px` |
-| `hideOnMobile`, `hideOnDesktop` | `boolean` | Responsive visibility |
-| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Container background |
+| Prop                            | Values/default                                                                                             | Purpose                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `size`                          | `fullwidth`, `full`, `boxed`, `laptop`, `content`, `medium`, `text`, `tablet`, `mobile`; default `content` | Maximum content width                   |
+| `py`, `my`                      | Tailwind spacing suffix                                                                                    | Vertical padding or margin              |
+| `mdPy`, `mdMy`                  | Tailwind spacing suffix                                                                                    | Vertical padding or margin from `768px` |
+| `hideOnMobile`, `hideOnDesktop` | `boolean`                                                                                                  | Responsive visibility                   |
+| Background props                | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media)                                  | Container background                    |
 
 `GridContainer` always renders a `div`; choose `GridStack as="..."` when a semantic outer element is required.
 
@@ -1042,14 +1296,14 @@ Main props:
 
 Main props:
 
-| Prop | Values/default | Purpose |
-| ---- | -------------- | ------- |
-| `size` | Any container size | Optional centered maximum width for the row |
-| `align` | `start`, `center`, `end`, `stretch`; default `start` | Cross-axis column alignment |
-| `justify` | `start`, `center`, `end`, `between`, `around`, `evenly`; default `start` | Horizontal distribution |
-| `equalHeight` | `boolean`, default `false` | Stretch sibling columns equally on desktop |
-| `py`, `my`, `mdPy`, `mdMy` | Tailwind spacing suffix | Responsive vertical spacing |
-| Visibility and background props | Shared grid API | Responsive visibility and row background |
+| Prop                            | Values/default                                                           | Purpose                                     |
+| ------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------- |
+| `size`                          | Any container size                                                       | Optional centered maximum width for the row |
+| `align`                         | `start`, `center`, `end`, `stretch`; default `start`                     | Cross-axis column alignment                 |
+| `justify`                       | `start`, `center`, `end`, `between`, `around`, `evenly`; default `start` | Horizontal distribution                     |
+| `equalHeight`                   | `boolean`, default `false`                                               | Stretch sibling columns equally on desktop  |
+| `py`, `my`, `mdPy`, `mdMy`      | Tailwind spacing suffix                                                  | Responsive vertical spacing                 |
+| Visibility and background props | Shared grid API                                                          | Responsive visibility and row background    |
 
 #### `GridCol`
 
@@ -1074,41 +1328,41 @@ Main props:
 
 Main props:
 
-| Prop | Values/default | Purpose |
-| ---- | -------------- | ------- |
-| `span` | `1`–`12`, default `12` | Desktop width in twelfths |
-| `smSpan` | `1`–`12` | Mobile width in twelfths; defaults to full width |
-| `mdSpan` | `1`–`12` | Explicit desktop width override |
-| `smOrder` | `1`–`12`, `first`, `last`, `none` | Mobile order, reset on desktop |
-| `hideOnMobile`, `hideOnDesktop` | `boolean` | Responsive visibility |
-| Background props | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Column background |
+| Prop                            | Values/default                                                            | Purpose                                          |
+| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------ |
+| `span`                          | `1`–`12`, default `12`                                                    | Desktop width in twelfths                        |
+| `smSpan`                        | `1`–`12`                                                                  | Mobile width in twelfths; defaults to full width |
+| `mdSpan`                        | `1`–`12`                                                                  | Explicit desktop width override                  |
+| `smOrder`                       | `1`–`12`, `first`, `last`, `none`                                         | Mobile order, reset on desktop                   |
+| `hideOnMobile`, `hideOnDesktop` | `boolean`                                                                 | Responsive visibility                            |
+| Background props                | See [Backgrounds, gradients, and media](#backgrounds-gradients-and-media) | Column background                                |
 
 #### Container sizes
 
 `GridContainer` defaults to `content`. `GridRow` can also receive `size` when a row needs its own centered maximum width.
 
-| `size` value | Maximum width | Typical use |
-| ------------ | ------------- | ----------- |
-| `fullwidth`  | `100%`, without automatic horizontal padding | Edge-to-edge sections |
-| `full`       | `100%` | Full-width content with page padding |
-| `boxed`      | The smaller of `90%` and `1500px` | Wide landing pages and dashboards |
-| `laptop`     | `1367px` | Wide application layouts |
-| `content`    | `1080px` | Default pages and marketing sections |
-| `medium`     | `920px` | Forms, feature content, and compact pages |
-| `text`       | `728px` | Articles and long-form copy |
-| `tablet`     | `600px` | Narrow forms and dialogs presented as pages |
-| `mobile`     | `480px` | Authentication and single-column flows |
+| `size` value | Maximum width                                | Typical use                                 |
+| ------------ | -------------------------------------------- | ------------------------------------------- |
+| `fullwidth`  | `100%`, without automatic horizontal padding | Edge-to-edge sections                       |
+| `full`       | `100%`                                       | Full-width content with page padding        |
+| `boxed`      | The smaller of `90%` and `1500px`            | Wide landing pages and dashboards           |
+| `laptop`     | `1367px`                                     | Wide application layouts                    |
+| `content`    | `1080px`                                     | Default pages and marketing sections        |
+| `medium`     | `920px`                                      | Forms, feature content, and compact pages   |
+| `text`       | `728px`                                      | Articles and long-form copy                 |
+| `tablet`     | `600px`                                      | Narrow forms and dialogs presented as pages |
+| `mobile`     | `480px`                                      | Authentication and single-column flows      |
 
 Every size except `fullwidth` includes `px-4 md:px-0`. Use `full` when content must stay full width but still needs safe mobile page padding.
 
 #### Responsive columns
 
-| Prop | Values | Behaviour |
-| ---- | ------ | --------- |
-| `span` | `1`–`12`, default `12` | Column width from the `md` breakpoint (`768px`) upward |
-| `smSpan` | `1`–`12` | Column width below `768px`; without it the column is full width |
-| `mdSpan` | `1`–`12` | Explicit desktop width override |
-| `smOrder` | `1`–`12`, `first`, `last`, `none` | Mobile order; normal source order is restored from `768px` |
+| Prop      | Values                            | Behaviour                                                       |
+| --------- | --------------------------------- | --------------------------------------------------------------- |
+| `span`    | `1`–`12`, default `12`            | Column width from the `md` breakpoint (`768px`) upward          |
+| `smSpan`  | `1`–`12`                          | Column width below `768px`; without it the column is full width |
+| `mdSpan`  | `1`–`12`                          | Explicit desktop width override                                 |
+| `smOrder` | `1`–`12`, `first`, `last`, `none` | Mobile order; normal source order is restored from `768px`      |
 
 Think in twelfths: `6 + 6` gives two equal columns, `8 + 4` gives content plus a sidebar, and `3 + 3 + 3 + 3` gives four desktop cards. A row wraps when its columns exceed 12.
 
@@ -1161,12 +1415,12 @@ Set `equal-height` when cards in the same desktop row must stretch to the height
 
 `GridContainer` and `GridRow` provide these optional spacing shortcuts:
 
-| Prop | Generated utility |
-| ---- | ----------------- |
-| `py="12"` | `py-12` |
-| `my="8"` | `my-8` |
-| `md-py="20"` | `md:py-20` |
-| `md-my="12"` | `md:my-12` |
+| Prop         | Generated utility |
+| ------------ | ----------------- |
+| `py="12"`    | `py-12`           |
+| `my="8"`     | `my-8`            |
+| `md-py="20"` | `md:py-20`        |
+| `md-my="12"` | `md:my-12`        |
 
 The values are Tailwind spacing scale suffixes. Regular Tailwind classes remain available for asymmetric or breakpoint-specific spacing.
 
@@ -1198,12 +1452,12 @@ Place the background on `GridStack` and the readable content inside `GridContain
 
 ```vue
 <GridStack
-	class="h-[min(760px,100dvh)] text-white"
-	bg-color="#111827"
-	bg-image="/images/hero-desktop.webp"
-	bg-image-sm="/images/hero-mobile.webp"
-	bg-gradient="linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.15))"
-	bg-gradient-sm="linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.9))"
+ class="h-[min(760px,100dvh)] text-white"
+ bg-color="#111827"
+ bg-image="/images/hero-desktop.webp"
+ bg-image-sm="/images/hero-mobile.webp"
+ bg-gradient="linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.15))"
+ bg-gradient-sm="linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.9))"
 >
 	<GridContainer size="boxed" class="h-full justify-center">
 		<GridRow align="center">
@@ -1300,15 +1554,15 @@ Keep the semantic source order consistent and change only the mobile presentatio
 
 Background props are available on `GridStack`, `GridContainer`, `GridRow`, and `GridCol`.
 
-| Desktop/default prop | Mobile override | Purpose |
-| -------------------- | --------------- | ------- |
-| `bgColor` | — | Any CSS background color |
-| `bgImage` | `bgImageSm` | Image URL |
-| `bgGradient` | `bgGradientSm` | CSS gradient placed over the image or video |
-| `bgSize` | `bgSizeSm` | CSS background size; defaults to `cover` |
-| `bgVideo` | `bgVideoSm` | Muted, looping local background video |
-| `bgVideoPoster` | `bgVideoPosterSm` | Poster shown while a local video loads |
-| `bgYoutube` | `bgYoutubeSm` | YouTube video ID or URL used as a background |
+| Desktop/default prop | Mobile override   | Purpose                                      |
+| -------------------- | ----------------- | -------------------------------------------- |
+| `bgColor`            | —                 | Any CSS background color                     |
+| `bgImage`            | `bgImageSm`       | Image URL                                    |
+| `bgGradient`         | `bgGradientSm`    | CSS gradient placed over the image or video  |
+| `bgSize`             | `bgSizeSm`        | CSS background size; defaults to `cover`     |
+| `bgVideo`            | `bgVideoSm`       | Muted, looping local background video        |
+| `bgVideoPoster`      | `bgVideoPosterSm` | Poster shown while a local video loads       |
+| `bgYoutube`          | `bgYoutubeSm`     | YouTube video ID or URL used as a background |
 
 Mobile overrides apply below `768px`. If an image, gradient, size, or poster override is omitted, its desktop value is reused. Set `bg-image-sm="none"` to remove a desktop background image on mobile.
 
@@ -1320,12 +1574,12 @@ Always provide posters so the section has a useful first frame while video loads
 
 ```vue
 <GridStack
-	class="h-[680px] text-white"
-	bg-video="/video/launch-desktop.mp4"
-	bg-video-sm="/video/launch-mobile.mp4"
-	bg-video-poster="/images/launch-desktop.webp"
-	bg-video-poster-sm="/images/launch-mobile.webp"
-	bg-gradient="linear-gradient(90deg, rgba(2,6,23,.85), rgba(2,6,23,.2))"
+ class="h-[680px] text-white"
+ bg-video="/video/launch-desktop.mp4"
+ bg-video-sm="/video/launch-mobile.mp4"
+ bg-video-poster="/images/launch-desktop.webp"
+ bg-video-poster-sm="/images/launch-mobile.webp"
+ bg-gradient="linear-gradient(90deg, rgba(2,6,23,.85), rgba(2,6,23,.2))"
 >
 	<GridContainer size="content" class="h-full justify-end py-12">
 		<GridRow>
@@ -1377,10 +1631,10 @@ The same API can be used for a card, banner, or one side of a split layout:
 
 ```vue
 <GridStack
-	class="h-[640px] text-white"
-	bg-youtube="https://www.youtube.com/watch?v=VIDEO_ID"
-	bg-youtube-sm="MOBILE_VIDEO_ID"
-	bg-gradient="linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.72))"
+ class="h-[640px] text-white"
+ bg-youtube="https://www.youtube.com/watch?v=VIDEO_ID"
+ bg-youtube-sm="MOBILE_VIDEO_ID"
+ bg-gradient="linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.72))"
 >
 	<GridContainer size="text" class="h-full items-center justify-center text-center">
 		<UiHeading :level="1">Campaign headline</UiHeading>
@@ -1483,9 +1737,18 @@ const rows = ref([{ id: 1, profile: { name: "Ada" } }]);
 Additional component examples:
 
 ```vue
-<UiAlert variant="success" title="Saved" description="Your changes are live." closable />
+<UiAlert
+ variant="success"
+ title="Saved"
+ description="Your changes are live."
+ closable
+/>
 <UiBadge label="New" color="blue" variant="soft" />
-<UiBanner title="Scheduled maintenance" description="Sunday at 02:00 UTC" closable />
+<UiBanner
+ title="Scheduled maintenance"
+ description="Sunday at 02:00 UTC"
+ closable
+/>
 <UiChip text="3" color="red"><UiAvatar name="Ada Lovelace" /></UiChip>
 <UiCommandPalette />
 <UiCursorCreative />
@@ -1495,17 +1758,39 @@ Additional component examples:
 <UiLocalTime timezone="Europe/Warsaw" label="Warsaw" show-date />
 <UiPopup id="welcome-offer" title="Welcome" trigger-delay="1500" />
 <UiRelativeTime :date="publishedAt" />
-<UiScheduledContent from="2026-12-01T00:00:00Z" to="2026-12-31T23:59:59Z">Holiday offer</UiScheduledContent>
+<UiScheduledContent
+ from="2026-12-01T00:00:00Z"
+ to="2026-12-31T23:59:59Z"
+>Holiday offer</UiScheduledContent>
 <UiScrollToTop />
 <UiSegmentedControl v-model="period" :options="periodOptions" />
-<UiSmartContrast src="/images/cover.webp" height="70vh"><UiHeading :level="1">Readable cover</UiHeading></UiSmartContrast>
-<UiSnapContainer direction="vertical"><UiSnapSection id="intro" bg-image="/images/intro.webp">Intro</UiSnapSection></UiSnapContainer>
-<UiSplitSection image-src="/images/team.webp" image-alt="Our team"><template #text>Team story</template></UiSplitSection>
+<UiSmartContrast
+ src="/images/cover.webp"
+ height="70vh"
+><UiHeading :level="1">Readable cover</UiHeading></UiSmartContrast>
+<UiSnapContainer
+ direction="vertical"
+><UiSnapSection id="intro" bg-image="/images/intro.webp">Intro</UiSnapSection></UiSnapContainer>
+<UiSplitSection
+ image-src="/images/team.webp"
+ image-alt="Our team"
+><template #text>Team story</template></UiSplitSection>
 <UiStickyWrapper :offset="96">Sticky navigation</UiStickyWrapper>
-<UiTextarea v-model="message" id="message" label="Message" buttons-position="outside" @save="submit" />
-<UiTextColumn text-size-class="text-lg">Long-form readable content</UiTextColumn>
+<UiTextarea
+ v-model="message"
+ id="message"
+ label="Message"
+ buttons-position="outside"
+ @save="submit"
+/>
+<UiTextColumn
+ text-size-class="text-lg"
+>Long-form readable content</UiTextColumn>
 <UiToggler v-model="enabled" label="Enable notifications" />
-<UiTruncateText :mobile-limit="120" :desktop-limit="300">Long text to truncate…</UiTruncateText>
+<UiTruncateText
+ :mobile-limit="120"
+ :desktop-limit="300"
+>Long text to truncate…</UiTruncateText>
 <UiViewportSpacer size="20" mobile-size="12" />
 ```
 
@@ -1561,16 +1846,36 @@ Additional view examples:
 
 ```vue
 <ViewAnnouncementBar title="Version 2 is available" sticky closable />
-<ViewAvatarGroup :max="4"><UiAvatar v-for="person in team" :key="person.id" :src="person.avatar" /></ViewAvatarGroup>
+<ViewAvatarGroup
+ :max="4"
+><UiAvatar v-for="person in team" :key="person.id" :src="person.avatar" /></ViewAvatarGroup>
 <ViewContentWithToc><article><h2>Installation</h2><p>...</p></article></ViewContentWithToc>
 <ViewCopyright owner="MyelophOne" :start-year="2024" />
 <ViewCountdownTimer target-date="2027-01-01T00:00:00Z" timezone="UTC" />
-<ViewCreativeCTA title="Start building" primary-text="Get started" primary-link="/start" />
+<ViewCreativeCTA
+ title="Start building"
+ primary-text="Get started"
+ primary-link="/start"
+/>
 <ViewCurrencySelect />
 <ViewFeatureBoxGrid :items="features" :columns="3" />
-<ViewHorizontalMenu :items="[{ label: 'Overview', path: '/' }, { label: 'Docs', path: '/docs' }]" />
-<ViewImageCompare before-image="/before.webp" after-image="/after.webp" before-label="Before" after-label="After" />
-<ViewImgSlider :media="slides" :auto-scroll="true" :auto-scroll-interval="5000" />
+<ViewHorizontalMenu
+ :items="[
+  { label: 'Overview', path: '/' },
+  { label: 'Docs', path: '/docs' },
+ ]"
+/>
+<ViewImageCompare
+ before-image="/before.webp"
+ after-image="/after.webp"
+ before-label="Before"
+ after-label="After"
+/>
+<ViewImgSlider
+ :media="slides"
+ :auto-scroll="true"
+ :auto-scroll-interval="5000"
+/>
 <ViewInfiniteMarquee :items="['Nuxt', 'Vue', 'Tailwind']" :duration="24" />
 <ViewInfoBar :items="contactItems" :actions="contactActions" />
 <ViewLogoGrid title="Trusted by teams" :items="logos" />
@@ -1598,11 +1903,16 @@ Additional view examples:
 | `SeoNoIndex` / `SeoContentNoIndex`     | Page and content indexing controls.                                                            |
 | `PagePreloader`                        | Route-loading overlay driven by the settings store.                                            |
 | `MyelophoneWelcome`                    | Default framework playground landing page.                                                     |
-| `MyelophoneCopyright`                  | Server-rendered copyright island used by the framework welcome screen.                          |
+| `MyelophoneCopyright`                  | Server-rendered copyright island used by the framework welcome screen.                         |
 
 ```vue
 <SafeEmail user="hello" domain="example" tld="com" subject="Website enquiry" />
-<SafeImgWithLoader src="/images/product.webp" alt="Product" width="1200" height="800" />
+<SafeImgWithLoader
+ src="/images/product.webp"
+ alt="Product"
+ width="1200"
+ height="800"
+/>
 <SafeNuxtPicture src="/images/hero.webp" alt="Hero" sizes="100vw md:1080px" />
 <CookieBanner />
 <CookieSettingsModal />
@@ -1649,8 +1959,8 @@ Review the security and performance defaults against each application's threat m
 ```text
 app/
 ├── assets/css/        Global Tailwind, theme, animation, media and print CSS
-├── components/        UI, grid, view, consent, cookie, safe and SEO components
-├── composables/       API, i18n, storage, device, consent and UI state helpers
+├── components/        UI, grid, view, ready-page, consent, cookie, safe and SEO components
+├── composables/       API, i18n, ready-page, storage, device, consent and UI state helpers
 ├── constants/         Layout maps and third-party cookie-script presets
 ├── locales/           Built-in en/pl/ru namespaces
 ├── middleware/        Localized and canonical URL behavior
