@@ -1,3 +1,7 @@
+## 📦 Release 0.6.0 (2026-08-16)
+### ✨ Features
+- add partial bg component- add sticky header plus content component
+
 ## 📦 Release 0.5.0 (2026-08-16)
 ### ✨ Features
 - add ready page functionality
