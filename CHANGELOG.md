@@ -1,3 +1,7 @@
+## 📦 Release 0.9.0 (2026-08-16)
+### ✨ Features
+- add file upload component
+
 ## 📦 Release 0.8.0 (2026-08-16)
 ### ✨ Features
 - add skeleton component
