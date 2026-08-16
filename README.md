@@ -1,6 +1,6 @@
 # @myelophone/nuxt
 
-Production-oriented Nuxt 4 + Tailwind CSS 4 application framework and Nuxt layer with SSR/SSG, multilingual routing, consent-aware integrations, Pinia stores, SEO, security headers, performance tooling, and reusable responsive components library.
+Production-oriented Nuxt 4 + Tailwind CSS application framework and Nuxt layer with SSR/SSG, multilingual routing, consent-aware integrations, Pinia stores, SEO, security headers, performance tooling, and reusable responsive components library.
 
 > [!TIP]
 > **Need a ready-to-run frontend instead of assembling a project from scratch?**
@@ -1701,6 +1701,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiSplitSection`     | Image/text split with side, container width, edge image, mobile reversal, and named text slot.                      |
 | `UiStickyWrapper`    | Sticky slot with pixel offset; prepares its parent positioning.                                                     |
 | `UiTable`            | Sortable table with nested keys and automatic virtualization above 100 rows; emits `sort`.                          |
+| `UiTabs`             | Accessible vertical/horizontal tabs with configurable side, width, alignment, slots, and animated panels.           |
 | `UiTextarea`         | `v-model` textarea with floating label, error state, clear/save controls and `save`/`clear` events.                 |
 | `UiTextColumn`       | Typography/spacing wrapper for prose slots.                                                                         |
 | `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                  |
@@ -1718,6 +1719,69 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 ```
 
 Numeric dimensions are pixels; strings accept any CSS length. The default skeleton is decorative and hidden from assistive technology. Set `aria-label="Loading profile"` when it should be announced as a status. Set `:animated="false"` for a static placeholder. Its color is derived from `--ui-bg` and `--ui-text`, and pulse animation is automatically disabled by `prefers-reduced-motion`.
+
+#### UiTabs
+
+`UiTabs` is vertical by default. `side="left"` places the tab list on the left and its content on the right; `side="right"` reverses them. Bind the selected item with `v-model` and pass a stable `value` for each item:
+
+```vue
+<script setup lang="ts">
+const activeTab = ref("overview");
+const tabs = [
+ { label: "Overview", value: "overview", content: "General information" },
+ { label: "Delivery", value: "delivery", content: "Delivery conditions" },
+ { label: "Archive", value: "archive", disabled: true },
+];
+</script>
+
+<template>
+ <UiTabs
+  v-model="activeTab"
+  :items="tabs"
+  side="left"
+  tab-width="auto"
+  align="start"
+  tabs-width="14rem"
+ >
+  <template #panel="{ item }">
+   <article>{{ item.content }}</article>
+  </template>
+ </UiTabs>
+</template>
+```
+
+For tabs above or below the content, use horizontal orientation:
+
+```vue
+<UiTabs
+ :items="tabs"
+ orientation="horizontal"
+ side="top"
+ tab-width="auto"
+ align="center"
+/>
+```
+
+Props:
+
+| Prop            | Type                             | Default            | Purpose                                                                                             |
+| --------------- | -------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------- |
+| `items`         | `TabItem[]`                      | Required           | Tabs containing `label`, optional `value`, fallback `content`, `disabled`, and any custom slot data |
+| `modelValue`    | `string \| number`               | —                  | Active item value; normally bound with `v-model`                                                    |
+| `defaultValue`  | `string \| number`               | First enabled item | Initial value for uncontrolled use                                                                  |
+| `orientation`   | `vertical \| horizontal`         | `vertical`         | Put the list beside the content or above/below it                                                   |
+| `side`          | `left \| right \| top \| bottom` | `left` or `top`    | List position; vertical accepts left/right and horizontal accepts top/bottom                        |
+| `tabWidth`      | `full \| auto`                   | `full`             | Fill the list width (or share a horizontal row) or use each heading's natural width                 |
+| `align`         | `start \| center \| end`         | `start`            | Align tab headings within the tab-list area                                                         |
+| `tabsWidth`     | CSS length                       | `16rem`            | Width reserved for the list in vertical mode                                                        |
+| `loop`          | `boolean`                        | `true`             | Wrap keyboard navigation from the last enabled tab to the first and back                            |
+| `stackOnMobile` | `boolean`                        | `true`             | Below 768 px, move a vertical list above the panel and make it horizontally scrollable              |
+| `ariaLabel`     | `string`                         | `Tabs`             | Accessible name of the tab list                                                                     |
+| `ui`            | `object`                         | `{}`               | Classes for `root`, `list`, `tab`, `activeTab`, and `panel`                                         |
+
+The `tab` slot receives `{ item, index, active, disabled }`; the `panel` slot receives `{ item, index, value }`. Without slots, labels and `content` are rendered as text. `change` emits `(value, item, index)`, alongside the standard `update:modelValue` event.
+
+Arrow keys follow the selected orientation, while `Home` and `End` select the first or last enabled tab. The panel uses a short fade-and-slide transition; `prefers-reduced-motion` disables it. Colors are derived from the theme's `--ui-bg` and `--ui-text` variables.
 
 #### UiFileUpload
 
@@ -1766,63 +1830,63 @@ For a single file, use `const avatar = ref<File | null>(null)` and omit `multipl
 
 Props:
 
-| Prop | Type | Default | Purpose |
-| ---- | ---- | ------- | ------- |
-| `modelValue` | `File \| File[] \| null` | `null` | Selected file for a single field or files for `multiple`; normally bound with `v-model` |
-| `id` | `string` | Generated | Native input id and base for accessible description/error ids |
-| `name` | `string` | — | Native form field name; use a server-compatible name such as `attachments[]` for multiple files |
-| `accept` | `string` | — | Comma-separated MIME types, wildcards, or extensions, for example `image/*,.pdf` |
-| `multiple` | `boolean` | `false` | Switch the model and native input to multiple-file mode |
-| `required` | `boolean` | `false` | Apply native required-field validation |
-| `disabled` | `boolean` | `false` | Disable selection, dropping, removal, and keyboard interaction |
-| `capture` | `boolean \| user \| environment` | — | Pass the native mobile capture hint to the file input |
-| `dropzone` | `boolean` | `true` | Enable drag-and-drop; `false` also renders the picker in its compact form |
-| `interactive` | `boolean` | `true` | Make the whole picker clickable and keyboard-operable; the actions button remains available when `false` |
-| `preview` | `boolean` | `true` | Render selected files and image object-URL thumbnails |
-| `append` | `boolean` | `true` | Append new selections in multiple mode; set `false` to replace the array |
-| `maxSize` | `number` | — | Maximum size of each file in bytes |
-| `maxFiles` | `number` | — | Maximum accepted file count in multiple mode |
-| `label` | `string` | `Upload files` | Main picker label |
-| `description` | `string` | Empty | Supporting instructions; linked to the native input with `aria-describedby` |
-| `selectText` | `string` | `Select files` | Default action text |
-| `emptyText` | `string` | `or drag and drop them here` | Default dropzone hint when no custom description is provided |
-| `layout` | `list \| grid` | `list` | Selected-file presentation; `grid` is useful for image previews |
-| `error` | `boolean \| string` | `false` | Invalid styling; a string is also rendered as an accessible error message |
+| Prop          | Type                             | Default                      | Purpose                                                                                                  |
+| ------------- | -------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `modelValue`  | `File \| File[] \| null`         | `null`                       | Selected file for a single field or files for `multiple`; normally bound with `v-model`                  |
+| `id`          | `string`                         | Generated                    | Native input id and base for accessible description/error ids                                            |
+| `name`        | `string`                         | —                            | Native form field name; use a server-compatible name such as `attachments[]` for multiple files          |
+| `accept`      | `string`                         | —                            | Comma-separated MIME types, wildcards, or extensions, for example `image/*,.pdf`                         |
+| `multiple`    | `boolean`                        | `false`                      | Switch the model and native input to multiple-file mode                                                  |
+| `required`    | `boolean`                        | `false`                      | Apply native required-field validation                                                                   |
+| `disabled`    | `boolean`                        | `false`                      | Disable selection, dropping, removal, and keyboard interaction                                           |
+| `capture`     | `boolean \| user \| environment` | —                            | Pass the native mobile capture hint to the file input                                                    |
+| `dropzone`    | `boolean`                        | `true`                       | Enable drag-and-drop; `false` also renders the picker in its compact form                                |
+| `interactive` | `boolean`                        | `true`                       | Make the whole picker clickable and keyboard-operable; the actions button remains available when `false` |
+| `preview`     | `boolean`                        | `true`                       | Render selected files and image object-URL thumbnails                                                    |
+| `append`      | `boolean`                        | `true`                       | Append new selections in multiple mode; set `false` to replace the array                                 |
+| `maxSize`     | `number`                         | —                            | Maximum size of each file in bytes                                                                       |
+| `maxFiles`    | `number`                         | —                            | Maximum accepted file count in multiple mode                                                             |
+| `label`       | `string`                         | `Upload files`               | Main picker label                                                                                        |
+| `description` | `string`                         | Empty                        | Supporting instructions; linked to the native input with `aria-describedby`                              |
+| `selectText`  | `string`                         | `Select files`               | Default action text                                                                                      |
+| `emptyText`   | `string`                         | `or drag and drop them here` | Default dropzone hint when no custom description is provided                                             |
+| `layout`      | `list \| grid`                   | `list`                       | Selected-file presentation; `grid` is useful for image previews                                          |
+| `error`       | `boolean \| string`              | `false`                      | Invalid styling; a string is also rendered as an accessible error message                                |
 
 Events:
 
-| Event | Payload | When it fires |
-| ----- | ------- | ------------- |
-| `update:modelValue` | `File \| File[] \| null` | Selection, removal, clear, or native form reset updates the model |
-| `change` | `File \| File[] \| null` | The committed value changes, including clear and form reset |
-| `reject` | `Array<{ file: File; reasons: Reason[] }>` | One or more incoming files fail validation |
-| `remove` | `file: File, index: number` | A specific selected file is removed |
-| `clear` | None | `clear()` or `removeFile()` without an index clears a non-empty selection |
+| Event               | Payload                                    | When it fires                                                             |
+| ------------------- | ------------------------------------------ | ------------------------------------------------------------------------- |
+| `update:modelValue` | `File \| File[] \| null`                   | Selection, removal, clear, or native form reset updates the model         |
+| `change`            | `File \| File[] \| null`                   | The committed value changes, including clear and form reset               |
+| `reject`            | `Array<{ file: File; reasons: Reason[] }>` | One or more incoming files fail validation                                |
+| `remove`            | `file: File, index: number`                | A specific selected file is removed                                       |
+| `clear`             | None                                       | `clear()` or `removeFile()` without an index clears a non-empty selection |
 
 `Reason` is one of `type`, `size`, `count`, or `duplicate`. Valid files in a mixed selection are still accepted; rejected files are reported separately.
 
 Scoped slots:
 
-| Slot | Scope | Purpose |
-| ---- | ----- | ------- |
-| `default` | `{ files, open, removeFile, clear, dragging }` | Replace the entire visible picker/dropzone content |
-| `leading` | — | Replace the default upload icon |
-| `label` | — | Replace the label markup |
-| `description` | — | Replace instructions or file constraints |
-| `actions` | `{ files, open, removeFile }` | Replace the select-file action |
-| `files-top` | `{ files, removeFile, clear }` | Insert content above the selected-file collection |
-| `files` | `{ files, removeFile, clear }` | Replace the complete selected-file collection |
-| `file` | `{ file, index, removeFile, previewUrl }` | Replace one selected-file row/card; `previewUrl` exists for supported images |
-| `files-bottom` | `{ files, removeFile, clear }` | Insert controls or status below the selected-file collection |
+| Slot           | Scope                                          | Purpose                                                                      |
+| -------------- | ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `default`      | `{ files, open, removeFile, clear, dragging }` | Replace the entire visible picker/dropzone content                           |
+| `leading`      | —                                              | Replace the default upload icon                                              |
+| `label`        | —                                              | Replace the label markup                                                     |
+| `description`  | —                                              | Replace instructions or file constraints                                     |
+| `actions`      | `{ files, open, removeFile }`                  | Replace the select-file action                                               |
+| `files-top`    | `{ files, removeFile, clear }`                 | Insert content above the selected-file collection                            |
+| `files`        | `{ files, removeFile, clear }`                 | Replace the complete selected-file collection                                |
+| `file`         | `{ file, index, removeFile, previewUrl }`      | Replace one selected-file row/card; `previewUrl` exists for supported images |
+| `files-bottom` | `{ files, removeFile, clear }`                 | Insert controls or status below the selected-file collection                 |
 
 Exposed methods and refs:
 
-| Member | Signature/value | Purpose |
-| ------ | --------------- | ------- |
-| `open` | `() => void` | Open the native file chooser |
-| `removeFile` | `(index?: number) => void` | Remove a file by index, or clear all when omitted |
-| `clear` | `() => void` | Clear all selected files |
-| `input` | Native input template ref | Access the underlying `<input type="file">` when integration code requires it |
+| Member       | Signature/value            | Purpose                                                                       |
+| ------------ | -------------------------- | ----------------------------------------------------------------------------- |
+| `open`       | `() => void`               | Open the native file chooser                                                  |
+| `removeFile` | `(index?: number) => void` | Remove a file by index, or clear all when omitted                             |
+| `clear`      | `() => void`               | Clear all selected files                                                      |
+| `input`      | Native input template ref  | Access the underlying `<input type="file">` when integration code requires it |
 
 The picker listens to its parent form's native `reset` event and clears the model automatically. Image preview object URLs are revoked when files are removed or the component unmounts. Colors come from `--ui-bg` and `--ui-text`, while validation uses `--ui-error` with a fallback. Motion transitions are disabled under `prefers-reduced-motion`.
 
