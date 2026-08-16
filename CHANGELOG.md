@@ -1,3 +1,9 @@
+## 📦 Release 0.4.14 (2026-08-15)
+### 🐛 Bug Fixes
+- useThemeSync memory overflow
+### 📚 Documentation
+- update readme
+
 ## 📦 Release 0.4.13 (2026-08-15)
 ### 🐛 Bug Fixes
 - update docs
