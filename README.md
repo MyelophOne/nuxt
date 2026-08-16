@@ -1693,6 +1693,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiScheduledContent` | Date-window content with timezone, preview, interval, and daily/yearly repeat; active/upcoming slots.               |
 | `UiScrollToTop`      | Global button shown after 600 px; also resets registered snap containers.                                           |
 | `UiSegmentedControl` | Single/multiple `v-model`, horizontal/vertical/full layout, icons, sizes, colors, outline/soft style.               |
+| `UiSkeleton`         | Theme-aware loading placeholder; `as`, `animated`, `rounded`, `width`, `height`, and optional accessible label.     |
 | `UiSmartContrast`    | Full background image/gradient wrapper with fixed/auto contrast modes and configurable height.                      |
 | `UiSnapContainer`    | Vertical/horizontal controlled full-page snapping for `UiSnapSection` children.                                     |
 | `UiSnapSection`      | Snap panel with image/video/YouTube mobile variants, poster, overlay, lazy loading, and content class.              |
@@ -1704,6 +1705,18 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                  |
 | `UiTruncateText`     | Responsive character limits with localized expand/collapse controls. Text-only slot.                                |
 | `UiViewportSpacer`   | Responsive `vh/dvh` or `vw/dvw` spacer.                                                                             |
+
+`UiSkeleton` can be sized with Tailwind classes like `USkeleton`, or with its `width` and `height` props:
+
+```vue
+<div class="space-y-3">
+ <UiSkeleton class="h-5 w-2/3" />
+ <UiSkeleton class="h-4 w-full" rounded="sm" />
+ <UiSkeleton :width="48" :height="48" rounded="full" />
+</div>
+```
+
+Numeric dimensions are pixels; strings accept any CSS length. The default skeleton is decorative and hidden from assistive technology. Set `aria-label="Loading profile"` when it should be announced as a status. Set `:animated="false"` for a static placeholder. Its color is derived from `--ui-bg` and `--ui-text`, and pulse animation is automatically disabled by `prefers-reduced-motion`.
 
 Example form and virtual table:
 
