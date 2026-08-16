@@ -1796,31 +1796,32 @@ Additional component examples:
 
 ### Content and view components
 
-| Component             | Purpose and principal props/events                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `ViewAnimatedCounter` | Intersection-driven counter: from/to, duration, decimals, prefix/suffix, separator, once.               |
-| `ViewAnnouncementBar` | Sticky/closable colored announcement with title/default/actions slots.                                  |
-| `ViewAvatarGroup`     | Overlapping `UiAvatar` children with size, max count, and remainder badge.                              |
-| `ViewBreadcrumbs`     | Localized generated breadcrumbs with truncation and separator.                                          |
-| `ViewContentWithToc`  | Builds an anchor navigation from slotted h2/h3/h4/heading components.                                   |
-| `ViewCopyright`       | Owner, optional start year, and localized “all rights reserved”.                                        |
-| `ViewCountdownTimer`  | Timezone-aware target countdown; exposes values to a slot and emits `finish`.                           |
-| `ViewCreativeCTA`     | Image/gradient CTA with alignment, two links, and title/description/actions slots.                      |
-| `ViewCurrencySelect`  | Cart-backed currency picker with class overrides and trigger slot.                                      |
-| `ViewFeatureBoxGrid`  | Linked feature cards with icons, 2–4 columns, layout direction, and description alignment.              |
-| `ViewHorizontalMenu`  | Horizontally scrollable route menu with edge fade masks.                                                |
-| `ViewImageCompare`    | Mouse/touch before-after image slider with optional labels.                                             |
-| `ViewImgSlider`       | Image/video carousel with autoplay interval, manual controls, and vertical mode.                        |
-| `ViewInfiniteMarquee` | Seamless repeated string items with duration, delay, and container class.                               |
-| `ViewInfoBar`         | Compact information items and actions with icons/callbacks.                                             |
-| `ViewLogoGrid`        | Linked logos with color/grayscale variants and mobile item limit.                                       |
-| `ViewLogoSlider`      | Infinite logo strip with speed, grayscale, and container class.                                         |
-| `ViewQuoteBig`        | Large quotation with author/avatar, alignment, and typography controls.                                 |
-| `ViewResponsiveMenu`  | Measures available width and moves overflowed route items into a dropdown.                              |
-| `ViewReviewsSlider`   | Responsive draggable review carousel with autoplay and links.                                           |
-| `ViewSocialBar`       | Iconify social links with five variants, size, gap, target, and per-item color.                         |
-| `ViewTallyForm`       | Tally standard embed, popup, or fullscreen mode; hidden fields, theme colors/options; exposed `open()`. |
-| `ViewWarningOutdated` | Full-screen unsupported-browser warning; mounted globally when core APIs are missing.                   |
+| Component               | Purpose and principal props/events                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `ViewAnimatedCounter`   | Intersection-driven counter: from/to, duration, decimals, prefix/suffix, separator, once.               |
+| `ViewAnnouncementBar`   | Sticky/closable colored announcement with title/default/actions slots.                                  |
+| `ViewAvatarGroup`       | Overlapping `UiAvatar` children with size, max count, and remainder badge.                              |
+| `ViewBreadcrumbs`       | Localized generated breadcrumbs with truncation and separator.                                          |
+| `ViewContentWithToc`    | Builds an anchor navigation from slotted h2/h3/h4/heading components.                                   |
+| `ViewCopyright`         | Owner, optional start year, and localized “all rights reserved”.                                        |
+| `ViewCountdownTimer`    | Timezone-aware target countdown; exposes values to a slot and emits `finish`.                           |
+| `ViewCreativeCTA`       | Image/gradient CTA with alignment, two links, and title/description/actions slots.                      |
+| `ViewCurrencySelect`    | Cart-backed currency picker with class overrides and trigger slot.                                      |
+| `ViewFeatureBoxGrid`    | Linked feature cards with icons, 2–4 columns, layout direction, and description alignment.              |
+| `ViewHorizontalMenu`    | Horizontally scrollable route menu with edge fade masks.                                                |
+| `ViewImageCompare`      | Mouse/touch before-after image slider with optional labels.                                             |
+| `ViewImgSlider`         | Image/video carousel with autoplay interval, manual controls, and vertical mode.                        |
+| `ViewInfiniteMarquee`   | Seamless repeated string items with duration, delay, and container class.                               |
+| `ViewInfoBar`           | Compact information items and actions with icons/callbacks.                                             |
+| `ViewLogoGrid`          | Linked logos with color/grayscale variants and mobile item limit.                                       |
+| `ViewLogoSlider`        | Infinite logo strip with speed, grayscale, and container class.                                         |
+| `ViewPartialBackground` | Full-width themed background with independent content width and left/right edge heights.                |
+| `ViewQuoteBig`          | Large quotation with author/avatar, alignment, and typography controls.                                 |
+| `ViewResponsiveMenu`    | Measures available width and moves overflowed route items into a dropdown.                              |
+| `ViewReviewsSlider`     | Responsive draggable review carousel with autoplay and links.                                           |
+| `ViewSocialBar`         | Iconify social links with five variants, size, gap, target, and per-item color.                         |
+| `ViewTallyForm`         | Tally standard embed, popup, or fullscreen mode; hidden fields, theme colors/options; exposed `open()`. |
+| `ViewWarningOutdated`   | Full-screen unsupported-browser warning; mounted globally when core APIs are missing.                   |
 
 ```vue
 <script setup lang="ts">
@@ -1880,12 +1881,107 @@ Additional view examples:
 <ViewInfoBar :items="contactItems" :actions="contactActions" />
 <ViewLogoGrid title="Trusted by teams" :items="logos" />
 <ViewLogoSlider :logos="logos" :speed="30" grayscale />
+<ViewPartialBackground
+ container-size="boxed"
+ background="url('/images/hero.webp') center / cover no-repeat"
+ background-dark="linear-gradient(rgb(0 0 0 / 35%), rgb(0 0 0 / 35%)), url('/images/hero.webp') center / cover no-repeat"
+ background-height-left="58dvh"
+ background-height-right="66dvh"
+ min-height="80dvh"
+ content-align="center"
+ content-class="py-16"
+>
+ <GridRow>
+  <GridCol :span="8">Content over the partial background</GridCol>
+ </GridRow>
+</ViewPartialBackground>
+
+<ViewPartialBackground
+ background-after-content
+ background-after-content-height="16dvh"
+ background-height-left="100%"
+ background-height-right="72%"
+ background-color="#f59e0b"
+ background-color-dark="#7c3aed"
+>
+ <GridRow>
+  <GridCol>Content keeps its natural height; the image starts below it.</GridCol>
+ </GridRow>
+</ViewPartialBackground>
+
+<ViewPartialBackground
+ background-before-content
+ background-before-content-height="14dvh"
+ background-height-left="70%"
+ background-height-right="100%"
+ background-color="#38bdf8"
+ background-color-dark="#075985"
+>
+ <GridRow>
+  <GridCol>The angled background starts before this content.</GridCol>
+ </GridRow>
+</ViewPartialBackground>
 <ViewQuoteBig text="A product-defining result." author-name="Ada Lovelace" />
 <ViewResponsiveMenu :items="navigation" />
 <ViewReviewsSlider :items="reviews" />
 <ViewSocialBar :items="socialLinks" variant="rounded" size="lg" />
 <ViewWarningOutdated />
 ```
+
+#### `ViewPartialBackground`
+
+`ViewPartialBackground` is a full-width section built with `GridStack` and `GridContainer`. Without a minimum height, its content area has natural content-driven height. The background edge and the content width are controlled independently.
+
+| Prop                                                       | Values/default                                    | Purpose                                                                        |
+| ---------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `containerSize`                                            | Any `GridContainer` size; default `content`       | Width of the inner content                                                     |
+| `minHeight`                                                | Any CSS size; unset by default                    | Optional minimum content height                                                |
+| `contentAlign`                                             | `top`, `center`, `bottom`; default `top`          | Vertical content alignment when `minHeight` creates free space                 |
+| `backgroundHeightLeft`, `backgroundHeightRight`            | Any CSS size; default `60dvh`                     | Visible background height at each side; different values create an angled edge |
+| `backgroundBeforeContent`                                  | `boolean`                                         | Add an angled background extension before the content                          |
+| `backgroundBeforeContentHeight`                            | Any CSS size; default `clamp(5rem, 12dvh, 10rem)` | Total height reserved for the extension before content                         |
+| `backgroundAfterContent`                                   | `boolean`                                         | Add an angled background extension after the content                           |
+| `backgroundAfterContentHeight`                             | Any CSS size; default `clamp(5rem, 12dvh, 10rem)` | Total height reserved for the extension after content                          |
+| `backgroundColor`, `backgroundColorDark`                   | Any CSS color                                     | Shared light/dark color for the content area and before/after extensions       |
+| `background`, `backgroundDark`                             | Any CSS `background` value                        | Light/dark color, gradient, or image on the decorative layer                   |
+| `backgroundSize`, `backgroundPosition`, `backgroundRepeat` | CSS background values                             | Decorative background rendering                                                |
+| `mask`, `maskDark`                                         | Any CSS `mask` value                              | Light/dark mask on the decorative layer                                        |
+| `maskSize`, `maskPosition`, `maskRepeat`                   | CSS mask values                                   | Decorative mask rendering                                                      |
+| `contentClass`, `layerClass`                               | CSS/Tailwind class string                         | Inner container and decorative layer customization                             |
+
+Both before/after heights accept `px`, `rem`, `vh`, `dvh`, `clamp()`, `min()`, `max()`, CSS variables, and other valid CSS lengths. Prefer `clamp()` for a responsive height with safe limits:
+
+```vue
+<ViewPartialBackground
+ background-after-content
+ background-after-content-height="clamp(4rem, 10dvh, 8rem)"
+ background-height-left="100%"
+ background-height-right="70%"
+ background-color="#f59e0b"
+ background-color-dark="#7c3aed"
+>
+ Content
+</ViewPartialBackground>
+```
+
+The values are reactive. Bind a ref or computed CSS value to change the height at runtime:
+
+```vue
+<script setup lang="ts">
+const lowerBackgroundHeight = ref("8rem");
+</script>
+
+<template>
+ <ViewPartialBackground
+  background-after-content
+  :background-after-content-height="lowerBackgroundHeight"
+ >
+  Content
+ </ViewPartialBackground>
+</template>
+```
+
+When `backgroundBeforeContent` and `backgroundAfterContent` are both enabled, both extensions are rendered and their heights remain independent. The `background-before` and `background-after` slots can customize them separately; the shared `background` slot is used as fallback for either side.
 
 ### Safe media, consent, SEO, and shell components
 
