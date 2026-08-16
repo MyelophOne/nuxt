@@ -786,6 +786,7 @@ Other built-in SEO behavior:
 - alternate-language and `x-default` links are generated for localized pages;
 - breadcrumb JSON-LD is generated from route metadata and translation keys;
 - `UiAccordion faq` emits FAQPage JSON-LD;
+- `SeoProfileInfo`, `SeoOrgInfo`, and `SeoBrandInfo` emit reactive SSR JSON-LD records;
 - `SeoNoIndex` marks 4xx pages as `noindex, nofollow`;
 - `SeoContentNoIndex` wraps content in `data-nosnippet` and renders it client-side;
 - `nuxt-og-image`, robots, link checking, and SEO utilities are included.
@@ -800,6 +801,204 @@ Other built-in SEO behavior:
 ```
 
 Set `public.siteUrl` in production. Without it, server-rendered absolute alternate and breadcrumb URLs do not have a reliable origin.
+
+### Profile, organization, and brand JSON-LD
+
+`SeoProfileInfo`, `SeoOrgInfo`, and `SeoBrandInfo` are head-only components: they render no visible element and add an SSR-accessible `<script type="application/ld+json">` record to `<head>`. Values remain reactive during client navigation. JSON is escaped so supplied text cannot prematurely close the script element.
+
+Use `SeoProfileInfo` only when the page primarily describes one person or organization. Google requires `mainEntity` and a `name` or `alternateName` on that entity for ProfilePage eligibility. The shorthand entity props cover Google's common fields; `entity` accepts every additional `Person` or `Organization` property:
+
+```vue
+<SeoProfileInfo
+ id="https://example.com/team/ada#profile-page"
+ url="https://example.com/team/ada"
+ name="Ada Lovelace — profile"
+ date-created="2024-01-10T09:00:00Z"
+ date-modified="2026-08-16T12:00:00Z"
+ entity-id="https://example.com/team/ada#person"
+ entity-name="Ada Lovelace"
+ alternate-name="@ada"
+ entity-description="Lead platform engineer"
+ entity-image="https://example.com/images/ada.webp"
+ :same-as="['https://github.com/ada', 'https://www.linkedin.com/in/ada']"
+ :interaction-statistic="[
+  {
+   '@type': 'InteractionCounter',
+   interactionType: 'https://schema.org/FollowAction',
+   userInteractionCount: 1250,
+  },
+ ]"
+ :entity="{
+  jobTitle: 'Lead platform engineer',
+  worksFor: { '@id': 'https://example.com/#organization' },
+  knowsAbout: ['Nuxt', 'Accessibility'],
+ }"
+ :data="{
+  isPartOf: { '@id': 'https://example.com/#website' },
+ }"
+/>
+```
+
+If a complete entity object already exists, pass it as `main-entity`; it replaces the generated entity:
+
+```vue
+<SeoProfileInfo
+ :main-entity="{
+  '@type': 'Organization',
+  '@id': 'https://example.com/#organization',
+  name: 'Example Studio',
+  url: 'https://example.com/',
+ }"
+/>
+```
+
+For a single JSON-LD script with an `@graph`, set `entity-only` to make the profile's root node a `Person` or `Organization`, then pass every related node through `graph`. This covers graph structures containing a person, company, nested brand, WebSite, FAQPage, and any other Schema.org records:
+
+```vue
+<script setup lang="ts">
+const personId = "https://aleksivanov.me/#person";
+const organizationId = "https://myeloph.one/#organization";
+
+const relatedGraph = [
+ {
+  "@type": "Organization",
+  "@id": organizationId,
+  name: "MyelophOne",
+  url: "https://myeloph.one/",
+  legalName: "Aliaksandr Ivanou",
+  founder: { "@id": personId },
+  brand: {
+   "@type": "Brand",
+   name: "MyelophOne",
+  },
+ },
+ {
+  "@type": "WebSite",
+  "@id": "https://aleksivanov.me/#website",
+  name: "Aleks Ivanou",
+  url: "https://aleksivanov.me/",
+  publisher: { "@id": personId },
+ },
+ {
+  "@type": "FAQPage",
+  "@id": "https://aleksivanov.me/#faq",
+  mainEntity: [
+   {
+    "@type": "Question",
+    name: "Who is Aleks Ivanou?",
+    acceptedAnswer: {
+     "@type": "Answer",
+     text: "A full-stack developer and founder of MyelophOne.",
+    },
+   },
+  ],
+ },
+];
+</script>
+
+<template>
+ <SeoProfileInfo
+  entity-only
+  :id="personId"
+  entity-type="Person"
+  name="Aliaksandr Ivanou"
+  :alternate-name="['Aleks Ivanou', 'Alex Ivanou', '@aleksivanou']"
+  url="https://aleksivanov.me/"
+  image="https://aleksivanov.me/assets/img/portrait.jpg"
+  job-title="Full-stack developer"
+  email="mailto:aleks@example.com"
+  description="Full-stack developer and founder of MyelophOne."
+  :same-as="['https://github.com/aleksivanou']"
+  :owns="{ '@id': organizationId }"
+  :knows-about="['Nuxt.js', 'Vue.js', 'TypeScript', 'Go']"
+  :graph="relatedGraph"
+ />
+</template>
+```
+
+The result is one script shaped as `{ "@context": "https://schema.org", "@graph": [...] }`. The generated profile/entity is the first graph node, followed by the supplied nodes. The `graph` prop is also available on `SeoOrgInfo` and `SeoBrandInfo`, so any of the three record types can be the primary node. When `graph` is omitted, the component continues to emit its normal standalone JSON-LD record.
+
+Use `SeoOrgInfo` once on the home page or a page that describes the organization. Prefer the most specific applicable Schema.org subtype through `type`, such as `Corporation`, `OnlineStore`, or a suitable `LocalBusiness` subtype:
+
+```vue
+<SeoOrgInfo
+ type="Corporation"
+ id="https://example.com/#organization"
+ name="Example Studio"
+ alternate-name="Example"
+ legal-name="Example Studio sp. z o.o."
+ url="https://example.com/"
+ description="Product design and engineering studio"
+ telephone="+48-12-345-67-89"
+ email="hello@example.com"
+ :logo="{
+  '@type': 'ImageObject',
+  url: 'https://example.com/logo.png',
+  width: 512,
+  height: 512,
+ }"
+ :address="{
+  '@type': 'PostalAddress',
+  streetAddress: '1 Example Street',
+  addressLocality: 'Warsaw',
+  postalCode: '00-001',
+  addressCountry: 'PL',
+ }"
+ :contact-point="{
+  '@type': 'ContactPoint',
+  contactType: 'customer support',
+  telephone: '+48-12-345-67-89',
+  availableLanguage: ['en', 'pl'],
+ }"
+ :same-as="[
+  'https://github.com/example',
+  'https://www.linkedin.com/company/example',
+ ]"
+ :data="{
+  foundingDate: '2020-01-01',
+  knowsLanguage: ['en', 'pl'],
+ }"
+/>
+```
+
+`SeoOrgInfo` has direct props for identity, names, URLs, logo/images, contacts, addresses, founders, employees, organization relationships, brands, service areas, ratings/reviews, offers, merchant policies, shipping services, awards, expertise, and common company identifiers (`taxID`, `vatID`, `duns`, `globalLocationNumber`, `iso6523Code`, `leiCode`, and `naics`).
+
+`SeoBrandInfo` supports the complete Brand-specific set plus the commonly useful inherited Thing properties:
+
+```vue
+<SeoBrandInfo
+ id="https://example.com/#brand"
+ name="Example"
+ alternate-name="Example Labs"
+ url="https://example.com/"
+ logo="https://example.com/brand.svg"
+ slogan="Build clearly"
+ :same-as="['https://www.wikidata.org/wiki/Q123']"
+ :owner="{ '@id': 'https://example.com/#organization' }"
+ :aggregate-rating="{
+  '@type': 'AggregateRating',
+  ratingValue: 4.9,
+  reviewCount: 86,
+ }"
+/>
+```
+
+Common control props:
+
+| Prop        | Default                | Purpose                                                                             |
+| ----------- | ---------------------- | ----------------------------------------------------------------------------------- |
+| `enabled`   | `true`                 | Reactively add or remove this JSON-LD script                                        |
+| `context`   | `https://schema.org`   | JSON-LD `@context`                                                                  |
+| `type`      | Component type         | JSON-LD `@type`; accepts a string or multiple types                                 |
+| `id`        | —                      | Stable entity/page `@id`, normally an absolute URL with an optional fragment        |
+| `data`      | `{}`                   | Any additional or future Schema.org properties for the root record                  |
+| `graph`     | —                      | Wrap the generated record and additional nodes in one root `@graph` script          |
+| `scriptKey` | Generated per instance | Override Nuxt head deduplication key when the record needs a stable application key |
+| `scriptId`  | —                      | Optional HTML id on the generated script element                                    |
+
+`data` is merged first; explicit component props override properties with the same name. `@context` and `@type` always come from their corresponding props. For `SeoProfileInfo`, `entity` is merged the same way for the generated `mainEntity`, while `mainEntity` supplies a fully custom entity and takes precedence over all shorthand entity fields. Set `entityOnly` when the root record itself must be the generated `Person` or `Organization`; in this mode the page-level `id`, `name`, `url`, `description`, and `image` props also act as fallbacks for their entity equivalents. This pass-through design supports all Schema.org properties, nested nodes, arrays, `@id` references, multi-typed records, and future vocabulary additions without waiting for a component update.
+
+Always use absolute crawlable URLs, include only information represented by the visible page, and omit unknown data instead of inventing it. Validate deployed output with Google's Rich Results Test and the Schema.org validator; valid markup improves machine understanding but does not guarantee a rich result.
 
 ## Cookie consent and third-party scripts
 
@@ -2306,6 +2505,9 @@ Set `heading-side="right"` to swap the desktop columns. Set `:sticky="false"` wh
 | `CookieConsentWrapper`                 | Generic category-gated slot and preference prompt.                                             |
 | `CookiePrivacyPolicy`                  | Generated provider/category/legal-source disclosure.                                           |
 | `CookieBanner` / `CookieSettingsModal` | Global consent UI; already mounted by the base app.                                            |
+| `SeoProfileInfo`                       | SSR ProfilePage JSON-LD with a Person or Organization main entity.                             |
+| `SeoOrgInfo`                           | SSR Organization/subtype JSON-LD with common props and unrestricted data pass-through.         |
+| `SeoBrandInfo`                         | SSR Brand JSON-LD with ratings, identity fields, and unrestricted data pass-through.           |
 | `SeoNoIndex` / `SeoContentNoIndex`     | Page and content indexing controls.                                                            |
 | `PagePreloader`                        | Route-loading overlay driven by the settings store.                                            |
 | `PageFullscreenPreloader`              | Full-viewport themed overlay with centered arbitrary slot content.                             |
