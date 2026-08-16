@@ -1,5 +1,18 @@
 import type { CookieScriptsConfig, CookieControlConfig } from '~/types/cookie';
 
+export interface PageFullscreenPreloaderConfig {
+	component: string;
+	props?: Record<string, unknown>;
+	transparent?: boolean;
+	background?: string;
+	backgroundDark?: string;
+	zIndex?: number | string;
+	ariaLabel?: string;
+	class?: string;
+	contentClass?: string;
+	minimumDuration?: number;
+}
+
 declare module '@nuxt/schema' {
 	interface RuntimeConfig {}
 	interface PublicRuntimeConfig {
@@ -14,6 +27,7 @@ declare module '@nuxt/schema' {
 		frankfurterCurrencies: string[];
 		frankfurterBaseCurrency: string;
 		creativeCursor: boolean;
+		pageFullscreenPreloader?: PageFullscreenPreloaderConfig;
 		tally?: {
 			domain?: string;
 		};

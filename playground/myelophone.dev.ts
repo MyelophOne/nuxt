@@ -18,6 +18,16 @@ export default defineNuxtConfig({
 			frankfurterCurrencies: [],
 			frankfurterBaseCurrency: 'USD',
 			creativeCursor: false,
+			pageFullscreenPreloader: {
+				component: 'DemoPreloaderLogo',
+				props: {
+					label: 'MyelophOne',
+				},
+				background: '#f7f7f7',
+				backgroundDark: '#121212',
+				minimumDuration: 250,
+				ariaLabel: 'Loading MyelophOne site',
+			},
 		},
 	},
 });

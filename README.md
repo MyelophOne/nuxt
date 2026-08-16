@@ -182,6 +182,7 @@ Nuxt runtime values can also be supplied with standard `NUXT_*` environment-vari
 | `public.frankfurterCurrencies`   | `[]`             | Default quote currencies for `/api/exchange-rates`. Empty means provider defaults. |
 | `public.frankfurterBaseCurrency` | `USD`            | Base currency for the exchange-rate endpoint.                                      |
 | `public.creativeCursor`          | `false`          | Enable the custom cursor for fine pointers without reduced motion.                 |
+| `public.pageFullscreenPreloader` | `{}` / disabled  | Optional global full-screen route preloader component and overlay configuration.   |
 | `public.tally.domain`            | `tally.so`       | Default host used by `ViewTallyForm`.                                              |
 
 ## Rendering and deployment
@@ -2050,6 +2051,7 @@ Set `heading-side="right"` to swap the desktop columns. Set `:sticky="false"` wh
 | `CookieBanner` / `CookieSettingsModal` | Global consent UI; already mounted by the base app.                                            |
 | `SeoNoIndex` / `SeoContentNoIndex`     | Page and content indexing controls.                                                            |
 | `PagePreloader`                        | Route-loading overlay driven by the settings store.                                            |
+| `PageFullscreenPreloader`              | Full-viewport themed overlay with centered arbitrary slot content.                             |
 | `MyelophoneWelcome`                    | Default framework playground landing page.                                                     |
 | `MyelophoneCopyright`                  | Server-rendered copyright island used by the framework welcome screen.                         |
 
@@ -2065,9 +2067,70 @@ Set `heading-side="right"` to swap the desktop columns. Set `:sticky="false"` wh
 <CookieBanner />
 <CookieSettingsModal />
 <PagePreloader />
+<PageFullscreenPreloader>
+ <BrandLoader />
+</PageFullscreenPreloader>
 <MyelophoneWelcome />
 <NuxtIsland name="MyelophoneCopyright" />
 ```
+
+### Full-screen page preloader
+
+`PageFullscreenPreloader` is independent from the existing `PagePreloader`. The existing component keeps its original store-driven purpose. The new component covers the viewport and centers arbitrary slot content such as an SVG logo, icon, text, GIF, animation, or a custom loader component.
+
+By default, no global full-screen preloader is enabled. To use one for route transitions across the whole site, configure an auto-imported component by name in the optional `myelophone.ts` file:
+
+```ts
+export default defineNuxtConfig({
+ runtimeConfig: {
+  public: {
+   pageFullscreenPreloader: {
+    component: "SitePreloaderLogo",
+    props: {
+     label: "Acme Studio",
+    },
+    background: "#f7f7f7",
+    backgroundDark: "#121212",
+    minimumDuration: 250,
+    ariaLabel: "Loading Acme Studio",
+   },
+  },
+ },
+});
+```
+
+Create the configured component inside the application's `components` directory. The selected component is resolved statically during the Nuxt build, so unrelated auto-imported components are not added to the client bundle.
+
+`PageFullscreenPreloaderConfiguredContent` is an internal generated wrapper used by the base app for that static import. Do not create or call it yourself; `pageFullscreenPreloader.component` is the only place where the site's own loader-content component is selected.
+
+`playground/myelophone.dev.ts` is only a configuration template and is never loaded by Nuxt directly. Copy it to `playground/myelophone.ts` when testing global configuration in this repository. If `myelophone.ts` does not exist, the internal configuration stays empty and no global full-screen overlay is mounted. The local `/demo` example does not require that file.
+
+Configuration fields:
+
+| Field                          | Values/default                          | Purpose                                                                       |
+| ------------------------------ | --------------------------------------- | ----------------------------------------------------------------------------- |
+| `component`                    | Auto-imported component name            | Centered global preloader content                                             |
+| `props`                        | Serializable object                     | Props passed to the configured content component                              |
+| `transparent`                  | `boolean`; default `false`              | Use a transparent overlay instead of its background                           |
+| `background`, `backgroundDark` | CSS backgrounds; default `var(--ui-bg)` | Light and dark overlay backgrounds                                            |
+| `zIndex`                       | Number or CSS value; default `9999`     | Overlay stacking level                                                        |
+| `ariaLabel`                    | `string`; default `Page loading`        | Accessible status label                                                       |
+| `class`, `contentClass`        | Class strings                           | Overlay and centered-content customization                                    |
+| `minimumDuration`              | Milliseconds; default `250`             | Minimum time the overlay remains visible after hydration or navigation starts |
+
+For a single page, place the component directly in that page. It automatically follows Nuxt's page-loading lifecycle, so it appears while that particular page is loading and disappears on `page:finish`:
+
+```vue
+<template>
+ <PageFullscreenPreloader background="#f7f7f7" background-dark="#121212">
+  <SitePreloaderLogo />
+ </PageFullscreenPreloader>
+</template>
+```
+
+This declaration is local to that page; no manual `ref`, click handler, or global configuration is needed. On the first request the overlay is included next to the main SSR content, but CSS keeps it hidden for `html.nojs`. The existing inline head script changes that class to `js` before Nuxt loads, making the overlay visible without removing or covering the SSR content for no-JavaScript clients and crawlers. On a hard load it stays until `window.load` and `minimumDuration`; on internal navigation it stays until `page:finish` and `minimumDuration`.
+
+Set `transparent` for a transparent full-screen interaction layer. The overlay uses `data-theme="light|dark"`, falls back to `prefers-color-scheme`, disables its fade transition under reduced-motion preferences, and accepts arbitrary slot content.
 
 ## Utility functions
 

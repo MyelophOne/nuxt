@@ -5,14 +5,27 @@ const nuxtApp = useNuxtApp();
 
 nuxtApp.hook("app:mounted", () => {
 	console.info(
-		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright (c) 2026 Aliaksandr Ivanou.\nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
+		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright © 2026 Aliaksandr Ivanou.\nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
 		"font-size:14px",
 	);
 });
 
 const {
-	public: { multi18n, siteUrl, stores, creativeCursor },
+	public: {
+		multi18n,
+		siteUrl,
+		stores,
+		creativeCursor,
+		pageFullscreenPreloader,
+	},
 } = useRuntimeConfig();
+
+const globalFullscreenPreloaderOptions =
+	pageFullscreenPreloader &&
+	typeof pageFullscreenPreloader.component === "string" &&
+	pageFullscreenPreloader.component
+		? pageFullscreenPreloader
+		: null;
 
 const pinia = nuxtApp.$pinia;
 
@@ -158,7 +171,13 @@ onNuxtReady(() => {
 useHead({
 	htmlAttrs: {
 		lang: computed(() => htmlLang.value),
-		class: () => (isStaticMode.value ? "is-static" : ""),
+		class: () =>
+			[
+				import.meta.client ? "js" : "nojs",
+				isStaticMode.value ? "is-static" : "",
+			]
+				.filter(Boolean)
+				.join(" "),
 	},
 	meta: [
 		{ name: "color-scheme", content: "dark light" },
@@ -324,6 +343,21 @@ useCommand({
 			</template>
 		</NuxtErrorBoundary>
 	</NuxtLayout>
+	<PageFullscreenPreloader
+		v-if="globalFullscreenPreloaderOptions"
+		:transparent="globalFullscreenPreloaderOptions.transparent"
+		:background="globalFullscreenPreloaderOptions.background"
+		:background-dark="globalFullscreenPreloaderOptions.backgroundDark"
+		:z-index="globalFullscreenPreloaderOptions.zIndex"
+		:aria-label="globalFullscreenPreloaderOptions.ariaLabel"
+		:class="globalFullscreenPreloaderOptions.class"
+		:content-class="globalFullscreenPreloaderOptions.contentClass"
+		:minimum-duration="globalFullscreenPreloaderOptions.minimumDuration"
+	>
+		<PageFullscreenPreloaderConfiguredContent
+			v-bind="globalFullscreenPreloaderOptions.props"
+		/>
+	</PageFullscreenPreloader>
 	<Teleport to="#teleports">
 		<ClientOnly>
 			<PagePreloader />

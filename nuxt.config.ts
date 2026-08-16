@@ -3,6 +3,7 @@ import path from 'node:path';
 import multi18n from './app/modules/multi18n/module';
 import i18nTreeShaker from './app/modules/i18n-shaker.mjs';
 import nuxtHtaccess from './app/modules/htaccess';
+import fullscreenPreloader from './app/modules/fullscreen-preloader/module';
 
 import { cleanEmptyCssPlugin } from './vite/plugins/clean-css';
 import postcssViewportFallback from './vite/plugins/postcss-viewport-fallback';
@@ -62,6 +63,7 @@ export default defineNuxtConfig({
 		...moreModules,
 		multi18n,
 		nuxtHtaccess,
+		fullscreenPreloader,
 	],
 	features: {
 		inlineStyles: false,
@@ -510,6 +512,7 @@ export default defineNuxtConfig({
 			frankfurterCurrencies: [],
 			frankfurterBaseCurrency: 'USD',
 			creativeCursor: false,
+			pageFullscreenPreloader: {},
 			tally: {
 				domain: 'tally.so',
 			},
