@@ -7,6 +7,7 @@
 <script setup lang="ts">
 const props = defineProps<{
 	level?: 1 | 2 | 3 | 4 | 5 | 6;
+	size?: "xs" | "sm" | "md" | "lg" | "xl" | "display";
 	class?: string;
 }>();
 
@@ -21,7 +22,30 @@ const defaultClasses: Record<number, string> = {
 	6: "text-base font-normal",
 };
 
-const headingClass = computed(() =>
-	`${defaultClasses[props.level || 1]} ${props.class || ""}`.trim(),
-);
+const fontWeightClasses: Record<number, string> = {
+	1: "font-semibold",
+	2: "font-semibold",
+	3: "font-semibold",
+	4: "font-medium",
+	5: "font-medium",
+	6: "font-normal",
+};
+
+const sizeClasses = {
+	xs: "text-xl",
+	sm: "text-2xl",
+	md: "text-3xl",
+	lg: "text-4xl md:text-5xl",
+	xl: "text-5xl md:text-6xl",
+	display: "text-5xl md:text-7xl lg:text-8xl",
+} as const;
+
+const headingClass = computed(() => {
+	const level = props.level || 1;
+	const typography = props.size
+		? `${sizeClasses[props.size]} ${fontWeightClasses[level]}`
+		: defaultClasses[level];
+
+	return `${typography} ${props.class || ""}`.trim();
+});
 </script>

@@ -15,5 +15,6 @@ html {
 }
 
 @source "../../../**/*.{vue}";
+@source "../../constants/**/*.ts";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));

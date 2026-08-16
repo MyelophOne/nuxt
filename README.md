@@ -1676,7 +1676,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiCursorCreative`   | Optional animated desktop cursor; disables itself for coarse pointers and reduced motion.                           |
 | `UiFeatureAccordion` | Feature list synchronized with an image; side/mobile ordering and optional links.                                   |
 | `UiGeoDependent`     | Show slot using country whitelist/blacklist and optional pre-resolved `geoData`.                                    |
-| `UiHeading`          | Semantic `h1`–`h6` with default typography and custom class.                                                        |
+| `UiHeading`          | Semantic `h1`–`h6` with independent `xs`–`display` visual size and custom class.                                    |
 | `UiIcon`             | Server component fetching Iconify SVG by `prefix:name`; accepts `size` and class.                                   |
 | `UiIcon8`            | Server component fetching Icons8 PNG by icon, type, size, and color.                                                |
 | `UiInput`            | Floating-label `v-model` input with type, icon position, placeholder, and disabled state.                           |
@@ -1796,32 +1796,33 @@ Additional component examples:
 
 ### Content and view components
 
-| Component               | Purpose and principal props/events                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| `ViewAnimatedCounter`   | Intersection-driven counter: from/to, duration, decimals, prefix/suffix, separator, once.               |
-| `ViewAnnouncementBar`   | Sticky/closable colored announcement with title/default/actions slots.                                  |
-| `ViewAvatarGroup`       | Overlapping `UiAvatar` children with size, max count, and remainder badge.                              |
-| `ViewBreadcrumbs`       | Localized generated breadcrumbs with truncation and separator.                                          |
-| `ViewContentWithToc`    | Builds an anchor navigation from slotted h2/h3/h4/heading components.                                   |
-| `ViewCopyright`         | Owner, optional start year, and localized “all rights reserved”.                                        |
-| `ViewCountdownTimer`    | Timezone-aware target countdown; exposes values to a slot and emits `finish`.                           |
-| `ViewCreativeCTA`       | Image/gradient CTA with alignment, two links, and title/description/actions slots.                      |
-| `ViewCurrencySelect`    | Cart-backed currency picker with class overrides and trigger slot.                                      |
-| `ViewFeatureBoxGrid`    | Linked feature cards with icons, 2–4 columns, layout direction, and description alignment.              |
-| `ViewHorizontalMenu`    | Horizontally scrollable route menu with edge fade masks.                                                |
-| `ViewImageCompare`      | Mouse/touch before-after image slider with optional labels.                                             |
-| `ViewImgSlider`         | Image/video carousel with autoplay interval, manual controls, and vertical mode.                        |
-| `ViewInfiniteMarquee`   | Seamless repeated string items with duration, delay, and container class.                               |
-| `ViewInfoBar`           | Compact information items and actions with icons/callbacks.                                             |
-| `ViewLogoGrid`          | Linked logos with color/grayscale variants and mobile item limit.                                       |
-| `ViewLogoSlider`        | Infinite logo strip with speed, grayscale, and container class.                                         |
-| `ViewPartialBackground` | Full-width themed background with independent content width and left/right edge heights.                |
-| `ViewQuoteBig`          | Large quotation with author/avatar, alignment, and typography controls.                                 |
-| `ViewResponsiveMenu`    | Measures available width and moves overflowed route items into a dropdown.                              |
-| `ViewReviewsSlider`     | Responsive draggable review carousel with autoplay and links.                                           |
-| `ViewSocialBar`         | Iconify social links with five variants, size, gap, target, and per-item color.                         |
-| `ViewTallyForm`         | Tally standard embed, popup, or fullscreen mode; hidden fields, theme colors/options; exposed `open()`. |
-| `ViewWarningOutdated`   | Full-screen unsupported-browser warning; mounted globally when core APIs are missing.                   |
+| Component                  | Purpose and principal props/events                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `ViewAnimatedCounter`      | Intersection-driven counter: from/to, duration, decimals, prefix/suffix, separator, once.               |
+| `ViewAnnouncementBar`      | Sticky/closable colored announcement with title/default/actions slots.                                  |
+| `ViewAvatarGroup`          | Overlapping `UiAvatar` children with size, max count, and remainder badge.                              |
+| `ViewBreadcrumbs`          | Localized generated breadcrumbs with truncation and separator.                                          |
+| `ViewContentWithToc`       | Builds an anchor navigation from slotted h2/h3/h4/heading components.                                   |
+| `ViewCopyright`            | Owner, optional start year, and localized “all rights reserved”.                                        |
+| `ViewCountdownTimer`       | Timezone-aware target countdown; exposes values to a slot and emits `finish`.                           |
+| `ViewCreativeCTA`          | Image/gradient CTA with alignment, two links, and title/description/actions slots.                      |
+| `ViewCurrencySelect`       | Cart-backed currency picker with class overrides and trigger slot.                                      |
+| `ViewFeatureBoxGrid`       | Linked feature cards with icons, 2–4 columns, layout direction, and description alignment.              |
+| `ViewHorizontalMenu`       | Horizontally scrollable route menu with edge fade masks.                                                |
+| `ViewImageCompare`         | Mouse/touch before-after image slider with optional labels.                                             |
+| `ViewImgSlider`            | Image/video carousel with autoplay interval, manual controls, and vertical mode.                        |
+| `ViewInfiniteMarquee`      | Seamless repeated string items with duration, delay, and container class.                               |
+| `ViewInfoBar`              | Compact information items and actions with icons/callbacks.                                             |
+| `ViewLogoGrid`             | Linked logos with color/grayscale variants and mobile item limit.                                       |
+| `ViewLogoSlider`           | Infinite logo strip with speed, grayscale, and container class.                                         |
+| `ViewPartialBackground`    | Full-width themed background with independent content width and left/right edge heights.                |
+| `ViewQuoteBig`             | Large quotation with author/avatar, alignment, and typography controls.                                 |
+| `ViewResponsiveMenu`       | Measures available width and moves overflowed route items into a dropdown.                              |
+| `ViewReviewsSlider`        | Responsive draggable review carousel with autoplay and links.                                           |
+| `ViewSocialBar`            | Iconify social links with five variants, size, gap, target, and per-item color.                         |
+| `ViewStickyHeadingContent` | Two-column section with a configurable sticky `UiHeading` beside scrolling content.                     |
+| `ViewTallyForm`            | Tally standard embed, popup, or fullscreen mode; hidden fields, theme colors/options; exposed `open()`. |
+| `ViewWarningOutdated`      | Full-screen unsupported-browser warning; mounted globally when core APIs are missing.                   |
 
 ```vue
 <script setup lang="ts">
@@ -1982,6 +1983,57 @@ const lowerBackgroundHeight = ref("8rem");
 ```
 
 When `backgroundBeforeContent` and `backgroundAfterContent` are both enabled, both extensions are rendered and their heights remain independent. The `background-before` and `background-after` slots can customize them separately; the shared `background` slot is used as fallback for either side.
+
+#### `ViewStickyHeadingContent`
+
+`ViewStickyHeadingContent` uses `GridContainer`, `GridRow`, and `GridCol` to place a sticky `UiHeading` beside a content column. The heading remains sticky only inside the height of the adjacent content. On mobile, the heading stays first in document order even when it is configured on the right for desktop.
+
+```vue
+<ViewStickyHeadingContent
+ title="Forming lasting partnerships"
+ heading-side="left"
+ :heading-level="2"
+ heading-size="xl"
+ :heading-span="5"
+ :content-span="7"
+ sticky-from="md"
+ sticky-offset="5rem"
+ container-size="boxed"
+ container-class="py-20"
+ content-class="space-y-8 text-xl leading-relaxed"
+>
+ <p>First long content block…</p>
+ <p>More content that scrolls beside the sticky heading…</p>
+</ViewStickyHeadingContent>
+```
+
+Main props:
+
+| Prop                                       | Values/default                                        | Purpose                                                          |
+| ------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------------------- |
+| `title`                                    | `string`                                              | Default heading text; replace with the `heading` slot for markup |
+| `headingSide`                              | `left`, `right`; default `left`                       | Desktop heading side; the heading remains first on mobile        |
+| `headingLevel`                             | `1`–`6`; default `2`                                  | Semantic heading element passed to `UiHeading`                   |
+| `headingSize`                              | `xs`, `sm`, `md`, `lg`, `xl`, `display`; default `lg` | Visual size passed independently to `UiHeading`                  |
+| `headingSpan`                              | `1`–`12`; default `5`                                 | Desktop heading-column width                                     |
+| `contentSpan`                              | `1`–`12`; default `7`                                 | Desktop content-column width                                     |
+| `containerSize`                            | Any `GridContainer` size; default `content`           | Overall content width                                            |
+| `sticky`                                   | `boolean`; default `true`                             | Enable or disable sticky positioning                             |
+| `stickyFrom`                               | `always`, `sm`, `md`, `lg`; default `lg`              | Breakpoint from which sticky positioning applies                 |
+| `stickyOffset`                             | Any CSS length; default `6rem`                        | Distance from the top of the viewport while sticky               |
+| `containerClass`, `rowClass`               | Class strings                                         | Grid container and row customization                             |
+| `headingColumnClass`, `contentColumnClass` | Class strings                                         | Individual grid-column customization                             |
+| `headingClass`, `contentClass`             | Class strings                                         | Heading and content typography/customization                     |
+
+Slots:
+
+| Slot            | Purpose                                            |
+| --------------- | -------------------------------------------------- |
+| `heading`       | Heading contents rendered inside `UiHeading`       |
+| `heading-after` | Optional content directly below the sticky heading |
+| `default`       | Main scrolling content column                      |
+
+Set `heading-side="right"` to swap the desktop columns. Set `:sticky="false"` when the same layout is needed without sticky behaviour.
 
 ### Safe media, consent, SEO, and shell components
 
