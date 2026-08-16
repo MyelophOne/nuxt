@@ -1,3 +1,7 @@
+## 📦 Release 0.10.0 (2026-08-16)
+### ✨ Features
+- add tabs
+
 ## 📦 Release 0.9.0 (2026-08-16)
 ### ✨ Features
 - add file upload component
