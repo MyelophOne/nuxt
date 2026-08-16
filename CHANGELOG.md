@@ -1,3 +1,7 @@
+## 📦 Release 0.12.0 (2026-08-16)
+### ✨ Features
+- add person, brand, org micro data
+
 ## 📦 Release 0.11.0 (2026-08-16)
 ### ✨ Features
 - add console component
