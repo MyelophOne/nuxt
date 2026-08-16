@@ -1,3 +1,7 @@
+## 📦 Release 0.11.0 (2026-08-16)
+### ✨ Features
+- add console component
+
 ## 📦 Release 0.10.0 (2026-08-16)
 ### ✨ Features
 - add tabs
