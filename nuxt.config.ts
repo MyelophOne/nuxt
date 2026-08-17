@@ -507,7 +507,7 @@ export default defineNuxtConfig({
 				enabled: true,
 			},
 			bundleTranslations: true,
-			splitCss: true,
+			splitCss: false,
 			stores: {
 				cart: false,
 				user: false,
