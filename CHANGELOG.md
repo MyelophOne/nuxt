@@ -1,3 +1,7 @@
+## 📦 Release 0.13.1 (2026-08-17)
+### 🐛 Bug Fixes
+- add ipx cache- splitcss to false default
+
 ## 📦 Release 0.13.0 (2026-08-17)
 ### ✨ Features
 - add steps component- add tooltip component
