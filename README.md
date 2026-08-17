@@ -1904,9 +1904,18 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiTabs`             | Accessible vertical/horizontal tabs with configurable side, width, alignment, slots, and animated panels.           |
 | `UiTextarea`         | `v-model` textarea with floating label, error state, clear/save controls and `save`/`clear` events.                 |
 | `UiTextColumn`       | Typography/spacing wrapper for prose slots.                                                                         |
+| `UiTooltip`          | Hover/click tooltip with arbitrary trigger/content slots, mobile tap support, viewport-aware flip/shift, and `v-model`. |
 | `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                  |
 | `UiTruncateText`     | Responsive character limits with localized expand/collapse controls. Text-only slot.                                |
 | `UiViewportSpacer`   | Responsive `vh/dvh` or `vw/dvw` spacer.                                                                             |
+
+#### UiTooltip
+
+The default `trigger="hover"` opens from mouse hover or keyboard focus and falls back to tap-to-toggle on touch screens. Use `trigger="click"` for click/tap toggling on every device. The tooltip is teleported to `body`, flips to a side with enough room, shifts inside `viewportPadding`, and is remeasured on scroll, resize, and content-size changes.
+
+The default slot accepts any trigger; the `content` slot accepts arbitrary markup and receives a `close()` function. For actionable content, set `role="dialog"`. Use `as="div"` around block/layout triggers, and set `trigger-tabindex="-1"` when the slotted trigger already contains its own focusable control. `v-model`, `open`/`close` events, and exposed `open()`, `close()`, `toggle()`, and `updatePosition()` methods are available for external control.
+
+Placements are `auto`, `top`, `right`, `bottom`, `left`, and their `-start`/`-end` variants. Styling can be changed with `triggerClass`, `contentClass`, or the `--tooltip-background`, `--tooltip-color`, `--tooltip-border`, `--tooltip-radius`, and `--tooltip-shadow` CSS variables.
 
 #### UiConsole
 
@@ -2233,6 +2242,19 @@ Additional component examples:
  image-alt="Our team"
 ><template #text>Team story</template></UiSplitSection>
 <UiStickyWrapper :offset="96">Sticky navigation</UiStickyWrapper>
+<UiTooltip placement="top" trigger="hover">
+ <span class="underline decoration-dotted">Point at this phrase</span>
+ <template #content>Short explanatory text</template>
+</UiTooltip>
+<UiTooltip trigger="click" placement="bottom-start" role="dialog">
+ <img src="/images/help.webp" alt="Help" class="size-10 rounded-full" />
+ <template #content="{ close }">
+  <div class="space-y-3">
+   <strong>Any Vue content can go here</strong>
+   <UiButton size="sm" @click="close">Got it</UiButton>
+  </div>
+ </template>
+</UiTooltip>
 <UiTextarea
  v-model="message"
  id="message"
