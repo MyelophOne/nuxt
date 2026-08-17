@@ -25,7 +25,7 @@ const cookieScripts: CookieScriptsConfig = {
 };
 
 const version = pkg.version;
-const dateActuality = '2026-08-16';
+const dateActuality = '2026-08-18';
 const banner = `/* © 2025 Aliaksandr Ivanou. All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 
 const isSSG = process.env.NUXT_STATIC === 'true';
@@ -347,6 +347,9 @@ export default defineNuxtConfig({
 			vimeo: 'https://i.vimeocdn.com',
 		},
 		provider: isSSG ? 'none' : 'ipx',
+		ipx: {
+			maxAge: 31536000,
+		},
 	},
 	robots: {
 		blockNonSeoBots: true,
