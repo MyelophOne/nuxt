@@ -1899,6 +1899,7 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiSnapContainer`    | Vertical/horizontal controlled full-page snapping for `UiSnapSection` children.                                     |
 | `UiSnapSection`      | Snap panel with image/video/YouTube mobile variants, poster, overlay, lazy loading, and content class.              |
 | `UiSplitSection`     | Image/text split with side, container width, edge image, mobile reversal, and named text slot.                      |
+| `UiSteps`            | Responsive progress line, icon/number steps, or step cards with navigation, alignment, placement, and `v-model`.   |
 | `UiStickyWrapper`    | Sticky slot with pixel offset; prepares its parent positioning.                                                     |
 | `UiTable`            | Sortable table with nested keys and automatic virtualization above 100 rows; emits `sort`.                          |
 | `UiTabs`             | Accessible vertical/horizontal tabs with configurable side, width, alignment, slots, and animated panels.           |
@@ -1908,6 +1909,32 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 | `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                  |
 | `UiTruncateText`     | Responsive character limits with localized expand/collapse controls. Text-only slot.                                |
 | `UiViewportSpacer`   | Responsive `vh/dvh` or `vw/dvw` spacer.                                                                             |
+
+#### UiSteps
+
+`UiSteps` accepts `items` with `title`, optional `value`, `description`, `icon`, `content`, and `disabled`. Choose `variant="progress"`, `variant="steps"`, or `variant="cards"`; place navigation above or below the content with `placement`; and align it using `align="start | center | end"`. Number/icon steps become vertical and cards become full-width below 640 px when `stackOnMobile` is enabled.
+
+The default scoped slot receives `item`, `index`, `value`, `goTo()`, `next()`, `previous()`, `complete()`, `uncomplete()`, `completeAndNext()`, `isCompleted()`, `canGoTo()`, `isFirst`, and `isLast`. Header clicks are enabled by default, while `linear` prevents skipping unvisited steps through the header.
+
+Use `v-model:completed` as the source of successfully completed steps. Set `requirePrevious` when every step must wait for the previous enabled step, or add `requires: 'step-value'` / `requires: ['first-value', 'second-value']` to an individual item. Both conditions are combined when both are present. Call `complete()` only after form validation or an API operation succeeds; `completeAndNext()` marks the current step successful and opens the next available step.
+
+Theme styling follows `--ui-bg` and `--ui-text`; override `--ui-steps-accent`, `--ui-steps-muted`, `--ui-steps-border`, or `--ui-steps-surface` when needed.
+
+```vue
+<UiSteps
+ v-model="step"
+ v-model:completed="completedSteps"
+ :items="steps"
+ variant="cards"
+ require-previous
+>
+ <template #default="{ item, goTo, canGoTo, completeAndNext }">
+  <h2>{{ item.title }}</h2>
+  <UiButton :disabled="!canGoTo('review')" @click="goTo('review')">Go to review</UiButton>
+  <UiButton @click="completeAndNext">Save and continue</UiButton>
+ </template>
+</UiSteps>
+```
 
 #### UiTooltip
 
