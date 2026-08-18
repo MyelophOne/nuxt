@@ -91,7 +91,7 @@ export default {
 						'{{#each commits}}{{> commit root=@root}}{{/each}}' +
 						'{{#unless @last}}\n{{/unless}}' +
 						'{{/each}}',
-					commitPartial: '- {{subject}}',
+					commitPartial: '- {{subject}}\n',
 					groupBy: 'type',
 					commitGroupsSort: 'title',
 					commitsSort: ['subject'],

@@ -1578,7 +1578,7 @@ __metadata:
     "@nuxt/fonts": "npm:^0.14.0"
     "@nuxt/image": "npm:^2.1.0"
     "@nuxt/schema": "npm:^4.5.2"
-    "@nuxt/scripts": "npm:^1.3.4"
+    "@nuxt/scripts": "npm:^1.3.5"
     "@nuxt/types": "npm:^2.18.1"
     "@nuxtjs/fontaine": "npm:^0.5.0"
     "@nuxtjs/robots": "npm:^6.1.4"
@@ -2184,9 +2184,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/scripts@npm:^1.3.4":
-  version: 1.3.4
-  resolution: "@nuxt/scripts@npm:1.3.4"
+"@nuxt/scripts@npm:^1.3.5":
+  version: 1.3.5
+  resolution: "@nuxt/scripts@npm:1.3.5"
   dependencies:
     "@nuxt/devtools-kit": "npm:^3.2.4"
     "@vueuse/core": "npm:^14.3.0"
@@ -2240,7 +2240,7 @@ __metadata:
       optional: true
   bin:
     nuxt-scripts: ./bin/cli.mjs
-  checksum: 10c0/f3583e842d2c1c0aecad36871c582704e8d7d139dd349552ea5a35f9b92723553b993b6e71b7bb9c972e055d22909bf4f2073056278a02c808a53798ed533d15
+  checksum: 10c0/ae6678e619407e35bc6e2e3143603d8772c3d36b386301cecee93f06d9baa16f89bda5f3aebb32df6a2eddffec390a4871bcc9fcef6e5cc6fe90cbda35a845bc
   languageName: node
   linkType: hard
 
