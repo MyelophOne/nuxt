@@ -1,3 +1,7 @@
+<template>
+	<span v-if="false" aria-hidden="true" />
+</template>
+
 <script setup lang="ts">
 const props = defineProps<{
 	statusCode?: number;

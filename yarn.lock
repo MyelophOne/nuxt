@@ -1599,6 +1599,7 @@ __metadata:
     "@vueuse/core": "npm:^14.4.0"
     commitlint: "npm:^21.2.2"
     conventional-changelog-conventionalcommits: "npm:^10.3.0"
+    fuse.js: "npm:^7.5.0"
     h3: "npm:^2.0.1-rc.26"
     h3-compression: "npm:^1.1.0"
     nuxt: "npm:^4.5.2"

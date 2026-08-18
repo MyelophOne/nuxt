@@ -93,5 +93,8 @@
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "fuse.js": "^7.5.0"
   }
 }

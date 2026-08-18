@@ -195,6 +195,7 @@
 <script setup lang="ts">
 import { useCommandStore } from "~/stores/commands";
 import type { RouteRecordNormalized } from "vue-router";
+import { UI_SITE_SEARCH_OPEN_EVENT } from "../../constants/ui-events";
 
 const router = useRouter();
 const route = useRoute();
@@ -377,7 +378,11 @@ const scrollToItem = () => {
 };
 
 const onKeydown = (e: KeyboardEvent) => {
-	if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+	if (
+		(e.ctrlKey || e.metaKey) &&
+		!e.shiftKey &&
+		e.key.toLowerCase() === "k"
+	) {
 		e.preventDefault();
 		if (!isOpen.value) {
 			isOpen.value = true;
@@ -389,9 +394,14 @@ const onKeydown = (e: KeyboardEvent) => {
 	}
 };
 
+const onSiteSearchOpen = () => {
+	if (isOpen.value) close();
+};
+
 onMounted(() => {
 	if (typeof window !== "undefined") {
 		window.addEventListener("keydown", onKeydown);
+		window.addEventListener(UI_SITE_SEARCH_OPEN_EVENT, onSiteSearchOpen);
 		const saved = safeSessionStorage.getItem("cmd_history");
 		if (saved)
 			try {
@@ -401,8 +411,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	if (typeof window !== "undefined")
+	if (typeof window !== "undefined") {
 		window.removeEventListener("keydown", onKeydown);
+		window.removeEventListener(UI_SITE_SEARCH_OPEN_EVENT, onSiteSearchOpen);
+	}
 });
 
 watch(

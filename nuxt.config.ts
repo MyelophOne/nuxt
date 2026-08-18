@@ -25,7 +25,7 @@ const cookieScripts: CookieScriptsConfig = {
 };
 
 const version = pkg.version;
-const dateActuality = '2026-08-18';
+const dateActuality = '2026-08-20';
 const banner = `/* © 2025 Aliaksandr Ivanou. All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 
 const isSSG = process.env.NUXT_STATIC === 'true';
@@ -142,7 +142,7 @@ export default defineNuxtConfig({
 		build: {
 			cssMinify: 'esbuild',
 			sourcemap: process.env.NODE_ENV === 'development',
-			assetsInlineLimit: 2048,
+			assetsInlineLimit: 4096,
 			license: {
 				fileName: '_nuxt/licenses.md',
 			},
@@ -255,6 +255,7 @@ export default defineNuxtConfig({
 				'img-src': ["'self'", 'data:', 'blob:', 'https:'],
 				'media-src': ["'self'", 'https:', 'blob:'],
 				'object-src': ["'none'"],
+				'worker-src': ["'self'", 'blob:'],
 				'style-src': ["'self'", 'https:', "'unsafe-inline'"],
 				'script-src': ["'nonce-{{nonce}}'", "'strict-dynamic'"],
 				'script-src-attr': ["'none'"],
@@ -515,7 +516,19 @@ export default defineNuxtConfig({
 			frankfurterCurrencies: [],
 			frankfurterBaseCurrency: 'USD',
 			creativeCursor: false,
-			pageFullscreenPreloader: {},
+			siteSearch: {
+				strategy: 'client',
+				endpoint: '',
+				minQueryLength: 2,
+				limit: 10,
+				operator: 'and',
+				queryParam: 'search',
+				modeParam: 'searchMode',
+				operatorParam: 'searchOperator',
+				urlMode: 'search',
+				consumeUrl: false,
+				enabled: true,
+			},
 			tally: {
 				domain: 'tally.so',
 			},

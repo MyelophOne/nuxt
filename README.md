@@ -84,7 +84,7 @@ export default defineNuxtConfig({
    apiBase: "https://api.example.com",
    siteUrl: "https://example.com",
    bundleTranslations: false,
-   splitCss: true,
+   splitCss: false,
    stores: { cart: true, user: true },
    frankfurterBaseCurrency: "EUR",
    frankfurterCurrencies: ["USD", "PLN", "GBP"],
@@ -176,7 +176,7 @@ Nuxt runtime values can also be supplied with standard `NUXT_*` environment-vari
 | `public.cookieControl.enabled`   | `true`           | Enables the consent banner and preferences flow.                                   |
 | `public.cookieScripts`           | empty categories | Consent-aware integrations and legal notices.                                      |
 | `public.bundleTranslations`      | `true`           | Bundle locale data together; `false` enables per-locale chunk grouping.            |
-| `public.splitCss`                | `true`           | Controls Vite CSS code splitting.                                                  |
+| `public.splitCss`                | `false`          | Controls Vite CSS code splitting.                                                  |
 | `public.stores.cart`             | `false`          | Initialize the cart store, exchange rates, persistence, and tab sync.              |
 | `public.stores.user`             | `false`          | Initialize the user store, session extension, persistence, and tab sync.           |
 | `public.frankfurterCurrencies`   | `[]`             | Default quote currencies for `/api/exchange-rates`. Empty means provider defaults. |
@@ -1861,54 +1861,126 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 
 ### UI primitives
 
-| Component            | Purpose and principal props/events                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `UiAccordion`        | `items[{ label, content, defaultOpen }]`, `multiple`, `faq`, `ui`; item/header/content scoped slots.                |
-| `UiAlert`            | Info/success/warning/error alert with title, description, icon/avatar, size, close button, and action slot.         |
-| `UiAvatar`           | Image/icon/initials avatar; `size`, optional status `chipColor` and position.                                       |
-| `UiBadge`            | Solid/soft/outline badge; colors, sizes, pill/rounded, icons, avatar, slots.                                        |
-| `UiBanner`           | Closable full-width banner with color/variant, icon/avatar, title/default/actions slots.                            |
-| `UiButton`           | Button, anchor, or NuxtLink; color/variant/size, loading, disabled, block, rounded, square, leading/trailing icons. |
-| `UiCard`             | Div/section/article or link card; bordered, rounded, padded, header/default/footer slots.                           |
-| `UiCheckbox`         | Checkbox group with `v-model`, options, legend, disabled state, and dividers.                                       |
-| `UiChip`             | Positioned or standalone indicator; text, color, size, inset, visibility, and ping animation.                       |
-| `UiCommandPalette`   | Global route/command search opened with `Ctrl/Cmd+K`.                                                               |
-| `UiConsole`          | Responsive animated console with delayed/removable lines, highlighted segments, looping, slots, and controls.       |
-| `UiCursorCreative`   | Optional animated desktop cursor; disables itself for coarse pointers and reduced motion.                           |
-| `UiFeatureAccordion` | Feature list synchronized with an image; side/mobile ordering and optional links.                                   |
-| `UiFileUpload`       | Native/FormData-compatible file picker and dropzone; single/multiple files, validation, previews, removal, slots.   |
-| `UiGeoDependent`     | Show slot using country whitelist/blacklist and optional pre-resolved `geoData`.                                    |
-| `UiHeading`          | Semantic `h1`–`h6` with independent `xs`–`display` visual size and custom class.                                    |
-| `UiIcon`             | Server component fetching Iconify SVG by `prefix:name`; accepts `size` and class.                                   |
-| `UiIcon8`            | Server component fetching Icons8 PNG by icon, type, size, and color.                                                |
-| `UiInput`            | Floating-label `v-model` input with type, icon position, placeholder, and disabled state.                           |
-| `UiLangLink`         | NuxtLink that adds/removes the current locale prefix.                                                               |
-| `UiLanguageSelect`   | Responsive locale dropdown with full/short labels and class overrides.                                              |
-| `UiLangVisible`      | Render by `only` or `except` locale lists.                                                                          |
-| `UiLightBox`         | Async image gallery/lightbox; string/object images, item/image style/class, pass-through lightbox props.            |
-| `UiLocalTime`        | Live time for an IANA timezone; optional label/date/seconds and 12/24-hour mode.                                    |
-| `UiModal`            | Teleported stacked modal with `v-model`, title, width, close prevention, body class; emits `close`.                 |
-| `UiPopup`            | Frequency-capped popup with id, copy/image, five visual variants, delay, and action slot.                           |
-| `UiProtectedEmail`   | Builds an email address only after mount; split user/domain/TLD, subject, placeholder.                              |
-| `UiRelativeTime`     | Accessible live relative date with locale override, short/long style, and dynamic tag.                              |
-| `UiScheduledContent` | Date-window content with timezone, preview, interval, and daily/yearly repeat; active/upcoming slots.               |
-| `UiScrollToTop`      | Global button shown after 600 px; also resets registered snap containers.                                           |
-| `UiSegmentedControl` | Single/multiple `v-model`, horizontal/vertical/full layout, icons, sizes, colors, outline/soft style.               |
-| `UiSkeleton`         | Theme-aware loading placeholder; `as`, `animated`, `rounded`, `width`, `height`, and optional accessible label.     |
-| `UiSmartContrast`    | Full background image/gradient wrapper with fixed/auto contrast modes and configurable height.                      |
-| `UiSnapContainer`    | Vertical/horizontal controlled full-page snapping for `UiSnapSection` children.                                     |
-| `UiSnapSection`      | Snap panel with image/video/YouTube mobile variants, poster, overlay, lazy loading, and content class.              |
-| `UiSplitSection`     | Image/text split with side, container width, edge image, mobile reversal, and named text slot.                      |
-| `UiSteps`            | Responsive progress line, icon/number steps, or step cards with navigation, alignment, placement, and `v-model`.   |
-| `UiStickyWrapper`    | Sticky slot with pixel offset; prepares its parent positioning.                                                     |
-| `UiTable`            | Sortable table with nested keys and automatic virtualization above 100 rows; emits `sort`.                          |
-| `UiTabs`             | Accessible vertical/horizontal tabs with configurable side, width, alignment, slots, and animated panels.           |
-| `UiTextarea`         | `v-model` textarea with floating label, error state, clear/save controls and `save`/`clear` events.                 |
-| `UiTextColumn`       | Typography/spacing wrapper for prose slots.                                                                         |
+| Component            | Purpose and principal props/events                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `UiAccordion`        | `items[{ label, content, defaultOpen }]`, `multiple`, `faq`, `ui`; item/header/content scoped slots.                    |
+| `UiAlert`            | Info/success/warning/error alert with title, description, icon/avatar, size, close button, and action slot.             |
+| `UiAvatar`           | Image/icon/initials avatar; `size`, optional status `chipColor` and position.                                           |
+| `UiBadge`            | Solid/soft/outline badge; colors, sizes, pill/rounded, icons, avatar, slots.                                            |
+| `UiBanner`           | Closable full-width banner with color/variant, icon/avatar, title/default/actions slots.                                |
+| `UiButton`           | Button, anchor, or NuxtLink; color/variant/size, loading, disabled, block, rounded, square, leading/trailing icons.     |
+| `UiCard`             | Div/section/article or link card; bordered, rounded, padded, header/default/footer slots.                               |
+| `UiCheckbox`         | Checkbox group with `v-model`, options, legend, disabled state, and dividers.                                           |
+| `UiChip`             | Positioned or standalone indicator; text, color, size, inset, visibility, and ping animation.                           |
+| `UiCommandPalette`   | Global route/command search opened with `Ctrl/Cmd+K`.                                                                   |
+| `UiConsole`          | Responsive animated console with delayed/removable lines, highlighted segments, looping, slots, and controls.           |
+| `UiCursorCreative`   | Optional animated desktop cursor; disables itself for coarse pointers and reduced motion.                               |
+| `UiFeatureAccordion` | Feature list synchronized with an image; side/mobile ordering and optional links.                                       |
+| `UiFileUpload`       | Native/FormData-compatible file picker and dropzone; single/multiple files, validation, previews, removal, slots.       |
+| `UiGeoDependent`     | Show slot using country whitelist/blacklist and optional pre-resolved `geoData`.                                        |
+| `UiHeading`          | Semantic `h1`–`h6` with independent `xs`–`display` visual size and custom class.                                        |
+| `UiIcon`             | Server component fetching Iconify SVG by `prefix:name`; accepts `size` and class.                                       |
+| `UiIcon8`            | Server component fetching Icons8 PNG by icon, type, size, and color.                                                    |
+| `UiInput`            | Floating-label `v-model` input with type, icon position, placeholder, and disabled state.                               |
+| `UiLangLink`         | NuxtLink that adds/removes the current locale prefix.                                                                   |
+| `UiLanguageSelect`   | Responsive locale dropdown with full/short labels and class overrides.                                                  |
+| `UiLangVisible`      | Render by `only` or `except` locale lists.                                                                              |
+| `UiLightBox`         | Async image gallery/lightbox; string/object images, item/image style/class, pass-through lightbox props.                |
+| `UiLocalTime`        | Live time for an IANA timezone; optional label/date/seconds and 12/24-hour mode.                                        |
+| `UiModal`            | Teleported stacked modal with `v-model`, title, width, close prevention, body class; emits `close`.                     |
+| `UiPopup`            | Frequency-capped popup with id, copy/image, five visual variants, delay, and action slot.                               |
+| `UiProtectedEmail`   | Builds an email address only after mount; split user/domain/TLD, subject, placeholder.                                  |
+| `UiRelativeTime`     | Accessible live relative date with locale override, short/long style, and dynamic tag.                                  |
+| `UiScheduledContent` | Date-window content with timezone, preview, interval, and daily/yearly repeat; active/upcoming slots.                   |
+| `UiScrollToTop`      | Global button shown after 600 px; also resets registered snap containers.                                               |
+| `UiSegmentedControl` | Single/multiple `v-model`, horizontal/vertical/full layout, icons, sizes, colors, outline/soft style.                   |
+| `UiSiteSearch`       | Lazy worker-backed Fuse search over auto-discovered Nuxt routes and sitemaps, with locale and URL presets.              |
+| `UiSkeleton`         | Theme-aware loading placeholder; `as`, `animated`, `rounded`, `width`, `height`, and optional accessible label.         |
+| `UiSmartContrast`    | Full background image/gradient wrapper with fixed/auto contrast modes and configurable height.                          |
+| `UiSnapContainer`    | Vertical/horizontal controlled full-page snapping for `UiSnapSection` children.                                         |
+| `UiSnapSection`      | Snap panel with image/video/YouTube mobile variants, poster, overlay, lazy loading, and content class.                  |
+| `UiSplitSection`     | Image/text split with side, container width, edge image, mobile reversal, and named text slot.                          |
+| `UiSteps`            | Responsive progress line, icon/number steps, or step cards with navigation, alignment, placement, and `v-model`.        |
+| `UiStickyWrapper`    | Sticky slot with pixel offset; prepares its parent positioning.                                                         |
+| `UiTable`            | Sortable table with nested keys and automatic virtualization above 100 rows; emits `sort`.                              |
+| `UiTabs`             | Accessible vertical/horizontal tabs with configurable side, width, alignment, slots, and animated panels.               |
+| `UiTextarea`         | `v-model` textarea with floating label, error state, clear/save controls and `save`/`clear` events.                     |
+| `UiTextColumn`       | Typography/spacing wrapper for prose slots.                                                                             |
 | `UiTooltip`          | Hover/click tooltip with arbitrary trigger/content slots, mobile tap support, viewport-aware flip/shift, and `v-model`. |
-| `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                  |
-| `UiTruncateText`     | Responsive character limits with localized expand/collapse controls. Text-only slot.                                |
-| `UiViewportSpacer`   | Responsive `vh/dvh` or `vw/dvw` spacer.                                                                             |
+| `UiToggler`          | Accessible boolean `v-model` switch with label and disabled state.                                                      |
+| `UiTruncateText`     | Responsive character limits with localized expand/collapse controls. Text-only slot.                                    |
+| `UiViewportSpacer`   | Responsive `vh/dvh` or `vw/dvw` spacer.                                                                                 |
+
+#### UiSiteSearch
+
+Place `UiSiteSearch` once in a layout. It automatically collects static routes from the Nuxt router and URLs from `robots.txt`, `sitemap.xml`, and `sitemap_index.xml`; pages do not need to be listed in component props. Page HTML is fetched and parsed in a dedicated Web Worker. The worker, Fuse.js, crawling, and IndexedDB cache are initialized only when the palette is first opened.
+
+Search defaults to the active site locale. Locale is determined from the first URL segment; a URL without a supported locale prefix belongs to `defaultLocale`. Set `searchAllLocales` to search the complete multilingual index. Current-locale results are placed first, and translated variants with the same path after removing the locale prefix are collapsed into one result. The default shortcut is `Ctrl/Cmd+Shift+K`; `shortcutKey` and `shortcutShift` can change it. The trigger slot receives `open()`, `close()`, and `isOpen`; the component also exposes `open(query?, immediate?)`, `search(query?)`, `close()`, and `clearCache()`.
+
+URL presets work anywhere the component is mounted:
+
+- `?search=responsive&searchMode=search` opens the palette and searches immediately.
+- `?search=responsive&searchMode=prefill` opens it with a filled field and waits for Enter or editing.
+- `?search=responsive+worker&searchOperator=and` requires every search word; use `searchOperator=or` to match any word.
+
+The AND/OR selector is also available inside the palette. Its default is controlled by `operator` or `v-model:operator`. Rename URL parameters with `queryParam`, `modeParam`, and `operatorParam`. When the mode parameter is absent, `urlMode` chooses the behavior. `consumeUrl` removes the parameters after they have been handled.
+
+```vue
+<UiSiteSearch search-all-locales>
+ <template #trigger="{ open }">
+  <UiButton @click="open()">Search</UiButton>
+ </template>
+</UiSiteSearch>
+```
+
+Search strategies:
+
+- `client` is the default strategy and uses automatic page discovery plus the lazy Fuse worker described above.
+- `remote` sends the query to `endpoint`. If `strategy` is omitted, is not `remote`, or `endpoint` is empty, the component falls back to `client`.
+
+```vue
+<UiSiteSearch strategy="remote" endpoint="/api/site-search" />
+```
+
+Remote search sends a GET request. Existing query parameters in `endpoint` are preserved:
+
+```text
+GET /api/site-search?q=responsive%20worker&locale=ru&operator=and&limit=10&allLocales=false
+Accept: application/json
+```
+
+The endpoint must return an object with a `results` array. Only `path` and `title` are required. `score` uses Fuse semantics where a lower value is a better match. Highlight ranges are optional, zero-based, and inclusive; if omitted, the component highlights exact query words itself.
+
+The playground remote endpoint uses [JSONPlaceholder](https://jsonplaceholder.typicode.com) as its data source, performs AND/OR filtering server-side, and adapts the posts response to this contract.
+
+```json
+{
+ "total": 2,
+ "results": [
+  {
+   "id": "product-42-ru",
+   "path": "/ru/products/product-42",
+   "url": "https://example.com/ru/products/product-42",
+   "title": "Responsive Worker",
+   "description": "Короткое описание страницы",
+   "snippet": "Фрагмент текста, содержащий responsive worker",
+   "locale": "ru",
+   "score": 0.08,
+   "highlights": {
+    "title": [
+     [0, 9],
+     [11, 16]
+    ],
+    "snippet": [
+     [28, 37],
+     [39, 44]
+    ],
+    "path": []
+   }
+  }
+ ]
+}
+```
 
 #### UiSteps
 

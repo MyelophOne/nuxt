@@ -1,7 +1,7 @@
 import type { CookieScriptsConfig, CookieControlConfig } from '~/types/cookie';
 
 export interface PageFullscreenPreloaderConfig {
-	component: string;
+	component?: string;
 	props?: Record<string, unknown>;
 	transparent?: boolean;
 	background?: string;
@@ -11,6 +11,20 @@ export interface PageFullscreenPreloaderConfig {
 	class?: string;
 	contentClass?: string;
 	minimumDuration?: number;
+}
+
+export interface SiteSearchConfig {
+	strategy?: string;
+	endpoint?: string;
+	minQueryLength?: number;
+	limit?: number;
+	operator?: string;
+	queryParam?: string;
+	modeParam?: string;
+	operatorParam?: string;
+	urlMode?: string;
+	consumeUrl?: boolean;
+	enabled?: boolean;
 }
 
 declare module '@nuxt/schema' {
@@ -27,6 +41,7 @@ declare module '@nuxt/schema' {
 		frankfurterCurrencies: string[];
 		frankfurterBaseCurrency: string;
 		creativeCursor: boolean;
+		siteSearch: SiteSearchConfig;
 		pageFullscreenPreloader?: PageFullscreenPreloaderConfig;
 		tally?: {
 			domain?: string;

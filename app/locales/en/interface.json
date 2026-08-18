@@ -13,5 +13,21 @@
   "somethingWentWrong": "An unexpected error occurred on the server. We are already working on fixing this issue. Please try again later.",
   "updatePage": "Refresh Page",
   "noGoogleMapAddress": "No address or Place ID provided",
-  "nodata": "No data"
+  "nodata": "No data",
+  "siteSearch": {
+    "ariaLabel": "Search the site",
+    "placeholder": "Search page content…",
+    "clear": "Clear search",
+    "indexing": "Preparing site search…",
+    "indexingProgress": "Preparing search: {indexed} of {total} pages",
+    "indexed": "{count} pages indexed",
+    "remote": "Server search",
+    "searching": "Searching…",
+    "operatorLabel": "Match search words using AND or OR",
+    "results": "Search results",
+    "noResults": "Nothing found",
+    "typeMore": "Enter at least {count} characters",
+    "prefilled": "The query is ready. Press Enter or edit it to search.",
+    "error": "Search could not be prepared. Please try again."
+  }
 }

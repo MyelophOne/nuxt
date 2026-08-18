@@ -13,5 +13,21 @@
   "somethingWentWrong": "Wystąpił nieoczekiwany błąd na serwerze. Pracujemy już nad rozwiązaniem tego problemu. Spróbuj ponownie później.",
   "updatePage": "Odśwież stronę",
   "noGoogleMapAddress": "Nie podano adresu ani identyfikatora miejsca",
-  "nodata": "Brak danych"
+  "nodata": "Brak danych",
+  "siteSearch": {
+    "ariaLabel": "Wyszukiwanie w witrynie",
+    "placeholder": "Szukaj w treści stron…",
+    "clear": "Wyczyść wyszukiwanie",
+    "indexing": "Przygotowywanie wyszukiwania…",
+    "indexingProgress": "Przygotowywanie: {indexed} z {total} stron",
+    "indexed": "Zindeksowane strony: {count}",
+    "remote": "Wyszukiwanie na serwerze",
+    "searching": "Wyszukiwanie…",
+    "operatorLabel": "Łączenie wyszukiwanych słów za pomocą AND lub OR",
+    "results": "Wyniki wyszukiwania",
+    "noResults": "Nic nie znaleziono",
+    "typeMore": "Wpisz co najmniej {count} znaki(-ów)",
+    "prefilled": "Zapytanie jest gotowe. Naciśnij Enter lub zmień je, aby wyszukać.",
+    "error": "Nie udało się przygotować wyszukiwania. Spróbuj ponownie."
+  }
 }

@@ -17,6 +17,7 @@ const {
 		stores,
 		creativeCursor,
 		pageFullscreenPreloader,
+		siteSearch,
 	},
 } = useRuntimeConfig();
 
@@ -286,6 +287,10 @@ const CookieSettingsModal = defineAsyncComponent(
 	() => import("~/components/cookie/SettingsModal.vue"),
 );
 
+const SiteSearch = defineAsyncComponent(
+	() => import("~/components/ui/SiteSearch.vue"),
+);
+
 const BrowserWarning = defineAsyncComponent(
 	() => import("~/components/view/WarningOutdated.vue"),
 );
@@ -381,6 +386,19 @@ useCommand({
 			<BrowserWarning v-if="isLegacy" />
 			<UiCommandPalette />
 			<UiScrollToTop />
+			<SiteSearch
+				v-if="siteSearch.enabled"
+				:strategy="siteSearch.strategy"
+				:endpoint="siteSearch.endpoint"
+				:min-query-length="siteSearch.minQueryLength"
+				:limit="siteSearch.limit"
+				:operator="siteSearch.operator"
+				:query-param="siteSearch.queryParam"
+				:mode-param="siteSearch.modeParam"
+				:operator-param="siteSearch.operatorParam"
+				:url-mode="siteSearch.urlMode"
+				:consume-url="siteSearch.consumeUrl"
+			/>
 		</ClientOnly>
 	</Teleport>
 </template>

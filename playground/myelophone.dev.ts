@@ -18,6 +18,19 @@ export default defineNuxtConfig({
 			frankfurterCurrencies: [],
 			frankfurterBaseCurrency: 'USD',
 			creativeCursor: false,
+			siteSearch: {
+				strategy: 'client',
+				endpoint: '',
+				minQueryLength: 2,
+				limit: 10,
+				operator: 'and',
+				queryParam: 'search',
+				modeParam: 'searchMode',
+				operatorParam: 'searchOperator',
+				urlMode: 'search',
+				consumeUrl: false,
+				enabled: true,
+			},
 			pageFullscreenPreloader: {
 				component: 'DemoPreloaderLogo',
 				props: {
