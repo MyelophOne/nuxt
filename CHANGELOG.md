@@ -1,3 +1,10 @@
+## 📦 Release 0.14.0 (2026-08-18)
+### ✨ Features
+- add site search
+
+### 🐛 Bug Fixes
+- update dependencies
+
 ## 📦 Release 0.13.1 (2026-08-17)
 ### 🐛 Bug Fixes
 - add ipx cache- splitcss to false default
