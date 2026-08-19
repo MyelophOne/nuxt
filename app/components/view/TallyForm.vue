@@ -182,7 +182,7 @@ defineExpose({ open: openPopup });
 		:class="{ 'cursor-pointer': mode !== 'standard' }"
 		@click="mode !== 'standard' && openPopup()"
 	>
-		<ClientOnly v-if="mode === 'standard'">
+		<LazyClientOnly v-if="mode === 'standard'">
 			<div
 				class="relative w-full overflow-hidden"
 				:style="{
@@ -231,7 +231,7 @@ defineExpose({ open: openPopup });
 					>
 				</div>
 			</template>
-		</ClientOnly>
+		</LazyClientOnly>
 		<slot v-else />
 	</component>
 </template>

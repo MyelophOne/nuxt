@@ -5,7 +5,7 @@ const nuxtApp = useNuxtApp();
 
 nuxtApp.hook("app:mounted", () => {
 	console.info(
-		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright © 2026 Aliaksandr Ivanou.\nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
+		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright © 2026 Aliaksandr Ivanou. https://aleksivanov.me/\nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
 		"font-size:14px",
 	);
 });
@@ -334,7 +334,7 @@ useCommand({
 	<NuxtLayout>
 		<NuxtErrorBoundary>
 			<main id="main" tabindex="-1">
-				<NuxtPage />
+				<NuxtPage :keepalive="{ max: 10 }" />
 			</main>
 			<template #error="{ error, clearError }">
 				<SeoNoIndex :status-code="error?.statusCode" />
@@ -364,26 +364,13 @@ useCommand({
 		/>
 	</PageFullscreenPreloader>
 	<Teleport to="#teleports">
-		<ClientOnly>
+		<LazyClientOnly>
+			<BrowserWarning v-if="isLegacy" />
 			<PagePreloader />
 			<NuxtLoadingIndicator :height="1" color="#0078e7" :throttle="0" />
-			<Toaster
-				:position="toasterPosition"
-				:theme="currentTheme"
-				:key="`${currentTheme}-${toasterPosition}`"
-				richColors
-				:toastOptions="{
-					style: {
-						paddingTop: '12px',
-						paddingBottom: '15px',
-						fontSize: '0.9rem',
-					},
-				}"
-			/>
+			<UiCursorCreative v-if="creativeCursor" />
 			<CookieBanner @settings="openCookieSettings" />
 			<CookieSettingsModal />
-			<UiCursorCreative v-if="creativeCursor" />
-			<BrowserWarning v-if="isLegacy" />
 			<UiCommandPalette />
 			<UiScrollToTop />
 			<SiteSearch
@@ -399,7 +386,21 @@ useCommand({
 				:url-mode="siteSearch.urlMode"
 				:consume-url="siteSearch.consumeUrl"
 			/>
-		</ClientOnly>
+			<Toaster
+				:position="toasterPosition"
+				:theme="currentTheme"
+				:key="`${currentTheme}-${toasterPosition}`"
+				richColors
+				:toastOptions="{
+					style: {
+						paddingTop: '12px',
+						paddingBottom: '15px',
+						fontSize: '0.9rem',
+					},
+				}"
+			/>
+			<UiSonnerStyle />
+		</LazyClientOnly>
 	</Teleport>
 </template>
 

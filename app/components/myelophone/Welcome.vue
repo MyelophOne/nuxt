@@ -10,13 +10,13 @@
 				<div class="flex items-center gap-3">
 					<SafeNuxtImg
 						src="/myelophone_eng.png"
-						width="221px"
+						width="221"
 						class="block dark:hidden"
 						alt="MyelophOne"
 					/>
 					<SafeNuxtImg
 						src="/myelophone_eng_white.png"
-						width="221px"
+						width="221"
 						class="hidden dark:block"
 						alt="MyelophOne"
 					/><svg

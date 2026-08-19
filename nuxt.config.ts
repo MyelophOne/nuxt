@@ -26,7 +26,7 @@ const cookieScripts: CookieScriptsConfig = {
 
 const version = pkg.version;
 const dateActuality = '2026-08-20';
-const banner = `/* © 2025 Aliaksandr Ivanou. All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
+const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 
 const isSSG = process.env.NUXT_STATIC === 'true';
 const isPlayground = process.env.NUXT_PLAYGROUND === 'true';
@@ -104,6 +104,7 @@ export default defineNuxtConfig({
 			],
 			htmlAttrs: {
 				class: 'nojs',
+				dir: 'ltr',
 			},
 			script: [
 				{
@@ -386,6 +387,9 @@ export default defineNuxtConfig({
 		server: true,
 		client: process.env.NODE_ENV === 'development',
 	},
+	vueSonner: {
+		css: false,
+	},
 	hooks: {
 		'build:manifest': (manifest) => {
 			for (const key in manifest) {
@@ -532,6 +536,7 @@ export default defineNuxtConfig({
 			tally: {
 				domain: 'tally.so',
 			},
+			noindex: false,
 		},
 	},
 });

@@ -46,6 +46,7 @@ declare module '@nuxt/schema' {
 		tally?: {
 			domain?: string;
 		};
+		noindex?: boolean;
 	}
 }
 

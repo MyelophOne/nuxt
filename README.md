@@ -184,6 +184,7 @@ Nuxt runtime values can also be supplied with standard `NUXT_*` environment-vari
 | `public.creativeCursor`          | `false`          | Enable the custom cursor for fine pointers without reduced motion.                 |
 | `public.pageFullscreenPreloader` | `{}` / disabled  | Optional global full-screen route preloader component and overlay configuration.   |
 | `public.tally.domain`            | `tally.so`       | Default host used by `ViewTallyForm`.                                              |
+| `public.noindex`                 | `false`          | Hide whole site from search engines.                                               |
 
 ## Rendering and deployment
 
@@ -2653,6 +2654,8 @@ Set `heading-side="right"` to swap the desktop columns. Set `:sticky="false"` wh
 <MyelophoneWelcome />
 <NuxtIsland name="MyelophoneCopyright" />
 ```
+
+> **_NOTE:_** The `public.noindex` option (when is true) disables site search functionality.
 
 ### Full-screen page preloader
 
