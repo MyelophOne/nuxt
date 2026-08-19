@@ -1,3 +1,7 @@
+## 📦 Release 0.15.0 (2026-08-19)
+### ✨ Features
+- add optimizations
+
 ## 📦 Release 0.14.0 (2026-08-18)
 ### ✨ Features
 - add site search
