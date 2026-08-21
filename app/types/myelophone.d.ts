@@ -30,6 +30,7 @@ export interface SiteSearchConfig {
 declare module '@nuxt/schema' {
 	interface RuntimeConfig {}
 	interface PublicRuntimeConfig {
+		siteDomain?: string;
 		cookieScripts?: CookieScriptsConfig;
 		cookieControl?: CookieControlConfig;
 		bundleTranslations?: boolean;
@@ -47,6 +48,11 @@ declare module '@nuxt/schema' {
 			domain?: string;
 		};
 		noindex?: boolean;
+		blog?: {
+			blogEnabled?: boolean;
+			postsLayout?: string;
+		};
+		ssrStream?: boolean;
 	}
 }
 

@@ -1,16 +1,17 @@
 import pkg from './package.json';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import multi18n from './app/modules/multi18n/module';
 import i18nTreeShaker from './app/modules/i18n-shaker.mjs';
 import nuxtHtaccess from './app/modules/htaccess';
 import fullscreenPreloader from './app/modules/fullscreen-preloader/module';
+import defaultBlog from './app/modules/default-blog';
+import defaultSitemap from './app/modules/default-sitemap';
 
 import { cleanEmptyCssPlugin } from './vite/plugins/clean-css';
 import postcssViewportFallback from './vite/plugins/postcss-viewport-fallback';
 import noImportant from 'postcss-no-important';
 import postcssAddViewportUnits from './vite/plugins/postcss-add-viewportunits';
-
-import removeConsole from 'vite-plugin-remove-console';
 
 import tailwindcss from '@tailwindcss/vite';
 
@@ -25,11 +26,17 @@ const cookieScripts: CookieScriptsConfig = {
 };
 
 const version = pkg.version;
-const dateActuality = '2026-08-20';
+const dateActuality = '2026-08-22';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
+const defaultSeo = {
+	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
+	description:
+		'Welcome to our new amazing website where you can explore exciting content and features! Empowered by MyelophOne',
+};
 
 const isSSG = process.env.NUXT_STATIC === 'true';
 const isPlayground = process.env.NUXT_PLAYGROUND === 'true';
+const isSSRStreaming = process.env.NUXT_SSR_STREAMING === 'true';
 
 const moreModules: string[] = [];
 const { resolve } = createResolver(import.meta.url);
@@ -64,6 +71,8 @@ export default defineNuxtConfig({
 		multi18n,
 		nuxtHtaccess,
 		fullscreenPreloader,
+		defaultBlog,
+		defaultSitemap,
 	],
 	features: {
 		inlineStyles: false,
@@ -79,9 +88,8 @@ export default defineNuxtConfig({
 		componentIslands: true,
 		clientFallback: true,
 		typedPages: true,
-		payloadExtraction: isSSG ? false : true,
+		payloadExtraction: isSSG ? false : 'client',
 		nitroAutoImports: true,
-		ssrStreaming: isSSG ? false : false,
 		prefetchPreloadTags: true,
 		watcher: 'builder',
 		viteEnvironmentApi: false,
@@ -89,13 +97,7 @@ export default defineNuxtConfig({
 	devtools: { enabled: process.env.NODE_ENV === 'development' },
 	app: {
 		head: {
-			title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
 			meta: [
-				{
-					name: 'description',
-					content:
-						'Welcome to our new amazing website where you can explore exciting content and features! Empowered by MyelophOne',
-				},
 				{
 					name: 'viewport',
 					content:
@@ -114,6 +116,9 @@ export default defineNuxtConfig({
 			],
 		},
 	},
+	appConfig: {
+		defaultSeo,
+	},
 	ogImage: {
 		enabled: process.env.NODE_ENV !== 'test',
 		zeroRuntime: true,
@@ -121,6 +126,9 @@ export default defineNuxtConfig({
 	nitro: {
 		preset: isSSG ? 'static' : process.env.NITRO_PRESET || 'node-cluster',
 		compressPublicAssets: true,
+		externals: {
+			inline: ['h3', '@vue/shared'],
+		},
 		experimental: {
 			tasks: true,
 			database: true,
@@ -147,15 +155,22 @@ export default defineNuxtConfig({
 			license: {
 				fileName: '_nuxt/licenses.md',
 			},
+			rolldownOptions: {
+				treeshake: {
+					manualPureFunctions: [
+						'console.log',
+						'console.error',
+						'console.debug',
+						'console.trace',
+					],
+				},
+			},
 		},
 		css: {
 			devSourcemap: true,
 		},
 		plugins: [
 			tailwindcss(),
-			removeConsole({
-				includes: ['log', 'error', 'debug', 'trace'],
-			}),
 			{
 				name: 'suppress-plugin-timings-warning',
 				configResolved(config) {
@@ -382,6 +397,7 @@ export default defineNuxtConfig({
 	},
 	multi18n: {
 		locales: ['en'],
+		defaultLocale: 'en',
 	},
 	sourcemap: {
 		server: true,
@@ -391,6 +407,38 @@ export default defineNuxtConfig({
 		css: false,
 	},
 	hooks: {
+		'modules:before'() {
+			const nuxt = useNuxt();
+			nuxt.options.experimental.ssrStreaming =
+				!isSSG &&
+				(isSSRStreaming ||
+					nuxt.options.runtimeConfig.public.ssrStream === true);
+		},
+		'nitro:config'(nitroConfig) {
+			if (process.platform !== 'win32') {
+				return;
+			}
+
+			nitroConfig.rollupConfig ||= {};
+			const resolver = {
+				name: 'resolve-nuxt-cache-driver-file-url',
+				resolveId(source: string) {
+					if (
+						source.startsWith('file:') &&
+						source.endsWith('/runtime/utils/cache-driver.mjs')
+					) {
+						return fileURLToPath(source);
+					}
+				},
+			};
+			const plugins = nitroConfig.rollupConfig.plugins;
+
+			nitroConfig.rollupConfig.plugins = plugins
+				? Array.isArray(plugins)
+					? [...plugins, resolver]
+					: [plugins, resolver]
+				: [resolver];
+		},
 		'build:manifest': (manifest) => {
 			for (const key in manifest) {
 				const item = manifest[key];
@@ -507,6 +555,7 @@ export default defineNuxtConfig({
 	},
 	runtimeConfig: {
 		public: {
+			siteDomain: 'http://localhost:3000',
 			cookieScripts,
 			cookieControl: {
 				enabled: true,
@@ -537,6 +586,11 @@ export default defineNuxtConfig({
 				domain: 'tally.so',
 			},
 			noindex: false,
+			blog: {
+				blogEnabled: true,
+				postsLayout: 'default-blog',
+			},
+			ssrStream: false,
 		},
 	},
 });

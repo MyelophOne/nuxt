@@ -44,13 +44,15 @@ export const useCookieControl = () => {
 		}
 	};
 
-	watch(
-		() => store.cookiePreferences,
-		(newVal) => {
-			nuxtCookie.value = newVal;
-		},
-		{ deep: true },
-	);
+	if (import.meta.client) {
+		watch(
+			() => store.cookiePreferences,
+			(newVal) => {
+				nuxtCookie.value = newVal;
+			},
+			{ deep: true },
+		);
+	}
 
 	const acceptAll = () => {
 		const allAccepted = COOKIE_CATEGORIES.reduce((acc, cat) => {

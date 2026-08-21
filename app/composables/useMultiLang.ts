@@ -36,22 +36,15 @@ export function useMultiLang(namespaces: string | string[]) {
 
 	const localesAlias = import.meta.glob('#myelophone-nuxt-locales/**/*.json');
 	const localesPlayground = import.meta.glob(
-		'~/../playground/locales/**/*.json',
+		'~~/playground/locales/**/*.json',
 	);
 	const localesApp = import.meta.glob('~/locales/**/*.json');
 
-	const allLocalesShort = {
+	const allLocales = {
 		...localesAlias,
 		...localesApp,
+		...(!isProdDist ? localesPlayground : {}),
 	};
-
-	const allLocalesFull = {
-		...localesAlias,
-		...localesApp,
-		...localesPlayground,
-	};
-
-	const allLocales = isProdDist ? allLocalesShort : allLocalesFull;
 
 	const isPlainObject = (value: unknown): value is Record<string, any> =>
 		Object.prototype.toString.call(value) === '[object Object]';

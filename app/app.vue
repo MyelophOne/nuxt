@@ -5,7 +5,7 @@ const nuxtApp = useNuxtApp();
 
 nuxtApp.hook("app:mounted", () => {
 	console.info(
-		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright © 2026 Aliaksandr Ivanou. https://aleksivanov.me/\nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
+		"%cBuilt on top of @myelophone/nuxt, licensed under the PolyForm Noncommercial License 1.0.0. Copyright © 2026 Aliaksandr Ivanou. https://aleksivanov.me/ \nExperiment, customize and enjoy the speed and the performance! With ❤️ from @myeloph.one. Necessariam et Sufficientem.",
 		"font-size:14px",
 	);
 });
@@ -194,6 +194,18 @@ const breadcrumbsStore = useBreadcrumbs();
 const error = useError();
 
 const isNotFound = useState("is_404");
+const { defaultSeo } = useAppConfig();
+const has404 = computed(
+	() =>
+		isNotFound.value ||
+		error.value?.statusCode === 404 ||
+		error.value?.status === 404,
+);
+
+useSeoMeta({
+	title: () => (has404.value ? undefined : defaultSeo.title),
+	description: () => (has404.value ? undefined : defaultSeo.description),
+});
 
 useHead(
 	computed(() => {
@@ -364,7 +376,7 @@ useCommand({
 		/>
 	</PageFullscreenPreloader>
 	<Teleport to="#teleports">
-		<LazyClientOnly>
+		<ClientOnly>
 			<BrowserWarning v-if="isLegacy" />
 			<PagePreloader />
 			<NuxtLoadingIndicator :height="1" color="#0078e7" :throttle="0" />
@@ -400,7 +412,7 @@ useCommand({
 				}"
 			/>
 			<UiSonnerStyle />
-		</LazyClientOnly>
+		</ClientOnly>
 	</Teleport>
 </template>
 

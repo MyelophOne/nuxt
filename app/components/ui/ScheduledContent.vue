@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 type RepeatType = "daily" | "weekly" | "monthly" | "yearly";
+type ContentStatus = "active" | "upcoming" | "hidden";
 
 interface Props {
 	from?: string | Date;
@@ -28,8 +29,10 @@ const props = withDefaults(defineProps<Props>(), {
 	previewHours: 0,
 });
 
-const now = ref(new Date());
-let timer: any = null;
+const componentId = useId();
+const isMounted = ref(false);
+const now = ref(new Date(0));
+let timer: ReturnType<typeof setInterval> | null = null;
 
 const parseDate = (dateInput: string | Date | undefined): Date | null => {
 	if (!dateInput) return null;
@@ -85,10 +88,9 @@ const parseDate = (dateInput: string | Date | undefined): Date | null => {
 	return date;
 };
 
-const status = computed(() => {
+const resolveStatus = (current: Date): ContentStatus => {
 	const startDate = parseDate(props.from);
 	const endDate = parseDate(props.to);
-	const current = now.value;
 
 	if (!startDate) return "active";
 
@@ -122,13 +124,27 @@ const status = computed(() => {
 	}
 
 	return "hidden";
-});
+};
+
+const hydrationStatus = useState<ContentStatus>(
+	`scheduled-content:${componentId}`,
+	() => resolveStatus(new Date()),
+);
+
+const status = computed(() =>
+	isMounted.value ? resolveStatus(now.value) : hydrationStatus.value,
+);
 
 onMounted(() => {
+	now.value = new Date();
+	isMounted.value = true;
+
 	timer = setInterval(() => {
 		now.value = new Date();
 	}, props.checkInterval);
 });
 
-onBeforeUnmount(() => clearInterval(timer));
+onBeforeUnmount(() => {
+	if (timer) clearInterval(timer);
+});
 </script>

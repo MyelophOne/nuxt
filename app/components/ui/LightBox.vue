@@ -16,7 +16,7 @@
 			/>
 		</div>
 
-		<LazyClientOnly>
+		<ClientOnly>
 			<VueEasyLightbox
 				:visible="visibleRef"
 				:imgs="images"
@@ -49,7 +49,7 @@
 					</div>
 				</template>
 			</VueEasyLightbox>
-		</LazyClientOnly>
+		</ClientOnly>
 	</div>
 </template>
 

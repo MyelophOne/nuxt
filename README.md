@@ -82,7 +82,7 @@ export default defineNuxtConfig({
   apiBaseServer: "https://api.internal.example.com",
   public: {
    apiBase: "https://api.example.com",
-   siteUrl: "https://example.com",
+   siteDomain: "https://example.com",
    bundleTranslations: false,
    splitCss: false,
    stores: { cart: true, user: true },
@@ -158,33 +158,36 @@ The scripts use POSIX-style environment assignments and are expected to run in L
 | Variable                              | Effect                                                                                               |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `NUXT_STATIC=true`                    | Select the `static` Nitro preset, disable IPX, and copy the included `.htaccess` into static output. |
+| `NUXT_SSR_STREAMING=true`             | Enable experimental streaming SSR for non-static server builds; disabled by default.                 |
 | `NITRO_PRESET=<preset>`               | Override the SSR preset; defaults to `node-cluster`.                                                 |
 | `NUXT_PLAYGROUND=true`                | Include playground sources/locales while developing or building this repository.                     |
 | `PROD_DIST=true`                      | Exclude playground-only locale globs from `useMultiLang`.                                            |
 | `JSON_PLACEHOLDER_API_BASE_URL=<url>` | Replace the default `jsonPlaceholder` endpoint used by `nuxt-api-party`.                             |
-| `NODE_ENV=development                 | production                                                                                           | test` | Controls devtools, source maps, OG generation, and production-only processing. |
+| `NODE_ENV=<mode>`                     | Select `development`, `production`, or `test` behavior.                                              |
 
 Nuxt runtime values can also be supplied with standard `NUXT_*` environment-variable mapping, for example `NUXT_API_BASE_SERVER` and `NUXT_PUBLIC_API_BASE`.
 
 ### Runtime configuration
 
-| Key                              | Default          | Purpose                                                                            |
-| -------------------------------- | ---------------- | ---------------------------------------------------------------------------------- |
-| `apiBaseServer`                  | unset            | Private server-side base URL used by `useApi`.                                     |
-| `public.apiBase`                 | unset            | Public API base fallback used by `useApi` on the server.                           |
-| `public.siteUrl`                 | unset            | Absolute production origin for hreflang and breadcrumb JSON-LD during SSR.         |
-| `public.cookieControl.enabled`   | `true`           | Enables the consent banner and preferences flow.                                   |
-| `public.cookieScripts`           | empty categories | Consent-aware integrations and legal notices.                                      |
-| `public.bundleTranslations`      | `true`           | Bundle locale data together; `false` enables per-locale chunk grouping.            |
-| `public.splitCss`                | `false`          | Controls Vite CSS code splitting.                                                  |
-| `public.stores.cart`             | `false`          | Initialize the cart store, exchange rates, persistence, and tab sync.              |
-| `public.stores.user`             | `false`          | Initialize the user store, session extension, persistence, and tab sync.           |
-| `public.frankfurterCurrencies`   | `[]`             | Default quote currencies for `/api/exchange-rates`. Empty means provider defaults. |
-| `public.frankfurterBaseCurrency` | `USD`            | Base currency for the exchange-rate endpoint.                                      |
-| `public.creativeCursor`          | `false`          | Enable the custom cursor for fine pointers without reduced motion.                 |
-| `public.pageFullscreenPreloader` | `{}` / disabled  | Optional global full-screen route preloader component and overlay configuration.   |
-| `public.tally.domain`            | `tally.so`       | Default host used by `ViewTallyForm`.                                              |
-| `public.noindex`                 | `false`          | Hide whole site from search engines.                                               |
+| Key                              | Default                 | Purpose                                                                            |
+| -------------------------------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| `apiBaseServer`                  | unset                   | Private server-side base URL used by `useApi`.                                     |
+| `public.apiBase`                 | unset                   | Public API base fallback used by `useApi` on the server.                           |
+| `public.siteDomain`              | `http://localhost:3000` | Absolute production origin for SEO URLs and `/sitemap.xml`.                        |
+| `public.blog.blogEnabled`        | `true`                  | Enables Markdown post routes, prerendering, and sitemap entries.                   |
+| `public.blog.postsLayout`        | `default`               | Nuxt layout used by Markdown post pages.                                           |
+| `public.cookieControl.enabled`   | `true`                  | Enables the consent banner and preferences flow.                                   |
+| `public.cookieScripts`           | empty categories        | Consent-aware integrations and legal notices.                                      |
+| `public.bundleTranslations`      | `true`                  | Bundle locale data together; `false` enables per-locale chunk grouping.            |
+| `public.splitCss`                | `false`                 | Controls Vite CSS code splitting.                                                  |
+| `public.stores.cart`             | `false`                 | Initialize the cart store, exchange rates, persistence, and tab sync.              |
+| `public.stores.user`             | `false`                 | Initialize the user store, session extension, persistence, and tab sync.           |
+| `public.frankfurterCurrencies`   | `[]`                    | Default quote currencies for `/api/exchange-rates`. Empty means provider defaults. |
+| `public.frankfurterBaseCurrency` | `USD`                   | Base currency for the exchange-rate endpoint.                                      |
+| `public.creativeCursor`          | `false`                 | Enable the custom cursor for fine pointers without reduced motion.                 |
+| `public.pageFullscreenPreloader` | `{}` / disabled         | Optional global full-screen route preloader component and overlay configuration.   |
+| `public.tally.domain`            | `tally.so`              | Default host used by `ViewTallyForm`.                                              |
+| `public.noindex`                 | `false`                 | Hide whole site from search engines.                                               |
 
 ## Rendering and deployment
 
@@ -218,6 +221,111 @@ NITRO_PRESET=node-server yarn build
 
 `NUXT_STATIC=true` takes precedence over `NITRO_PRESET` and selects the static preset instead of a Node server build.
 
+### Streaming SSR
+
+The layer can use Nuxt's experimental streaming renderer in non-static builds. Enable it with the environment variable:
+
+```bash
+NUXT_SSR_STREAMING=true yarn build
+yarn server
+```
+
+On native PowerShell:
+
+```powershell
+$env:NUXT_SSR_STREAMING = "true"
+yarn build
+yarn server
+```
+
+Streaming SSR is disabled by default. The framework maps `NUXT_SSR_STREAMING=true` to `experimental.ssrStreaming`; when the variable is absent or has any other value, the option remains `false`. Static generation always keeps streaming disabled because prerendered routes are emitted as complete HTML files.
+
+With streaming enabled, Nuxt sends the document shell first and streams the rendered route body afterwards. Server-rendered data is still part of the final HTML response; streaming changes when chunks are sent, not whether the route content is rendered on the server. Bots, prerendered routes, SPA routes, redirects, and routes with incompatible cache rules can automatically use buffered rendering.
+
+#### Server data that must be present in page source
+
+Await `useFetch` or `useAsyncData` during setup. Nuxt renders the resolved value into the HTML and serializes it in the hydration payload, so the browser does not repeat the initial request:
+
+```vue
+<script setup lang="ts">
+interface Post {
+ id: number;
+ title: string;
+ body: string;
+}
+
+const { data: posts, error } = await useFetch<Post[]>(
+ "https://jsonplaceholder.typicode.com/posts",
+ {
+  key: "posts-stream",
+  query: { _limit: 6 },
+  server: true,
+  default: () => [],
+ },
+);
+</script>
+
+<template>
+ <p v-if="error">Could not load posts.</p>
+ <article v-for="post in posts" v-else :key="post.id">
+  <h2>{{ post.title }}</h2>
+  <p>{{ post.body }}</p>
+ </article>
+</template>
+```
+
+Do not move SEO or no-JavaScript content into `onMounted`, and do not wrap it in `ClientOnly`: neither approach can place the fetched result in the server HTML. Prefer `useFetch`/`useAsyncData` over a bare universal `$fetch`, because the Nuxt composables transfer the resolved value through the payload and avoid a duplicate hydration request.
+
+#### Deliberately client-only or heavy data
+
+Use a lazy client component when its code and data are intentionally excluded from SSR. A `.client.vue` suffix prevents server rendering, `Lazy` keeps the component in a separate async chunk, and `server: false` documents that the request must run in the browser:
+
+```vue
+<template>
+ <ClientOnly>
+  <LazyExamplesHeavyPosts v-if="showHeavyComponent" />
+  <template #fallback>Posts are not part of the server HTML.</template>
+ </ClientOnly>
+</template>
+```
+
+```vue
+<!-- components/examples/HeavyPosts.client.vue -->
+<script setup lang="ts">
+const { data: posts, status } = useFetch(
+ "https://jsonplaceholder.typicode.com/posts",
+ {
+  key: "posts-client",
+  query: { _limit: 6 },
+  server: false,
+  lazy: true,
+ },
+);
+</script>
+```
+
+In this pattern the request starts only after the application renders the lazy client component, and the returned posts are therefore absent from View Source. Combine the component with an explicit user action, visibility condition, or another application-specific trigger when its download should be deferred further.
+
+#### Streaming compatibility requirements
+
+- The server and the hydrating client must initially select the same elements, attributes, IDs, and text. Do not derive initial markup independently from `Date.now()`, `new Date()`, `Math.random()`, browser timezone, viewport size, or browser-only storage.
+- Use `useState`, `useFetch`, or `useAsyncData` to serialize request-specific SSR state. Use Vue's `useId()` for stable component IDs. Browser APIs belong in `onMounted` or `.client.vue` components.
+- HTTP status, redirects, response headers, and cookie writes must be decided before the first response chunk is committed. If the result of an awaited route/component query determines those values, use buffered SSR for that route:
+
+```ts
+export default defineNuxtConfig({
+ routeRules: {
+  "/account/**": { streaming: false },
+  "/products/**": { streaming: false }, // dynamic 404/redirect after lookup
+ },
+});
+```
+
+- Keep above-the-fold paint-critical styles in global CSS. Deeply nested async components with their own scoped styles can briefly render before their late stylesheet chunk arrives.
+- Test a production `build` + `server`, not only `nuxt dev`. Verify the response status and headers, inspect View Source after the stream completes, and check the browser console for hydration warnings.
+
+`UiScheduledContent` follows these rules. It computes the initial active/upcoming/hidden branch on the server, stores that exact branch in the Nuxt payload with an instance-specific `useId()` key, and keeps using it until mount. The live browser clock starts only after hydration, preventing streamed HTML from selecting a different slot because of timing or server/browser timezone differences.
+
 ### Static generation
 
 ```bash
@@ -236,6 +344,61 @@ Health checks are available at:
 
 - `GET /healthz` → `{ "status": "ok" }`;
 - `GET /api/healthz` → `ok`.
+
+## Markdown blog posts
+
+The layer includes an optional server-rendered Markdown blog. Add application posts to the root `content/` directory. The layer can provide default posts from `app/content/`; an application post with the same relative path overrides the layer post.
+
+### Create a post
+
+The file path determines the URL recursively:
+
+| File                           | URL                       |
+| ------------------------------ | ------------------------- |
+| `content/hello-world.md`       | `/post/hello-world`       |
+| `content/guides/deployment.md` | `/post/guides/deployment` |
+
+For example:
+
+```md
+---
+title: "Hello world"
+description: "A short description used by search engines and social previews."
+image: "/images/posts/hello-world.jpg"
+---
+
+# Hello world
+
+This is a **Markdown** post.
+```
+
+`title`, `description`, and `image` are optional string frontmatter fields. They populate the page title, meta description, and Open Graph image. Raw HTML in Markdown is disabled; plain URLs are linkified and typographic substitutions are enabled.
+
+Posts are rendered on the server. The resulting post fragment is safely minified before it is inserted into the page source: structural whitespace is removed while significant inline whitespace and the contents of `<pre>` blocks are preserved.
+
+Adding, removing, or renaming a post requires a rebuild. During a build, post files are discovered once, nested directories are scanned recursively, and the result is reused by prerender and sitemap generation. Markdown modules are loaded lazily and each parsed post is cached for the lifetime of the server process.
+
+### Configure the blog
+
+```ts
+export default defineNuxtConfig({
+ runtimeConfig: {
+  public: {
+   siteDomain: "https://example.com",
+   blog: {
+    blogEnabled: true,
+    postsLayout: "default",
+   },
+  },
+ },
+});
+```
+
+- `blogEnabled: false` removes the catch-all post page and excludes posts from prerendering and the sitemap. Set it before building because changing it after deployment cannot recreate a route omitted from the build.
+- `postsLayout` selects the Nuxt layout used for every post.
+- `siteDomain` supplies the absolute sitemap origin. When it is not configured, the sitemap uses the current request origin.
+
+Every discovered post is added to `/sitemap.xml` and the Nitro prerender route list. A missing post returns a real HTTP 404 response. In a regular production build, the initial payload is embedded in the HTML while extracted `_payload.json` files remain available for client navigation without an unused preload. `NUXT_STATIC=true` disables payload extraction and prerenders the post pages as static HTML.
 
 ## Styling and themes
 
@@ -759,7 +922,7 @@ const selectPolish = () => settings.setLocale("pl");
 
 ### i18n and SEO
 
-For localized pages, the application shell updates `<html lang>`, creates alternate `hreflang` links and an `x-default` link, and keeps localized breadcrumb paths and labels in sync. Set `runtimeConfig.public.siteUrl` to the canonical production origin so SSR can produce absolute URLs.
+For localized pages, the application shell updates `<html lang>`, creates alternate `hreflang` links and an `x-default` link, and keeps localized breadcrumb paths and labels in sync. Set `runtimeConfig.public.siteDomain` to the canonical production origin so SSR can produce absolute URLs.
 
 ## SEO and URL behavior
 
@@ -801,7 +964,7 @@ Other built-in SEO behavior:
 </SeoContentNoIndex>
 ```
 
-Set `public.siteUrl` in production. Without it, server-rendered absolute alternate and breadcrumb URLs do not have a reliable origin.
+Set `public.siteDomain` in production. Without it, server-rendered absolute alternate and breadcrumb URLs do not have a reliable origin.
 
 ### Profile, organization, and brand JSON-LD
 
@@ -2743,7 +2906,8 @@ await refreshing();
 - In-process rate limit of 150 tokens per five minutes.
 - Console log/error/debug/trace removal from production bundles.
 - Source maps on the server and development-only client source maps.
-- Restore-state, view transitions, component islands, typed pages, early hints, and payload extraction for SSR.
+- Restore-state, view transitions, component islands, typed pages, early hints, an inline initial SSR payload, and extracted payloads for client navigation.
+- Optional server-rendered Markdown posts with nested routes, safe HTML minification, SEO frontmatter, prerendering, and sitemap integration.
 - Accessibility shell: skip link, route announcer, reduced-motion handling, modal keyboard behavior, and semantic time output.
 
 Review the security and performance defaults against each application's threat model. In particular, CORS currently permits all origins, CSRF and SRI are disabled, inline styles are allowed by CSP, and the rate-limit store is process-local.
@@ -2756,14 +2920,16 @@ app/
 ├── components/        UI, grid, view, ready-page, consent, cookie, safe and SEO components
 ├── composables/       API, i18n, ready-page, storage, device, consent and UI state helpers
 ├── constants/         Layout maps and third-party cookie-script presets
+├── content/           Default Markdown posts supplied by the layer
 ├── locales/           Built-in en/pl/ru namespaces
 ├── middleware/        Localized and canonical URL behavior
-├── modules/           multi18n, i18n tree shaking and static .htaccess
+├── modules/           Blog, sitemap, multi18n, i18n tree shaking and static .htaccess
 ├── plugins/           Theme/locale/URL/reveal/version/restore integrations
 ├── server/            Nitro routes, middleware and render plugins
 ├── stores/            Settings, commands, device, optional user and cart stores
 ├── types/             Runtime config and cookie contracts
-└── utils/             Sorting, transliteration, async refresh and YouTube helpers
+└── utils/             Blog rendering, sorting, transliteration, async refresh and YouTube helpers
+content/               Application Markdown posts; overrides matching layer posts
 playground/            Nuxt-recommended test app for framework development
 public/                Logos, favicon and browser assets
 tests/                 Playwright smoke tests

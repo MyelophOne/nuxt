@@ -218,7 +218,8 @@ const discoverUrls = async (options: SiteSearchWorkerOptions) => {
 	} catch {}
 
 	sitemapUrls.add(new URL('sitemap.xml', baseUrl).href);
-	sitemapUrls.add(new URL('sitemap_index.xml', baseUrl).href);
+	// TODO: add sitemap_index with multiple sitemaps
+	// sitemapUrls.add(new URL('sitemap_index.xml', baseUrl).href);
 
 	const crawlSitemap = async (
 		sitemapUrl: string,
