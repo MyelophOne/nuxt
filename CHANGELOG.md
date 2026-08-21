@@ -1,3 +1,7 @@
+## 📦 Release 0.16.0 (2026-08-21)
+### ✨ Features
+- add ssr stream and post content
+
 ## 📦 Release 0.15.0 (2026-08-19)
 ### ✨ Features
 - add optimizations
