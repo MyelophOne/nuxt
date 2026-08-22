@@ -5,7 +5,7 @@ interface BreadcrumbItem {
 
 export const useBreadcrumbs = () => {
 	const route = useRoute();
-	const config = useRuntimeConfig();
+	const config = useMyelophoneConfig();
 	const { t } = useMultiLang(['common', 'menu']);
 
 	const breadcrumbs = useState<BreadcrumbItem[]>(
@@ -13,8 +13,8 @@ export const useBreadcrumbs = () => {
 		() => [],
 	);
 
-	const supportedLocales = (config.public.multi18n?.locales ?? []).map(
-		(l: string) => l.toLowerCase(),
+	const supportedLocales = (config.multi18n?.locales ?? []).map((l: string) =>
+		l.toLowerCase(),
 	);
 
 	const detectedLocale = computed(() => {

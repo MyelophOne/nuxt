@@ -94,12 +94,12 @@ const getProviderErrorMessage = (error: unknown): string => {
 };
 
 export default defineEventHandler(async (event) => {
-	const config = useRuntimeConfig();
+	const config = useRuntimeConfig(event).myelophone;
 
 	const requestUrl = getRequestURL(event);
 
 	const configuredBase = normalizeCurrency(
-		config.public.frankfurterBaseCurrency,
+		config.frankfurterBaseCurrency,
 		'USD',
 	);
 
@@ -120,7 +120,7 @@ export default defineEventHandler(async (event) => {
 	const queryCurrencies = parseQueryCurrencies(requestUrl.searchParams, base);
 
 	const configuredCurrencies = parseCurrencyList(
-		config.public.frankfurterCurrencies as CurrencyConfigValue,
+		config.frankfurterCurrencies as CurrencyConfigValue,
 		base,
 	);
 

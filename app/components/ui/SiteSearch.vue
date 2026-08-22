@@ -51,7 +51,7 @@
 							ref="searchInput"
 							v-model="query"
 							type="search"
-							class="h-14 min-w-0 flex-1 border-0 bg-transparent text-base text-(--ui-text) outline-none placeholder:text-(--ui-text)/35"
+							class="site-search-input h-14 min-w-0 flex-1 border-0 bg-transparent text-base text-(--ui-text) outline-none placeholder:text-(--ui-text)/35"
 							:placeholder="
 								placeholder ||
 								t('interface.siteSearch.placeholder')
@@ -165,6 +165,7 @@
 
 						<ul
 							v-else-if="results.length"
+							class="site-search-results"
 							role="listbox"
 							:aria-label="t('interface.siteSearch.results')"
 						>
@@ -176,7 +177,7 @@
 							>
 								<NuxtLink
 									:to="resultTarget(result)"
-									class="group block w-full rounded-lg px-3 py-3 text-left transition-colors"
+									class="group block min-h-28 w-full rounded-lg px-3 py-3 text-left transition-colors"
 									:class="
 										selectedIndex === index
 											? 'bg-(--ui-text)/10'
@@ -457,6 +458,9 @@ const indexingLabel = computed(() =>
 			})
 		: t("interface.siteSearch.indexing"),
 );
+const requestedResultLimit = computed(() =>
+	Math.min(Math.max(1, props.limit), 10),
+);
 
 function documentLocale() {
 	return import.meta.client
@@ -604,7 +608,7 @@ function onWorkerMessage(event: MessageEvent<SiteSearchWorkerResponse>) {
 		message.type === "results" &&
 		message.requestId === latestSearchRequestId
 	) {
-		results.value = message.results;
+		results.value = message.results.slice(0, requestedResultLimit.value);
 		selectedIndex.value = 0;
 		searching.value = false;
 		return;
@@ -640,7 +644,7 @@ function runSearch() {
 		locale: activeLocale.value,
 		allLocales: props.searchAllLocales,
 		operator: activeOperator.value,
-		limit: props.limit,
+		limit: requestedResultLimit.value,
 	});
 }
 
@@ -710,7 +714,10 @@ async function runRemoteSearch(searchRequestId: number, searchQuery: string) {
 		requestUrl.searchParams.set("q", searchQuery);
 		requestUrl.searchParams.set("locale", activeLocale.value);
 		requestUrl.searchParams.set("operator", activeOperator.value);
-		requestUrl.searchParams.set("limit", String(props.limit));
+		requestUrl.searchParams.set(
+			"limit",
+			String(requestedResultLimit.value),
+		);
 		requestUrl.searchParams.set(
 			"allLocales",
 			String(props.searchAllLocales),
@@ -790,7 +797,7 @@ async function runRemoteSearch(searchRequestId: number, searchQuery: string) {
 				seenPages.add(key);
 				return true;
 			})
-			.slice(0, props.limit);
+			.slice(0, requestedResultLimit.value);
 		selectedIndex.value = 0;
 		searching.value = false;
 	} catch (error) {
@@ -1149,6 +1156,32 @@ defineExpose({ open, close, search, clearCache });
 </script>
 
 <style scoped>
+.site-search-input {
+	appearance: textfield;
+}
+
+.site-search-input::-webkit-search-cancel-button,
+.site-search-input::-webkit-search-decoration,
+.site-search-input::-webkit-search-results-button,
+.site-search-input::-webkit-search-results-decoration {
+	display: none;
+	appearance: none;
+}
+
+.site-search-input::-ms-clear,
+.site-search-input::-ms-reveal {
+	display: none;
+	width: 0;
+	height: 0;
+}
+
+.site-search-results {
+	max-height: min(calc(7rem * 3), calc(100dvh - 12rem));
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-gutter: stable;
+}
+
 .site-search-mark {
 	border-radius: 0.2em;
 	padding-inline: 0.08em;

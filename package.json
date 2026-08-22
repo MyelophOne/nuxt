@@ -78,6 +78,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "unstorage": "^1.17.5",
+    "valibot": "^1.4.2",
     "vite": "^8.2.2",
     "vue": "^3.5.41",
     "vue-easy-lightbox": "^1.19.0",

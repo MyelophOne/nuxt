@@ -2,9 +2,9 @@
 import urls from '#default-sitemap/urls.mjs';
 
 export default defineEventHandler((event) => {
-	const config = useRuntimeConfig();
+	const config = useRuntimeConfig(event).myelophone;
 
-	const configuredSiteUrl = String(config.public.siteDomain ?? '').replace(
+	const configuredSiteUrl = String(config.siteDomain ?? '').replace(
 		/\/$/,
 		'',
 	);

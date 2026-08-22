@@ -31,18 +31,11 @@ export const useSettingsStore = defineStore('settings', {
 	}),
 	actions: {
 		init() {
-			const nuxtApp = useNuxtApp();
-
-			const config = nuxtApp.$config.public?.multi18n as
-				| {
-						defaultLocale: string;
-						locales: string[];
-				  }
-				| undefined;
+			const config = useMyelophoneConfig().multi18n;
 
 			if (!config) {
 				console.warn(
-					'[multi18n] No runtime config found for public.multi18n',
+					'[multi18n] No myelophone config found for multi18n',
 				);
 				return;
 			}

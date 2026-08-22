@@ -1617,6 +1617,7 @@ __metadata:
     tailwindcss: "npm:^4.3.3"
     typescript: "npm:^6.0.3"
     unstorage: "npm:^1.17.5"
+    valibot: "npm:^1.4.2"
     vite: "npm:^8.2.2"
     vue: "npm:^3.5.41"
     vue-easy-lightbox: "npm:^1.19.0"

@@ -26,11 +26,6 @@ export default defineNuxtModule<MyelophoneNuxtModuleOptions>({
 		const localOptions = { ...options };
 		const { resolve } = createResolver(import.meta.url);
 
-		nuxt.options.runtimeConfig.public.multi18n = {
-			defaultLocale: options.defaultLocale,
-			locales: [...new Set(options.locales)],
-		};
-
 		nuxt.hooks.hook('pages:extend', (pages) => {
 			const { locales, defaultLocale } = localOptions;
 			const otherLocales = locales.filter((l) => l !== defaultLocale);

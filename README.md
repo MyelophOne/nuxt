@@ -82,14 +82,16 @@ export default defineNuxtConfig({
   apiBaseServer: "https://api.internal.example.com",
   public: {
    apiBase: "https://api.example.com",
-   siteDomain: "https://example.com",
-   bundleTranslations: false,
-   splitCss: false,
-   stores: { cart: true, user: true },
-   frankfurterBaseCurrency: "EUR",
-   frankfurterCurrencies: ["USD", "PLN", "GBP"],
-   creativeCursor: false,
   },
+ },
+ myelophone: {
+  siteDomain: "https://example.com",
+  bundleTranslations: false,
+  splitCss: false,
+  stores: { cart: true, user: true },
+  frankfurterBaseCurrency: "EUR",
+  frankfurterCurrencies: ["USD", "PLN", "GBP"],
+  creativeCursor: false,
  },
 });
 ```
@@ -169,25 +171,34 @@ Nuxt runtime values can also be supplied with standard `NUXT_*` environment-vari
 
 ### Runtime configuration
 
-| Key                              | Default                 | Purpose                                                                            |
-| -------------------------------- | ----------------------- | ---------------------------------------------------------------------------------- |
-| `apiBaseServer`                  | unset                   | Private server-side base URL used by `useApi`.                                     |
-| `public.apiBase`                 | unset                   | Public API base fallback used by `useApi` on the server.                           |
-| `public.siteDomain`              | `http://localhost:3000` | Absolute production origin for SEO URLs and `/sitemap.xml`.                        |
-| `public.blog.blogEnabled`        | `true`                  | Enables Markdown post routes, prerendering, and sitemap entries.                   |
-| `public.blog.postsLayout`        | `default`               | Nuxt layout used by Markdown post pages.                                           |
-| `public.cookieControl.enabled`   | `true`                  | Enables the consent banner and preferences flow.                                   |
-| `public.cookieScripts`           | empty categories        | Consent-aware integrations and legal notices.                                      |
-| `public.bundleTranslations`      | `true`                  | Bundle locale data together; `false` enables per-locale chunk grouping.            |
-| `public.splitCss`                | `false`                 | Controls Vite CSS code splitting.                                                  |
-| `public.stores.cart`             | `false`                 | Initialize the cart store, exchange rates, persistence, and tab sync.              |
-| `public.stores.user`             | `false`                 | Initialize the user store, session extension, persistence, and tab sync.           |
-| `public.frankfurterCurrencies`   | `[]`                    | Default quote currencies for `/api/exchange-rates`. Empty means provider defaults. |
-| `public.frankfurterBaseCurrency` | `USD`                   | Base currency for the exchange-rate endpoint.                                      |
-| `public.creativeCursor`          | `false`                 | Enable the custom cursor for fine pointers without reduced motion.                 |
-| `public.pageFullscreenPreloader` | `{}` / disabled         | Optional global full-screen route preloader component and overlay configuration.   |
-| `public.tally.domain`            | `tally.so`              | Default host used by `ViewTallyForm`.                                              |
-| `public.noindex`                 | `false`                 | Hide whole site from search engines.                                               |
+| Key              | Default | Purpose                                                  |
+| ---------------- | ------- | -------------------------------------------------------- |
+| `apiBaseServer`  | unset   | Private server-side base URL used by `useApi`.           |
+| `public.apiBase` | unset   | Public API base fallback used by `useApi` on the server. |
+
+### Myelophone build-time configuration
+
+Project-level framework options belong in the top-level `myelophone` section of `nuxt.config.ts` or `playground/myelophone.ts`. These values are resolved during Nuxt setup/build instead of being serialized through `runtimeConfig.public` in the HTML payload. The layer supplies defaults, and local Nuxt config files can override them through normal Nuxt config merging.
+
+| Key                                  | Default                 | Purpose                                                                            |
+| ------------------------------------ | ----------------------- | ---------------------------------------------------------------------------------- |
+| `myelophone.siteDomain`              | `http://localhost:3000` | Absolute production origin for SEO URLs and `/sitemap.xml`.                        |
+| `myelophone.blog.blogEnabled`        | `true`                  | Enables Markdown post routes, prerendering, and sitemap entries.                   |
+| `myelophone.blog.postsLayout`        | `default-blog`          | Nuxt layout used by Markdown post pages.                                           |
+| `myelophone.cookieControl.enabled`   | `true`                  | Enables the consent banner and preferences flow.                                   |
+| `myelophone.cookieScripts`           | empty categories        | Consent-aware integrations and legal notices.                                      |
+| `myelophone.bundleTranslations`      | `true`                  | Bundle locale data together; `false` enables per-locale chunk grouping.            |
+| `myelophone.splitCss`                | `false`                 | Controls Vite CSS code splitting.                                                  |
+| `myelophone.stores.cart`             | `false`                 | Initialize the cart store, exchange rates, persistence, and tab sync.              |
+| `myelophone.stores.user`             | `false`                 | Initialize the user store, session extension, persistence, and tab sync.           |
+| `myelophone.frankfurterCurrencies`   | `[]`                    | Default quote currencies for `/api/exchange-rates`. Empty means provider defaults. |
+| `myelophone.frankfurterBaseCurrency` | `USD`                   | Base currency for the exchange-rate endpoint.                                      |
+| `myelophone.creativeCursor`          | `false`                 | Enable the custom cursor for fine pointers without reduced motion.                 |
+| `myelophone.siteSearch`              | built-in defaults       | Site-search strategy, query params, limits, and enablement.                        |
+| `myelophone.pageFullscreenPreloader` | `{}` / disabled         | Optional global full-screen route preloader component and overlay configuration.   |
+| `myelophone.tally.domain`            | `tally.so`              | Default host used by `ViewTallyForm`.                                              |
+| `myelophone.noindex`                 | `false`                 | Hide whole site from search engines.                                               |
+| `myelophone.ssrStream`               | `false`                 | Enable experimental streaming SSR when not building static output.                 |
 
 ## Rendering and deployment
 
@@ -223,7 +234,17 @@ NITRO_PRESET=node-server yarn build
 
 ### Streaming SSR
 
-The layer can use Nuxt's experimental streaming renderer in non-static builds. Enable it with the environment variable:
+The layer can use Nuxt's experimental streaming renderer in non-static builds. Enable it in `myelophone.ts`:
+
+```ts
+export default defineNuxtConfig({
+ myelophone: {
+  ssrStream: true,
+ },
+});
+```
+
+The environment variable is also supported for CI or deployment-specific overrides:
 
 ```bash
 NUXT_SSR_STREAMING=true yarn build
@@ -238,7 +259,7 @@ yarn build
 yarn server
 ```
 
-Streaming SSR is disabled by default. The framework maps `NUXT_SSR_STREAMING=true` to `experimental.ssrStreaming`; when the variable is absent or has any other value, the option remains `false`. Static generation always keeps streaming disabled because prerendered routes are emitted as complete HTML files.
+Streaming SSR is disabled by default. The framework maps `myelophone.ssrStream: true` or `NUXT_SSR_STREAMING=true` to `experimental.ssrStreaming.enabled`. Static generation always keeps streaming disabled because prerendered routes are emitted as complete HTML files.
 
 With streaming enabled, Nuxt sends the document shell first and streams the rendered route body afterwards. Server-rendered data is still part of the final HTML response; streaming changes when chunks are sent, not whether the route content is rendered on the server. Bots, prerendered routes, SPA routes, redirects, and routes with incompatible cache rules can automatically use buffered rendering.
 
@@ -382,13 +403,11 @@ Adding, removing, or renaming a post requires a rebuild. During a build, post fi
 
 ```ts
 export default defineNuxtConfig({
- runtimeConfig: {
-  public: {
-   siteDomain: "https://example.com",
-   blog: {
-    blogEnabled: true,
-    postsLayout: "default",
-   },
+ myelophone: {
+  siteDomain: "https://example.com",
+  blog: {
+   blogEnabled: true,
+   postsLayout: "default-blog",
   },
  },
 });
@@ -830,7 +849,7 @@ tn("products.items", 12_500); // compact, locale-aware {count}
 
 Missing active-locale translations fall back to the default locale when that namespace is available, and unresolved values return the full translation key. Interpolated numbers use locale-aware `Intl.NumberFormat` formatting.
 
-Namespaces are loaded lazily with `import.meta.glob`, cached in shared Nuxt state, loaded again when the active locale changes, and SSR-serialized for hydration. Set `public.bundleTranslations: false` to group translation assets into separate per-locale chunks; keep it `true` to use the normal bundle grouping.
+Namespaces are loaded lazily with `import.meta.glob`, cached in shared Nuxt state, loaded again when the active locale changes, and SSR-serialized for hydration. Set `myelophone.bundleTranslations: false` to group translation assets into separate per-locale chunks; keep it `true` to use the normal bundle grouping.
 
 ### Dynamic keys and tree shaking
 
@@ -922,7 +941,7 @@ const selectPolish = () => settings.setLocale("pl");
 
 ### i18n and SEO
 
-For localized pages, the application shell updates `<html lang>`, creates alternate `hreflang` links and an `x-default` link, and keeps localized breadcrumb paths and labels in sync. Set `runtimeConfig.public.siteDomain` to the canonical production origin so SSR can produce absolute URLs.
+For localized pages, the application shell updates `<html lang>`, creates alternate `hreflang` links and an `x-default` link, and keeps localized breadcrumb paths and labels in sync. Set `myelophone.siteDomain` to the canonical production origin so SSR can produce absolute URLs.
 
 ## SEO and URL behavior
 
@@ -964,7 +983,7 @@ Other built-in SEO behavior:
 </SeoContentNoIndex>
 ```
 
-Set `public.siteDomain` in production. Without it, server-rendered absolute alternate and breadcrumb URLs do not have a reliable origin.
+Set `myelophone.siteDomain` in production. Without it, server-rendered absolute alternate and breadcrumb URLs do not have a reliable origin.
 
 ### Profile, organization, and brand JSON-LD
 
@@ -1183,8 +1202,8 @@ const cookieScripts = mergeCookieScriptConfigs(
 );
 
 export default defineNuxtConfig({
- runtimeConfig: {
-  public: { cookieScripts },
+ myelophone: {
+  cookieScripts,
  },
 });
 ```
@@ -1206,26 +1225,28 @@ Umami supports `legalBasis: 'cookieless'`; in that mode it is listed as a legal 
 ### Define a custom integration
 
 ```ts
-runtimeConfig: {
-	public: {
-		cookieScripts: {
-			analytics: [{
-				id: 'acme-analytics',
-				name: { en: 'Acme Analytics', pl: 'Analityka Acme' },
-				nameKey: 'cookies.acmeAnalytics.name',
-				description: 'Anonymous traffic measurement',
-				descriptionKey: 'cookies.acmeAnalytics.description',
-				provider: 'Acme',
-				legalBasis: 'consent',
-				loadKey: 'acme-analytics',
-				src: 'https://cdn.example.com/analytics.js',
-				beforeLoad: 'window.acmeQueue = window.acmeQueue || [];',
-				onConsentChange: 'window.acmeConsent = context.categories;',
-				options: { scriptAttributes: { defer: true } },
-			}],
-		},
-	},
-}
+export default defineNuxtConfig({
+ myelophone: {
+  cookieScripts: {
+   analytics: [
+    {
+     id: "acme-analytics",
+     name: { en: "Acme Analytics", pl: "Analityka Acme" },
+     nameKey: "cookies.acmeAnalytics.name",
+     description: "Anonymous traffic measurement",
+     descriptionKey: "cookies.acmeAnalytics.description",
+     provider: "Acme",
+     legalBasis: "consent",
+     loadKey: "acme-analytics",
+     src: "https://cdn.example.com/analytics.js",
+     beforeLoad: "window.acmeQueue = window.acmeQueue || [];",
+     onConsentChange: "window.acmeConsent = context.categories;",
+     options: { scriptAttributes: { defer: true } },
+    },
+   ],
+  },
+ },
+});
 ```
 
 Add the referenced `nameKey` and `descriptionKey` to each locale's `cookies.json`. The loader deduplicates scripts by `loadKey`, runs one-time initializers, applies category-specific hooks, and exposes consent state to hook code as `context.categories` and `context.isAllowed(category)`.
@@ -1285,7 +1306,7 @@ Configure both `apiBaseServer` and `public.apiBase` for real deployments. The cu
 
 ## User store
 
-Enable it with `public.stores.user: true`. The store provides normalized profiles, roles/permissions, auth status, expiry checks, session extension, consent-aware persistence, and cross-tab synchronization.
+Enable it with `myelophone.stores.user: true`. The store provides normalized profiles, roles/permissions, auth status, expiry checks, session extension, consent-aware persistence, and cross-tab synchronization.
 
 ```ts
 const user = useUserStore();
@@ -1333,7 +1354,7 @@ The persisted profile/session is client-readable and must never be treated as au
 
 ## Cart, totals, coupons, and currencies
 
-Enable it with `public.stores.cart: true`. The cart supports mixed item currencies, quantity management, coupons, custom metadata, exchange rates, calculation strategies/hooks, consent-aware persistence, and cross-tab synchronization.
+Enable it with `myelophone.stores.cart: true`. The cart supports mixed item currencies, quantity management, coupons, custom metadata, exchange rates, calculation strategies/hooks, consent-aware persistence, and cross-tab synchronization.
 
 ```ts
 const cart = useCartStore();
@@ -1412,12 +1433,12 @@ Open tabs from the same origin stay consistent without polling or a page reload.
 
 The application shell synchronizes these fields automatically:
 
-| State              | Synchronized fields                                            | Availability                        |
-| ------------------ | -------------------------------------------------------------- | ----------------------------------- |
-| Theme              | `settings.theme` and the applied `data-theme`/theme class      | Always enabled                      |
-| Cookie preferences | `settings.cookiePreferences`, `settings.isCookieBannerVisible` | Always enabled                      |
-| Cart               | `items`, `coupon`, `meta`, `currency`                          | When `public.stores.cart` is `true` |
-| User               | `profile`, `session`, `status`, `error`, `lastAuthenticatedAt` | When `public.stores.user` is `true` |
+| State              | Synchronized fields                                            | Availability                            |
+| ------------------ | -------------------------------------------------------------- | --------------------------------------- |
+| Theme              | `settings.theme` and the applied `data-theme`/theme class      | Always enabled                          |
+| Cookie preferences | `settings.cookiePreferences`, `settings.isCookieBannerVisible` | Always enabled                          |
+| Cart               | `items`, `coupon`, `meta`, `currency`                          | When `myelophone.stores.cart` is `true` |
+| User               | `profile`, `session`, `status`, `error`, `lastAuthenticatedAt` | When `myelophone.stores.user` is `true` |
 
 For example, adding an item or applying a coupon in one tab updates the other open tabs. Changing the theme updates both the Pinia state and the rendered document theme. Logging in, refreshing a session, updating a profile, or logging out is reflected across tabs when the user store is enabled.
 
@@ -2818,7 +2839,7 @@ Set `heading-side="right"` to swap the desktop columns. Set `:sticky="false"` wh
 <NuxtIsland name="MyelophoneCopyright" />
 ```
 
-> **_NOTE:_** The `public.noindex` option (when is true) disables site search functionality.
+> **_NOTE:_** The `myelophone.noindex` option (when true) disables site search functionality.
 
 ### Full-screen page preloader
 
@@ -2828,18 +2849,16 @@ By default, no global full-screen preloader is enabled. To use one for route tra
 
 ```ts
 export default defineNuxtConfig({
- runtimeConfig: {
-  public: {
-   pageFullscreenPreloader: {
-    component: "SitePreloaderLogo",
-    props: {
-     label: "Acme Studio",
-    },
-    background: "#f7f7f7",
-    backgroundDark: "#121212",
-    minimumDuration: 250,
-    ariaLabel: "Loading Acme Studio",
+ myelophone: {
+  pageFullscreenPreloader: {
+   component: "SitePreloaderLogo",
+   props: {
+    label: "Acme Studio",
    },
+   background: "#f7f7f7",
+   backgroundDark: "#121212",
+   minimumDuration: 250,
+   ariaLabel: "Loading Acme Studio",
   },
  },
 });
@@ -2849,7 +2868,7 @@ Create the configured component inside the application's `components` directory.
 
 `PageFullscreenPreloaderConfiguredContent` is an internal generated wrapper used by the base app for that static import. Do not create or call it yourself; `pageFullscreenPreloader.component` is the only place where the site's own loader-content component is selected.
 
-`playground/myelophone.dev.ts` is only a configuration template and is never loaded by Nuxt directly. Copy it to `playground/myelophone.ts` when testing global configuration in this repository. If `myelophone.ts` does not exist, the internal configuration stays empty and no global full-screen overlay is mounted. The local `/demo` example does not require that file.
+`playground/myelophone.dev.ts` is only a configuration template and is never loaded by Nuxt directly. Copy it to `playground/myelophone.ts` when testing global configuration in this repository. If `myelophone.ts` does not exist, the default configuration keeps the global full-screen overlay disabled. The local `/demo` example does not require that file.
 
 Configuration fields:
 
@@ -2891,6 +2910,8 @@ await refreshing();
 ```
 
 `sortBy` supports comparable nested item keys at the type level; YouTube helpers accept IDs and common watch/embed/short URLs.
+
+To validate forms @myelophonenuxt uses Valibot.
 
 ## Built-in production behavior
 

@@ -38,8 +38,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const iframeId = `tally-${Math.random().toString(36).slice(2, 11)}`;
 
-const config = useRuntimeConfig();
-const rawDomain = props.domain || config.public.tally?.domain || "tally.so";
+const config = useMyelophoneConfig();
+const rawDomain = props.domain || config.tally?.domain || "tally.so";
 const baseUrl = `https://${rawDomain}`;
 const scriptSrc = `${baseUrl}/widgets/embed.js`;
 

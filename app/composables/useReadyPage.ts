@@ -87,7 +87,7 @@ export function useReadyPage<T extends ReadySeoContent>(
 ): UseReadyPageResult<T> {
 	const fallbackLocale = (options.fallbackLocale || 'en').toLowerCase();
 	const settingsStore = useSettingsStore(useNuxtApp().$pinia);
-	const runtimeConfig = useRuntimeConfig();
+	const myelophoneConfig = useMyelophoneConfig();
 
 	const activeLocale = computed(() =>
 		(
@@ -98,7 +98,7 @@ export function useReadyPage<T extends ReadySeoContent>(
 	);
 
 	const configuredLocales = computed(() => {
-		const multi18n = runtimeConfig.public.multi18n as
+		const multi18n = myelophoneConfig.multi18n as
 			{ locales?: string[] } | undefined;
 		return multi18n?.locales || [];
 	});

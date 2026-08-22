@@ -4,6 +4,7 @@ import type {
 	CookieScriptDef,
 	CookieScriptsConfig,
 } from "~/types/cookie";
+import { useMyelophoneConfig } from "~/utils/myelophoneConfig";
 
 type PolicyCategory = CookieCategory | "notices";
 
@@ -19,10 +20,10 @@ const props = withDefaults(
 );
 
 const { t } = useMultiLang(["cookies"]);
-const runtimeConfig = useRuntimeConfig();
+const config = useMyelophoneConfig();
 
 const cookieScripts = computed(
-	() => (runtimeConfig.public.cookieScripts || {}) as CookieScriptsConfig,
+	() => (config.cookieScripts || {}) as CookieScriptsConfig,
 );
 
 const categories = computed<

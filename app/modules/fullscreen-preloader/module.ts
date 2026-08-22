@@ -11,8 +11,8 @@ export default defineNuxtModule({
 		name: '@myelophone/nuxt-fullscreen-preloader',
 	},
 	setup(_options, nuxt) {
-		const configured = nuxt.options.runtimeConfig.public
-			.pageFullscreenPreloader as FullscreenPreloaderConfig | undefined;
+		const configured = nuxt.options.myelophone?.pageFullscreenPreloader as
+			FullscreenPreloaderConfig | undefined;
 
 		const componentName = configured?.component;
 

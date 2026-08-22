@@ -21,8 +21,7 @@ export default defineNuxtModule({
 		const pageUrls = new Set<string>();
 		const postUrls = new Set<string>();
 
-		const blogEnabled =
-			nuxt.options.runtimeConfig.public.blog?.blogEnabled ?? false;
+		const blogEnabled = nuxt.options.myelophone?.blog?.blogEnabled ?? true;
 
 		if (blogEnabled) {
 			const urls = await getBlogPostUrls(nuxt);

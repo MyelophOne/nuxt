@@ -8,7 +8,7 @@ import type {
 	SiteSearchWorkerOptions,
 	SiteSearchWorkerRequest,
 	SiteSearchWorkerResponse,
-} from '../types/site-search';
+} from '~/types/site-search';
 
 interface CachedIndex {
 	key: string;

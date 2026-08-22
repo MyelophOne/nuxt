@@ -1,8 +1,10 @@
 import { defineNuxtConfig, type NuxtConfig } from 'nuxt/config';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const myelophonePath = path.resolve(__dirname, 'myelophone.ts');
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const myelophonePath = path.resolve(dirname, 'myelophone.ts');
 
 const baseConfig = defineNuxtConfig({
 	extends: ['../'],
@@ -14,13 +16,50 @@ function isNuxtConfig(value: unknown): value is NuxtConfig {
 	return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
+type DefaultSeo = {
+	title?: string;
+	description?: string;
+};
+
+function getStringDefaultSeo(value: unknown): DefaultSeo {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+		return {};
+	}
+
+	const seo = value as Record<string, unknown>;
+
+	return {
+		...(typeof seo.title === 'string' ? { title: seo.title } : {}),
+		...(typeof seo.description === 'string'
+			? { description: seo.description }
+			: {}),
+	};
+}
+
 if (fs.existsSync(myelophonePath)) {
 	try {
-		const mod = await import(myelophonePath);
+		const mod = await import(pathToFileURL(myelophonePath).href);
 		const config = mod.default || mod;
 
 		if (isNuxtConfig(config)) {
 			extendedConfig = config as NuxtConfig;
+			const title = extendedConfig.app?.head?.title;
+			const appConfig = extendedConfig.appConfig as
+				| {
+						defaultSeo?: unknown;
+				  }
+				| undefined;
+			const defaultSeo = getStringDefaultSeo(appConfig?.defaultSeo);
+
+			if (typeof title === 'string' && !defaultSeo.title) {
+				extendedConfig.appConfig = {
+					...(extendedConfig.appConfig || {}),
+					defaultSeo: {
+						...defaultSeo,
+						title,
+					},
+				};
+			}
 		} else {
 			console.warn(
 				'[myelophone-nuxt] ignored: myelophone.ts export is not a valid NuxtConfig object.',

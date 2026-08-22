@@ -1,6 +1,7 @@
+import { useMyelophoneConfig } from '~/utils/myelophoneConfig';
+
 export default defineNuxtRouteMiddleware((to) => {
-	const config = useRuntimeConfig().public.multi18n;
-	if (!config) return;
+	const config = useMyelophoneConfig().multi18n;
 
 	const { defaultLocale, locales } = config;
 	const segments = to.path.split('/').filter(Boolean);

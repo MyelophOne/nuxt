@@ -2,6 +2,7 @@ import pkg from './package.json';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multi18n from './app/modules/multi18n/module';
+import myelophoneConfig from './app/modules/myelophone-config/module';
 import i18nTreeShaker from './app/modules/i18n-shaker.mjs';
 import nuxtHtaccess from './app/modules/htaccess';
 import fullscreenPreloader from './app/modules/fullscreen-preloader/module';
@@ -17,14 +18,6 @@ import tailwindcss from '@tailwindcss/vite';
 
 import { createResolver, useNuxt, extendViteConfig } from '@nuxt/kit';
 
-import type { CookieScriptsConfig } from '~/types/cookie';
-const cookieScripts: CookieScriptsConfig = {
-	necessary: [],
-	analytics: [],
-	marketing: [],
-	functional: [],
-};
-
 const version = pkg.version;
 const dateActuality = '2026-08-22';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
@@ -36,10 +29,15 @@ const defaultSeo = {
 
 const isSSG = process.env.NUXT_STATIC === 'true';
 const isPlayground = process.env.NUXT_PLAYGROUND === 'true';
-const isSSRStreaming = process.env.NUXT_SSR_STREAMING === 'true';
 
 const moreModules: string[] = [];
 const { resolve } = createResolver(import.meta.url);
+const serverScanDirs = [
+	resolve('./app/server'),
+	resolve('./server'),
+	path.resolve(process.cwd(), 'app/server'),
+	path.resolve(process.cwd(), 'server'),
+].filter((dir, index, dirs) => dirs.indexOf(dir) === index);
 const i18nScanDirs = [
 	resolve('./app'),
 	path.resolve(process.cwd(), 'app'),
@@ -68,6 +66,7 @@ export default defineNuxtConfig({
 		'vue-sonner/nuxt',
 		'nuxt-vitalizer',
 		...moreModules,
+		myelophoneConfig,
 		multi18n,
 		nuxtHtaccess,
 		fullscreenPreloader,
@@ -124,6 +123,7 @@ export default defineNuxtConfig({
 		zeroRuntime: true,
 	},
 	nitro: {
+		scanDirs: serverScanDirs,
 		preset: isSSG ? 'static' : process.env.NITRO_PRESET || 'node-cluster',
 		compressPublicAssets: true,
 		externals: {
@@ -407,13 +407,6 @@ export default defineNuxtConfig({
 		css: false,
 	},
 	hooks: {
-		'modules:before'() {
-			const nuxt = useNuxt();
-			nuxt.options.experimental.ssrStreaming =
-				!isSSG &&
-				(isSSRStreaming ||
-					nuxt.options.runtimeConfig.public.ssrStream === true);
-		},
 		'nitro:config'(nitroConfig) {
 			if (process.platform !== 'win32') {
 				return;
@@ -453,40 +446,11 @@ export default defineNuxtConfig({
 		},
 		'modules:done'() {
 			const nuxt = useNuxt();
-
-			const config = nuxt.options.runtimeConfig;
-
-			const keysToRemove = ['nuxt-seo-utils-version'];
-
-			keysToRemove.forEach((key) => {
-				if (config.public && key in config.public) {
-					delete config.public[key];
-				}
-			});
-
-			const objectsToRemoveVersion = ['nuxt-scripts', 'nuxt-robots'];
-
-			objectsToRemoveVersion.forEach((objKey) => {
-				if (
-					config.public &&
-					objKey in config.public &&
-					config.public[objKey]
-				) {
-					const target = config.public[objKey];
-					delete target['version' as keyof typeof target];
-				}
-			});
-
 			const bundleTranslations =
-				config.public.bundleTranslations ?? false;
-			const splitCss: boolean =
-				config.public.splitCss === true ? true : false;
+				nuxt.options.myelophone?.bundleTranslations ?? true;
 
 			extendViteConfig((config) => {
 				const output = config.build?.rolldownOptions?.output;
-
-				config.build = config.build || {};
-				config.build.cssCodeSplit = splitCss;
 
 				if (
 					output &&
@@ -551,46 +515,6 @@ export default defineNuxtConfig({
 					};
 				}
 			});
-		},
-	},
-	runtimeConfig: {
-		public: {
-			siteDomain: 'http://localhost:3000',
-			cookieScripts,
-			cookieControl: {
-				enabled: true,
-			},
-			bundleTranslations: true,
-			splitCss: false,
-			stores: {
-				cart: false,
-				user: false,
-			},
-			frankfurterCurrencies: [],
-			frankfurterBaseCurrency: 'USD',
-			creativeCursor: false,
-			siteSearch: {
-				strategy: 'client',
-				endpoint: '',
-				minQueryLength: 2,
-				limit: 10,
-				operator: 'and',
-				queryParam: 'search',
-				modeParam: 'searchMode',
-				operatorParam: 'searchOperator',
-				urlMode: 'search',
-				consumeUrl: false,
-				enabled: true,
-			},
-			tally: {
-				domain: 'tally.so',
-			},
-			noindex: false,
-			blog: {
-				blogEnabled: true,
-				postsLayout: 'default-blog',
-			},
-			ssrStream: false,
 		},
 	},
 });

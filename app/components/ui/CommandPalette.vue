@@ -195,7 +195,7 @@
 <script setup lang="ts">
 import { useCommandStore } from "~/stores/commands";
 import type { RouteRecordNormalized } from "vue-router";
-import { UI_SITE_SEARCH_OPEN_EVENT } from "../../constants/ui-events";
+import { UI_SITE_SEARCH_OPEN_EVENT } from "~/constants/ui-events";
 
 const router = useRouter();
 const route = useRoute();

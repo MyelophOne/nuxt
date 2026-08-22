@@ -1,5 +1,6 @@
 <script setup>
 import "./assets/css/index.css";
+import { useMyelophoneConfig } from "~/utils/myelophoneConfig";
 
 const nuxtApp = useNuxtApp();
 
@@ -11,15 +12,13 @@ nuxtApp.hook("app:mounted", () => {
 });
 
 const {
-	public: {
-		multi18n,
-		siteUrl,
-		stores,
-		creativeCursor,
-		pageFullscreenPreloader,
-		siteSearch,
-	},
-} = useRuntimeConfig();
+	multi18n,
+	siteDomain,
+	stores,
+	creativeCursor,
+	pageFullscreenPreloader,
+	siteSearch,
+} = useMyelophoneConfig();
 
 const globalFullscreenPreloaderOptions =
 	pageFullscreenPreloader &&
@@ -202,8 +201,12 @@ const has404 = computed(
 		error.value?.status === 404,
 );
 
+useHead({
+	titleTemplate: (title) =>
+		title || (has404.value ? undefined : defaultSeo.title),
+});
+
 useSeoMeta({
-	title: () => (has404.value ? undefined : defaultSeo.title),
 	description: () => (has404.value ? undefined : defaultSeo.description),
 });
 
@@ -221,7 +224,7 @@ useHead(
 		if (error.value?.status === 404 || isNotFound.value)
 			return { link: [], script: [] };
 
-		const baseOrigin = (siteUrl || "").replace(/\/+$/, "");
+		const baseOrigin = (siteDomain || "").replace(/\/+$/, "");
 		const origin = import.meta.client ? window.location.origin : baseOrigin;
 
 		const pathSegments = fullPath.split("/").filter(Boolean);
@@ -233,30 +236,35 @@ useHead(
 		const finalPath = cleanPath.replace(/\/+$/, "") || "/";
 		const absoluteDefaultHref =
 			`${origin}${finalPath}`.replace(/\/+$/, "") || "/";
+		const isPostPath =
+			finalPath === "/post" || finalPath.startsWith("/post/");
 
 		const links = [];
 
-		links.push({
-			key: "hr-x-default",
-			rel: "alternate",
-			hreflang: "x-default",
-			href: absoluteDefaultHref,
-		});
-
-		supportedLocales.forEach((l) => {
-			if (l === currentLang) return;
-
-			const langPrefix = l === "en" ? "" : `/${l}`;
-			const fullHref =
-				`${origin}${langPrefix}${finalPath}`.replace(/\/+$/, "") || "/";
-
+		if (!isPostPath) {
 			links.push({
-				key: `hr-${l}`,
+				key: "hr-x-default",
 				rel: "alternate",
-				hreflang: l,
-				href: fullHref,
+				hreflang: "x-default",
+				href: absoluteDefaultHref,
 			});
-		});
+
+			supportedLocales.forEach((l) => {
+				if (l === currentLang) return;
+
+				const langPrefix = l === "en" ? "" : `/${l}`;
+				const fullHref =
+					`${origin}${langPrefix}${finalPath}`.replace(/\/+$/, "") ||
+					"/";
+
+				links.push({
+					key: `hr-${l}`,
+					rel: "alternate",
+					hreflang: l,
+					href: fullHref,
+				});
+			});
+		}
 
 		const bList = unref(breadcrumbsStore.breadcrumbs) || [];
 		const schema = {

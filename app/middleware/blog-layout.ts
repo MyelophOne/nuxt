@@ -1,9 +1,11 @@
+import { useMyelophoneConfig } from '~/utils/myelophoneConfig';
+
 export default defineNuxtRouteMiddleware(async (to) => {
-	const config = useRuntimeConfig();
+	const config = useMyelophoneConfig();
 
 	type LayoutName = Parameters<typeof setPageLayout>[0];
 
-	const layout = (config.public.blog?.postsLayout || 'default') as LayoutName;
+	const layout = (config.blog?.postsLayout || 'default') as LayoutName;
 
 	setPageLayout(layout);
 

@@ -4,6 +4,7 @@ import type {
 	CookieCategory,
 	CookiePreferences,
 } from '~/types/cookie';
+import { useMyelophoneConfig } from '~/utils/myelophoneConfig';
 
 type CookieScriptEntry = {
 	category: CookieCategory;
@@ -11,9 +12,8 @@ type CookieScriptEntry = {
 };
 
 export const useScriptLoader = () => {
-	const runtimeConfig = useRuntimeConfig();
-	const scriptsConfig = runtimeConfig.public
-		.cookieScripts as CookieScriptsConfig;
+	const config = useMyelophoneConfig();
+	const scriptsConfig = config.cookieScripts as CookieScriptsConfig;
 	const loadedScripts = reactive(new Set<string>());
 	const initializedScripts = reactive(new Set<string>());
 	const executedInitializers = reactive(new Set<string>());

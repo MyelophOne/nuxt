@@ -8,8 +8,8 @@ export const useCookieControl = () => {
 	const store = useSettingsStore();
 	const { cookiePreferences, isCookieBannerVisible } = storeToRefs(store);
 
-	const config = useRuntimeConfig();
-	const isEnabled = config.public.cookieControl?.enabled ?? true;
+	const config = useMyelophoneConfig();
+	const isEnabled = config.cookieControl?.enabled ?? true;
 
 	const nuxtCookie = useCookie<CookiePreferences | undefined>(
 		'privacy-preferences',

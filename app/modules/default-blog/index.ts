@@ -9,7 +9,7 @@ export default defineNuxtModule({
 	setup(_options, nuxt) {
 		extendPages((pages) => {
 			const blogEnabled =
-				nuxt.options.runtimeConfig.public.blog?.blogEnabled ?? false;
+				nuxt.options.myelophone?.blog?.blogEnabled ?? true;
 
 			processPages(pages, blogEnabled);
 		});

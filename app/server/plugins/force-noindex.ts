@@ -1,8 +1,8 @@
 export default defineNitroPlugin((nitroApp) => {
 	nitroApp.hooks.hook('render:html', (html, { event }) => {
-		const config = useRuntimeConfig(event);
+		const config = useRuntimeConfig(event).myelophone;
 
-		if (!config.public.noindex) {
+		if (!config.noindex) {
 			return;
 		}
 
@@ -31,9 +31,9 @@ export default defineNitroPlugin((nitroApp) => {
 	});
 
 	nitroApp.hooks.hook('render:response', (response, { event }) => {
-		const config = useRuntimeConfig(event);
+		const config = useRuntimeConfig(event).myelophone;
 
-		if (!config.public.noindex) {
+		if (!config.noindex) {
 			return;
 		}
 
