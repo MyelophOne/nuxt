@@ -1,3 +1,7 @@
+## 📦 Release 0.18.0 (2026-08-25)
+### ✨ Features
+- add purge css
+
 ## 📦 Release 0.17.0 (2026-08-22)
 ### ✨ Features
 - add query, ssr stream, move config
