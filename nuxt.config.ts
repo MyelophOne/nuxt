@@ -19,7 +19,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { createResolver, useNuxt, extendViteConfig } from '@nuxt/kit';
 
 const version = pkg.version;
-const dateActuality = '2026-08-22';
+const dateActuality = '2026-08-25';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
@@ -238,6 +238,7 @@ export default defineNuxtConfig({
 				scanDirs: i18nScanDirs,
 			}),
 			cleanEmptyCssPlugin({
+				purgeTailwindUtilities: true,
 				postcssPlugins: [
 					postcssViewportFallback(),
 					noImportant(),
