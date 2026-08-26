@@ -2,7 +2,8 @@ import type { Plugin } from 'vite';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { PurgeCSS } from 'purgecss';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
+import { useLogger } from '@nuxt/kit';
 
 interface CleanCssPluginOptions {
 	postcssPlugins?: AcceptedPlugin[];
@@ -18,6 +19,7 @@ export function cleanEmptyCssPlugin(
 	const SOURCE_FILE_RE = /\.(?:[cm]?[jt]sx?|vue|json)$/i;
 	const extractTailwindCandidates = (content: string) =>
 		content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || [];
+	const logger = useLogger('@myelophone/nuxt');
 
 	function removeUnresolved(css: string) {
 		const root = postcss.parse(css);
@@ -147,7 +149,10 @@ export function cleanEmptyCssPlugin(
 				css = css.replace(EMPTY_VAR_REGEX, '');
 				css = removeUnresolved(css);
 
-				if (options.purgeTailwindUtilities && sourceContent.length > 0) {
+				if (
+					options.purgeTailwindUtilities &&
+					sourceContent.length > 0
+				) {
 					const purgeResult = await purgeTailwindUtilities(
 						css,
 						sourceContent.join('\n'),
@@ -161,7 +166,9 @@ export function cleanEmptyCssPlugin(
 					options.postcssPlugins &&
 					options.postcssPlugins.length > 0
 				) {
-					const result = await postcss(options.postcssPlugins).process(css, {
+					const result = await postcss(
+						options.postcssPlugins,
+					).process(css, {
 						from: undefined,
 					});
 					css = result.css;
@@ -169,13 +176,14 @@ export function cleanEmptyCssPlugin(
 
 				await writeFile(file, css);
 				reports.push(
-					`[myelophone:tailwind-purge] ${file}: ${sourceContent.length} included source modules, utilities ${utilitiesBefore} → ${utilitiesAfter} B, CSS ${sizeBefore} → ${Buffer.byteLength(css, 'utf8')} B`,
+					`.../${basename(file)} (${sizeBefore} B → ${Buffer.byteLength(css, 'utf8')} B)`,
 				);
 			}
 		},
 		closeBundle() {
+			logger.info('Purging css...');
 			for (const report of reports) {
-				console.info(report);
+				logger.info(report);
 			}
 		},
 	};

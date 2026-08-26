@@ -1,4 +1,4 @@
-import pkg from './package.json';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multi18n from './app/modules/multi18n/module';
@@ -18,8 +18,13 @@ import tailwindcss from '@tailwindcss/vite';
 
 import { createResolver, useNuxt, extendViteConfig } from '@nuxt/kit';
 
+const pkg = JSON.parse(
+	readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+);
+
 const version = pkg.version;
-const dateActuality = '2026-08-25';
+
+const dateActuality = '2026-08-28';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
@@ -92,6 +97,14 @@ export default defineNuxtConfig({
 		prefetchPreloadTags: true,
 		watcher: 'builder',
 		viteEnvironmentApi: false,
+		defaults: {
+			nuxtLink: {
+				prefetchOn: {
+					interaction: true,
+					visibility: false,
+				},
+			},
+		},
 	},
 	devtools: { enabled: process.env.NODE_ENV === 'development' },
 	app: {
@@ -516,6 +529,11 @@ export default defineNuxtConfig({
 					};
 				}
 			});
+		},
+	},
+	runtimeConfig: {
+		public: {
+			version,
 		},
 	},
 });

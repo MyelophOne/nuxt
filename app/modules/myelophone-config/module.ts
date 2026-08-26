@@ -183,7 +183,7 @@ export default defineNuxtModule<MyelophoneConfig>({
 
 		nuxt.hook('build:before', () => {
 			logger.info(
-				'Thank You for using @MyelophOne/nuxt. With ❤️  from @aleksivanou (aleksivanov.me)',
+				'Thank You for using @MyelophOne/nuxt. With ❤️ from @aleksivanou (aleksivanov.me)',
 			);
 			if (isStreamingSSR) {
 				logger.info('Building with Nuxt streaming SSR enabled.');

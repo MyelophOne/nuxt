@@ -23,7 +23,7 @@ export default defineEventHandler((event) => {
 		return (
 			host.startsWith('localhost') ||
 			host.startsWith('127.') ||
-			location.hostname.startsWith('192.168.') ||
+			host.startsWith('192.168.') ||
 			host.startsWith('::1') ||
 			/^[\d.]+$/.test(host)
 		);

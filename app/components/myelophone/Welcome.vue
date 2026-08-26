@@ -81,7 +81,7 @@
 		<p
 			class="text-sm max-w-xl mb-6 opacity-30 hover:opacity-100 transition-opacity duration-500 sticky top-[100vh]"
 		>
-			<NuxtIsland name="MyelophoneCopyright" />
+			<MyelophoneCopyright />
 		</p>
 	</div>
 </template>
@@ -91,10 +91,11 @@ const pinia = useNuxtApp().$pinia;
 const settingsStore = useSettingsStore(pinia);
 const nuxtVersion = useNuxtVersion();
 
+const config = useRuntimeConfig();
+
 const { t } = useMultiLang(["myelophone"]);
 
-import pkg from "../../../package.json";
-const version = pkg.version;
+const version = config.public?.version || "unknown";
 </script>
 
 <style scoped>
