@@ -1,3 +1,7 @@
+## 📦 Release 0.18.1 (2026-08-26)
+### 🐛 Bug Fixes
+- update to typescript 7
+
 ## 📦 Release 0.18.0 (2026-08-25)
 ### ✨ Features
 - add purge css
