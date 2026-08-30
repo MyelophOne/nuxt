@@ -17,7 +17,7 @@
     "generate": "NODE_OPTIONS='--no-webstorage' NUXT_TELEMETRY_DEBUG=1 NODE_ENV=production NUXT_STATIC=true NUXT_PLAYGROUND=true nuxt generate playground",
     "preview": "NODE_OPTIONS='--no-webstorage' NUXT_TELEMETRY_DEBUG=1 NUXT_PLAYGROUND=true nuxt preview playground",
     "server": "node --no-deprecation --no-warnings --no-webstorage playground/.output/server/index.mjs",
-    "prepare": "NODE_OPTIONS='--no-webstorage' nuxt prepare && NODE_OPTIONS='--no-webstorage' nuxt prepare playground",
+    "prepare": "nuxt prepare && nuxt prepare playground",
     "analyze": "NODE_OPTIONS='--no-deprecation --no-webstorage' yarn nuxi analyze playground",
     "test": "yarn test:types && yarn playwright",
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
@@ -93,7 +93,8 @@
     "url": "git+https://github.com/myelophone/nuxt.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "provenance": true
   },
   "dependencies": {
     "fuse.js": "^7.5.0"

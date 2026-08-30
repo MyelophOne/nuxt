@@ -110,7 +110,7 @@ export default {
 			{
 				npmPublish: true,
 				pkgRoot: '.',
-				registry: 'https://npm.pkg.github.com',
+				pkgAccess: 'public',
 			},
 		],
 		[
