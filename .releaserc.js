@@ -126,6 +126,7 @@ export default {
 			'@semantic-release/github',
 			{
 				assets: ['@myelophone-nuxt.zip'],
+				labels: false,
 			},
 		],
 	],
