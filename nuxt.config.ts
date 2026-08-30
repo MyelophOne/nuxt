@@ -24,7 +24,7 @@ const pkg = JSON.parse(
 
 const version = pkg.version;
 
-const dateActuality = '2026-08-28';
+const dateActuality = '2026-08-31';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
