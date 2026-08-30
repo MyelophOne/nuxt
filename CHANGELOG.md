@@ -1,3 +1,7 @@
+## 📦 Release 0.19.1 (2026-08-30)
+### 🐛 Bug Fixes
+- update github actions
+
 ## 📦 Release 0.19.0 (2026-08-30)
 ### ✨ Features
 - add npm package flow
