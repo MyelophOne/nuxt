@@ -1,6 +1,6 @@
 {
   "name": "@myelophone/nuxt",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "type": "module",
   "author": "Aliaksandr Ivanou <aleksivanov.me@gmail.com> (https://github.com/aleksivanou)",
   "maintainers": [
