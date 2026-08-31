@@ -100,17 +100,17 @@ export default defineNuxtConfig({
 
 ### Extend it as a Nuxt layer
 
-The layer can be installed directly from GitHub without registry configuration, access tokens, or GitHub Packages authentication. Add the dependency to the consuming application's `package.json`:
+The layer is published on [npm](https://www.npmjs.com/package/@myelophone/nuxt). Add it to the consuming application's `package.json`:
 
 ```json
 {
  "devDependencies": {
-  "@myelophone/nuxt": "git+https://github.com/myelophone/nuxt.git"
+  "@myelophone/nuxt": "^0.19.1"
  }
 }
 ```
 
-Install dependencies and prepare Nuxt types:
+Install dependencies from npm and prepare Nuxt types:
 
 ```bash
 yarn install
@@ -2977,7 +2977,7 @@ Commits follow Conventional Commits and are checked with Commitlint. The `main` 
 - `BREAKING CHANGE:` → major release;
 - documentation, tests, refactors, build, CI, style, and chores do not release by default.
 
-The release workflow updates `CHANGELOG.md` and `package.json`, publishes to GitHub Packages, creates a GitHub release, and commits release metadata back to the repository.
+The release workflow updates `CHANGELOG.md` and `package.json`, publishes to [npm](https://www.npmjs.com/package/@myelophone/nuxt) with provenance, creates a GitHub release, and commits release metadata back to the repository.
 
 ### Compatibility checklist
 
