@@ -112,6 +112,11 @@ export default defineEventHandler((event) => {
 
 	for (const [rawKey, rawValue] of Object.entries(rules.headers)) {
 		const key = rawKey as SecurityHeaderKey;
+
+		if (key === 'contentSecurityPolicy') {
+			continue;
+		}
+
 		const headerName =
 			key === 'contentSecurityPolicy' &&
 			rules.contentSecurityPolicyReportOnly

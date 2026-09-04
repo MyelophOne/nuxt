@@ -10,6 +10,10 @@ import defaultBlog from './app/modules/default-blog';
 import defaultSitemap from './app/modules/default-sitemap';
 
 import { cleanEmptyCssPlugin } from './vite/plugins/clean-css';
+import {
+	blogContentPlugin,
+	defaultBlogContentDirectories,
+} from './vite/plugins/blog-content';
 import postcssViewportFallback from './vite/plugins/postcss-viewport-fallback';
 import noImportant from 'postcss-no-important';
 import postcssAddViewportUnits from './vite/plugins/postcss-add-viewportunits';
@@ -24,7 +28,7 @@ const pkg = JSON.parse(
 
 const version = pkg.version;
 
-const dateActuality = '2026-08-31';
+const dateActuality = '2026-09-05';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
@@ -131,6 +135,10 @@ export default defineNuxtConfig({
 	appConfig: {
 		defaultSeo,
 	},
+	seo: {
+		automaticTwitterTags: false,
+		automaticDefaults: false,
+	},
 	ogImage: {
 		enabled: process.env.NODE_ENV !== 'test',
 		zeroRuntime: true,
@@ -184,6 +192,12 @@ export default defineNuxtConfig({
 		},
 		plugins: [
 			tailwindcss(),
+			blogContentPlugin(
+				defaultBlogContentDirectories(
+					process.cwd(),
+					path.dirname(fileURLToPath(import.meta.url)),
+				),
+			),
 			{
 				name: 'suppress-plugin-timings-warning',
 				configResolved(config) {
@@ -324,7 +338,7 @@ export default defineNuxtConfig({
 			throwError: true,
 		},
 		rateLimiter: {
-			tokensPerInterval: 150,
+			tokensPerInterval: 300,
 			interval: 300000,
 			headers: true,
 			driver: {
@@ -406,9 +420,6 @@ export default defineNuxtConfig({
 		},
 		'/_ipx/**': { swr: false },
 	},
-	seo: {
-		automaticDefaults: false,
-	},
 	multi18n: {
 		locales: ['en'],
 		defaultLocale: 'en',
@@ -422,29 +433,49 @@ export default defineNuxtConfig({
 	},
 	hooks: {
 		'nitro:config'(nitroConfig) {
-			if (process.platform !== 'win32') {
-				return;
+			if (process.env.NUXT_PROFILE === '1') {
+				nitroConfig.plugins ||= [];
+				nitroConfig.plugins.push(
+					resolve('./vite/plugins/nitro-profile'),
+				);
 			}
 
 			nitroConfig.rollupConfig ||= {};
-			const resolver = {
-				name: 'resolve-nuxt-cache-driver-file-url',
-				resolveId(source: string) {
-					if (
-						source.startsWith('file:') &&
-						source.endsWith('/runtime/utils/cache-driver.mjs')
-					) {
-						return fileURLToPath(source);
-					}
-				},
-			};
-			const plugins = nitroConfig.rollupConfig.plugins;
+			const plugins = [
+				blogContentPlugin(
+					defaultBlogContentDirectories(
+						process.cwd(),
+						path.dirname(fileURLToPath(import.meta.url)),
+					),
+				),
+			];
 
-			nitroConfig.rollupConfig.plugins = plugins
-				? Array.isArray(plugins)
-					? [...plugins, resolver]
-					: [plugins, resolver]
-				: [resolver];
+			if (process.platform === 'win32') {
+				plugins.push({
+					name: 'resolve-nuxt-cache-driver-file-url',
+					resolveId(source: string) {
+						if (
+							source.startsWith('file:') &&
+							source.endsWith('/runtime/utils/cache-driver.mjs')
+						) {
+							return fileURLToPath(source);
+						}
+					},
+				});
+			}
+
+			const currentPlugins = nitroConfig.rollupConfig.plugins;
+			const mergedPlugins = [
+				...(Array.isArray(currentPlugins)
+					? currentPlugins
+					: currentPlugins
+						? [currentPlugins]
+						: []),
+				...plugins,
+			];
+			nitroConfig.rollupConfig.plugins = mergedPlugins as NonNullable<
+				typeof nitroConfig.rollupConfig.plugins
+			>;
 		},
 		'build:manifest': (manifest) => {
 			for (const key in manifest) {

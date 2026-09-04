@@ -354,7 +354,7 @@ useCommand({
 	<NuxtLayout>
 		<NuxtErrorBoundary>
 			<main id="main" tabindex="-1">
-				<NuxtPage :keepalive="{ max: 10 }" />
+				<NuxtPage />
 			</main>
 			<template #error="{ error, clearError }">
 				<SeoNoIndex :status-code="error?.statusCode" />

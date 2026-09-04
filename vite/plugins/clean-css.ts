@@ -10,6 +10,21 @@ interface CleanCssPluginOptions {
 	purgeTailwindUtilities?: boolean;
 }
 
+function formatBytes(bytes: number): string {
+	if (bytes === 0) {
+		return '0 B';
+	}
+
+	const units = ['B', 'KB', 'MB', 'GB'];
+	const unitIndex = Math.min(
+		Math.floor(Math.log(bytes) / Math.log(1024)),
+		units.length - 1,
+	);
+	const value = bytes / 1024 ** unitIndex;
+
+	return `${parseFloat(value.toFixed(2))} ${units[unitIndex]}`;
+}
+
 export function cleanEmptyCssPlugin(
 	options: CleanCssPluginOptions = {},
 ): Plugin {
@@ -175,12 +190,16 @@ export function cleanEmptyCssPlugin(
 				}
 
 				await writeFile(file, css);
+				const sizeAfter = Buffer.byteLength(css, 'utf8');
 				reports.push(
-					`.../${basename(file)} (${sizeBefore} B → ${Buffer.byteLength(css, 'utf8')} B)`,
+					`.../${basename(file)} (${formatBytes(sizeBefore)} → ${formatBytes(sizeAfter)})`,
 				);
 			}
 		},
 		closeBundle() {
+			if (this.environment?.name !== 'client') {
+				return;
+			}
 			logger.info('Purging css...');
 			for (const report of reports) {
 				logger.info(report);

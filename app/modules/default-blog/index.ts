@@ -20,7 +20,7 @@ function processPages(pages: NuxtPage[], blogEnabled: boolean) {
 	for (let i = pages.length - 1; i >= 0; i--) {
 		const page = pages[i]!;
 
-		if (page.file?.endsWith('/post/[...slug].vue')) {
+		if (page.file?.endsWith('/post/[...slug].server.vue')) {
 			if (!blogEnabled) {
 				pages.splice(i, 1);
 				continue;

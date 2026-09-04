@@ -33,6 +33,52 @@ const enableDefaultRouteStreaming = (routeRules: Record<string, any>) => {
 	};
 };
 
+const disablePostRouteStreaming = (
+	routeRules: Record<string, any>,
+	locales: string[],
+) => {
+	const postRoutes = new Set([
+		'/post/**',
+		...locales.map((locale) => `/${locale}/post/**`),
+	]);
+
+	for (const route of postRoutes) {
+		routeRules[route] = {
+			...(routeRules[route] && typeof routeRules[route] === 'object'
+				? routeRules[route]
+				: {}),
+			streaming: false,
+		};
+	}
+};
+
+const addSWRPayloadRoutes = (routeRules: Record<string, any>) => {
+	for (const [route, rule] of Object.entries(routeRules)) {
+		if (!rule || typeof rule !== 'object' || rule.swr === false) {
+			continue;
+		}
+
+		if ('swr' in rule) {
+			const payloadRoute = `${route === '/' ? '' : route.replace(/\/$/, '')}/_payload.json`;
+			const current = routeRules[payloadRoute];
+			const cache =
+				rule.cache && typeof rule.cache === 'object'
+					? rule.cache
+					: {
+							swr: true,
+							...(typeof rule.swr === 'number'
+								? { maxAge: rule.swr }
+								: {}),
+						};
+
+			routeRules[payloadRoute] = {
+				...(current && typeof current === 'object' ? current : {}),
+				cache,
+			};
+		}
+	}
+};
+
 const defaultCookieScripts = {
 	necessary: [],
 	analytics: [],
@@ -179,6 +225,10 @@ export default defineNuxtModule<MyelophoneConfig>({
 		if (isStreamingSSR) {
 			nuxt.options.routeRules ||= {};
 			enableDefaultRouteStreaming(nuxt.options.routeRules);
+			disablePostRouteStreaming(
+				nuxt.options.routeRules,
+				myelophone.multi18n.locales,
+			);
 		}
 
 		nuxt.hook('build:before', () => {
@@ -193,10 +243,15 @@ export default defineNuxtModule<MyelophoneConfig>({
 		nuxt.hook('nitro:config', (nitroConfig) => {
 			nitroConfig.runtimeConfig ||= {};
 			nitroConfig.runtimeConfig.myelophone = myelophone;
+			nitroConfig.routeRules ||= {};
+			addSWRPayloadRoutes(nitroConfig.routeRules);
 
 			if (isStreamingSSR) {
-				nitroConfig.routeRules ||= {};
 				enableDefaultRouteStreaming(nitroConfig.routeRules);
+				disablePostRouteStreaming(
+					nitroConfig.routeRules,
+					myelophone.multi18n.locales,
+				);
 			}
 		});
 

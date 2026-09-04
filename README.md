@@ -542,7 +542,7 @@ const props = withDefaults(
 
 const english: ProductPageContent = {
  seo: {
-  title: "Acme — a clearer way to work",
+  title: "Acme - a clearer way to work",
   description: "A short description of the complete product page.",
  },
  brand: "Acme",
@@ -558,7 +558,7 @@ const defaultContentByLocale: Record<string, ProductPageContent> = {
  en: english,
  pl: mergeReadyContent(english, {
   seo: {
-   title: "Acme — prostszy sposób pracy",
+   title: "Acme - prostszy sposób pracy",
    description: "Krótki opis kompletnej strony produktu.",
   },
   hero: {
@@ -995,7 +995,7 @@ Use `SeoProfileInfo` only when the page primarily describes one person or organi
 <SeoProfileInfo
  id="https://example.com/team/ada#profile-page"
  url="https://example.com/team/ada"
- name="Ada Lovelace — profile"
+ name="Ada Lovelace - profile"
  date-created="2024-01-10T09:00:00Z"
  date-modified="2026-08-16T12:00:00Z"
  entity-id="https://example.com/team/ada#person"

@@ -59,8 +59,8 @@ onUnmounted(deactivateNotFound);
 const { t } = useMultiLang(["interface"]);
 
 useAppSeo({
-	title: () => `404 — ${t("interface.pageNotFound")}`,
-	description: () => `404 — ${t("interface.pageNotFoundDescription")}`,
+	title: () => `404 - ${t("interface.pageNotFound")}`,
+	description: () => `404 - ${t("interface.pageNotFoundDescription")}`,
 	noIndex: true,
 });
 </script>

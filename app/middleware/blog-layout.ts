@@ -21,7 +21,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	if (!post) {
 		const event = useRequestEvent();
 
-		if (event) {
+		const isIslandRequest = Boolean(useNuxtApp().ssrContext?.islandContext);
+
+		if (event && !isIslandRequest) {
 			setResponseStatus(event, 404, 'Not Found');
 		}
 	}

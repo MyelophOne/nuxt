@@ -9,6 +9,13 @@ export default defineEventHandler((event) => {
 		`http://${event.node.req.headers.host}`,
 	);
 
+	if (
+		url.pathname.startsWith('/_nuxt/') ||
+		url.pathname.startsWith('/__nuxt_')
+	) {
+		return;
+	}
+
 	const sanitize = (path: string) => {
 		let p = path
 			.replace(/[<>{}|\\^`]/g, '')

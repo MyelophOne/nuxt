@@ -174,6 +174,14 @@ export function useMultiLang(namespaces: string | string[]) {
 		{ watch: [activeLang] },
 	);
 
+	if (import.meta.client) {
+		onMounted(() => {
+			void Promise.all(
+				nsArray.map((ns) => loadNamespace(activeLang.value, ns)),
+			);
+		});
+	}
+
 	const t = (
 		key: string,
 		arg1?: InterpolationParams | number,

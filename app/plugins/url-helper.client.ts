@@ -2,7 +2,6 @@ import { type Pinia } from 'pinia';
 
 export default defineNuxtPlugin((nuxtApp) => {
 	const router = useRouter();
-
 	const pinia = useNuxtApp().$pinia as Pinia;
 	const settingsStore = useSettingsStore(pinia);
 
