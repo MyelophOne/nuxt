@@ -1,3 +1,10 @@
+## 📦 Release 0.20.0 (2026-09-04)
+### ✨ Features
+- add ssr stream
+
+### 📚 Documentation
+- update readme
+
 ## 📦 Release 0.19.1 (2026-08-30)
 ### 🐛 Bug Fixes
 - update github actions
