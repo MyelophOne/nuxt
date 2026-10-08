@@ -8,7 +8,7 @@ import {
 	defineNuxtModule,
 } from '@nuxt/kit';
 
-import { getBlogPostUrls } from '../default-blog/posts';
+import { getBlogPostUrls } from '../default-blog/posts.ts';
 
 export default defineNuxtModule({
 	meta: {

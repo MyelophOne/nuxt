@@ -1,4 +1,4 @@
 export default defineNuxtPlugin(() => {
-	const version = import.meta.env.PACKAGE_VERSION || '4.x';
+	const version = useNuxtVersion();
 	return { provide: { nuxtVersion: version } };
 });

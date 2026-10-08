@@ -42,7 +42,7 @@ const props = defineProps({
 	containerClass: { type: String, default: "" },
 });
 
-const settingsStore = useSettingsStore();
+const settingsStore = useSettingsStore(useNuxtApp().$pinia);
 const now = ref(new Date());
 const isMounted = ref(false);
 let timer = null;

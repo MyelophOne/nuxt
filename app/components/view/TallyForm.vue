@@ -43,7 +43,7 @@ const rawDomain = props.domain || config.tally?.domain || "tally.so";
 const baseUrl = `https://${rawDomain}`;
 const scriptSrc = `${baseUrl}/widgets/embed.js`;
 
-const settingsStore = useSettingsStore();
+const settingsStore = useSettingsStore(useNuxtApp().$pinia);
 const currentTheme = computed(() => settingsStore.theme || "light");
 
 const getPayload = (isFullscreenOverride = false) => {

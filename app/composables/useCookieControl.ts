@@ -5,7 +5,7 @@ import {
 } from '~/types/cookie';
 
 export const useCookieControl = () => {
-	const store = useSettingsStore();
+	const store = useSettingsStore(useNuxtApp().$pinia);
 	const { cookiePreferences, isCookieBannerVisible } = storeToRefs(store);
 
 	const config = useMyelophoneConfig();

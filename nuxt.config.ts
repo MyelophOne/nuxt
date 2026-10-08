@@ -1,26 +1,26 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import multi18n from './app/modules/multi18n/module';
-import myelophoneConfig from './app/modules/myelophone-config/module';
+import multi18n from './app/modules/multi18n/module.ts';
+import myelophoneConfig from './app/modules/myelophone-config/module.ts';
 import i18nTreeShaker from './app/modules/i18n-shaker.mjs';
-import nuxtHtaccess from './app/modules/htaccess';
-import fullscreenPreloader from './app/modules/fullscreen-preloader/module';
-import defaultBlog from './app/modules/default-blog';
-import defaultSitemap from './app/modules/default-sitemap';
+import nuxtHtaccess from './app/modules/htaccess/index.ts';
+import fullscreenPreloader from './app/modules/fullscreen-preloader/module.ts';
+import defaultBlog from './app/modules/default-blog/index.ts';
+import defaultSitemap from './app/modules/default-sitemap/index.ts';
 
-import { cleanEmptyCssPlugin } from './vite/plugins/clean-css';
+import { cleanEmptyCssPlugin } from './vite/plugins/clean-css.ts';
 import {
 	blogContentPlugin,
 	defaultBlogContentDirectories,
-} from './vite/plugins/blog-content';
-import postcssViewportFallback from './vite/plugins/postcss-viewport-fallback';
+} from './vite/plugins/blog-content.ts';
+import postcssViewportFallback from './vite/plugins/postcss-viewport-fallback.ts';
 import noImportant from 'postcss-no-important';
-import postcssAddViewportUnits from './vite/plugins/postcss-add-viewportunits';
+import postcssAddViewportUnits from './vite/plugins/postcss-add-viewportunits.ts';
 
 import tailwindcss from '@tailwindcss/vite';
 
-import { createResolver, useNuxt, extendViteConfig } from '@nuxt/kit';
+import { createResolver, useNuxt, extendViteConfig, getNuxtVersion } from '@nuxt/kit';
 
 const pkg = JSON.parse(
 	readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
@@ -28,7 +28,7 @@ const pkg = JSON.parse(
 
 const version = pkg.version;
 
-const dateActuality = '2026-09-23';
+const dateActuality = '2026-10-10';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
@@ -148,7 +148,15 @@ export default defineNuxtConfig({
 		preset: isSSG ? 'static' : process.env.NITRO_PRESET || 'node-cluster',
 		compressPublicAssets: true,
 		externals: {
-			inline: ['h3', '@vue/shared'],
+			inline: [
+				'h3',
+				'@vue/shared',
+				// Keep Nuxt and Colada on the same Pinia injection symbols.
+				'pinia',
+				// The renderer needs Nitro's import.meta and virtual module transforms.
+				'nuxt/internal',
+				/[\\/]nuxt[\\/]dist[\\/]runtime[\\/]server[\\/]/,
+			],
 		},
 		experimental: {
 			tasks: true,
@@ -191,6 +199,26 @@ export default defineNuxtConfig({
 			devSourcemap: true,
 		},
 		plugins: [
+			{
+				name: 'server-output-comments',
+				apply: 'build',
+				configEnvironment(name) {
+					if (name !== 'ssr') return;
+					return {
+						build: {
+							rolldownOptions: {
+								output: {
+									comments: {
+										legal: true,
+										jsdoc: true,
+										annotation: false,
+									},
+								},
+							},
+						},
+					};
+				},
+			},
 			tailwindcss(),
 			blogContentPlugin(
 				defaultBlogContentDirectories(
@@ -491,6 +519,7 @@ export default defineNuxtConfig({
 		},
 		'modules:done'() {
 			const nuxt = useNuxt();
+			nuxt.options.runtimeConfig.public.nuxtVersion = getNuxtVersion(nuxt);
 			const bundleTranslations =
 				nuxt.options.myelophone?.bundleTranslations ?? true;
 
@@ -505,6 +534,7 @@ export default defineNuxtConfig({
 					output.codeSplitting = {
 						groups: [
 							{
+								debugName: 'myelophone-shared-chunks',
 								name(id: string): string | null {
 									if (id.includes('vue-sonner')) {
 										return 'sonner';
@@ -565,6 +595,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			version,
+			nuxtVersion: '',
 		},
 	},
 });

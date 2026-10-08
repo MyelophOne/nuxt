@@ -8,7 +8,7 @@ export default defineNuxtModule({
 		nuxt.hook('nitro:build:public-assets', () => {
 			if (!process.env.NUXT_STATIC) return;
 
-			const src = join(__dirname, '.htaccess');
+			const src = join(import.meta.dirname, '.htaccess');
 			if (!existsSync(src)) return;
 
 			const destDir = join(nuxt.options.rootDir, '.output/public');

@@ -9,7 +9,7 @@ const props = defineProps({
 	short: { type: Boolean, default: false },
 });
 
-const settingsStore = useSettingsStore();
+const settingsStore = useSettingsStore(useNuxtApp().$pinia);
 const currentLocale = computed(
 	() =>
 		props.locale ||
