@@ -20,7 +20,12 @@ import postcssAddViewportUnits from './vite/plugins/postcss-add-viewportunits.ts
 
 import tailwindcss from '@tailwindcss/vite';
 
-import { createResolver, useNuxt, extendViteConfig, getNuxtVersion } from '@nuxt/kit';
+import {
+	createResolver,
+	useNuxt,
+	extendViteConfig,
+	getNuxtVersion,
+} from '@nuxt/kit';
 
 const pkg = JSON.parse(
 	readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
@@ -28,7 +33,7 @@ const pkg = JSON.parse(
 
 const version = pkg.version;
 
-const dateActuality = '2026-10-10';
+const dateActuality = '2026-10-14';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
@@ -151,9 +156,7 @@ export default defineNuxtConfig({
 			inline: [
 				'h3',
 				'@vue/shared',
-				// Keep Nuxt and Colada on the same Pinia injection symbols.
 				'pinia',
-				// The renderer needs Nitro's import.meta and virtual module transforms.
 				'nuxt/internal',
 				/[\\/]nuxt[\\/]dist[\\/]runtime[\\/]server[\\/]/,
 			],
@@ -170,7 +173,7 @@ export default defineNuxtConfig({
 					failOnError: false,
 					crawlLinks: true,
 					ignore: [
-						(path: string) => path.match(/\.(js|css|map|json)$/),
+						(path: string) => /\.(js|css|map|json)$/.test(path),
 					],
 				}
 			: undefined,
@@ -191,6 +194,22 @@ export default defineNuxtConfig({
 						'console.error',
 						'console.debug',
 						'console.trace',
+						'console.table',
+						'console.dir',
+						'console.dirxml',
+						'console.assert',
+						'console.count',
+						'console.countReset',
+						'console.group',
+						'console.groupCollapsed',
+						'console.groupEnd',
+						'console.time',
+						'console.timeEnd',
+						'console.timeLog',
+						'console.timeStamp',
+						'console.profile',
+						'console.profileEnd',
+						'console.clear',
 					],
 				},
 			},
@@ -519,7 +538,8 @@ export default defineNuxtConfig({
 		},
 		'modules:done'() {
 			const nuxt = useNuxt();
-			nuxt.options.runtimeConfig.public.nuxtVersion = getNuxtVersion(nuxt);
+			nuxt.options.runtimeConfig.public.nuxtVersion =
+				getNuxtVersion(nuxt);
 			const bundleTranslations =
 				nuxt.options.myelophone?.bundleTranslations ?? true;
 
