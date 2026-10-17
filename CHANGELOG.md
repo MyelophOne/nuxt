@@ -1,3 +1,7 @@
+## 📦 Release 0.21.1 (2026-10-13)
+### 🐛 Bug Fixes
+- update dependencies
+
 ## 📦 Release 0.21.0 (2026-10-08)
 ### ✨ Features
 - update to nuxt v4.6.0
