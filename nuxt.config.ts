@@ -33,7 +33,7 @@ const pkg = JSON.parse(
 
 const version = pkg.version;
 
-const dateActuality = '2026-10-14';
+const dateActuality = '2026-10-17';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
@@ -43,6 +43,26 @@ const defaultSeo = {
 
 const isSSG = process.env.NUXT_STATIC === 'true';
 const isPlayground = process.env.NUXT_PLAYGROUND === 'true';
+
+const getSiteUrl = (dev: boolean): string | undefined => {
+	if (dev) {
+		const host = process.env.NUXT_HOST || 'localhost';
+		const port = process.env.NUXT_PORT || '3000';
+
+		return `http://${host}:${port}`;
+	}
+
+	const url =
+		process.env.NUXT_SITE_URL ||
+		process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+		process.env.VERCEL_URL ||
+		process.env.CF_PAGES_URL ||
+		process.env.URL;
+
+	if (!url) return undefined;
+
+	return new URL(/^https?:\/\//.test(url) ? url : `https://${url}`).origin;
+};
 
 const moreModules: string[] = [];
 const { resolve } = createResolver(import.meta.url);
@@ -617,5 +637,11 @@ export default defineNuxtConfig({
 			version,
 			nuxtVersion: '',
 		},
+	},
+	site: {
+		url: getSiteUrl(process.env.NODE_ENV !== 'production'),
+	},
+	linkChecker: {
+		runOnBuild: false,
 	},
 });
