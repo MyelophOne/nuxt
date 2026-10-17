@@ -1,3 +1,7 @@
+## 📦 Release 0.22.0 (2026-10-17)
+### ✨ Features
+- update dependencies
+
 ## 📦 Release 0.21.1 (2026-10-13)
 ### 🐛 Bug Fixes
 - update dependencies
