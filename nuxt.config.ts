@@ -33,12 +33,33 @@ const pkg = JSON.parse(
 
 const version = pkg.version;
 
-const dateActuality = '2026-10-19';
+const dateActuality = '2026-10-28';
 const banner = `/* © 2025 Aliaksandr Ivanou (https://aleksivanov.me/). All rights reserved. @MyelophOne/Nuxt v${version}. This app bundle licenses: /_nuxt/licenses.md */\n`;
 const defaultSeo = {
 	title: 'Our Nuxt WebSite | by MyelophOne/Nuxt',
 	description:
 		'Welcome to our new amazing website where you can explore exciting content and features! Empowered by MyelophOne',
+};
+
+const permissionsPolicy = {
+	accelerometer: [],
+	autoplay: ['self', '*'],
+	camera: ['self'],
+	'display-capture': [],
+	'encrypted-media': [],
+	fullscreen: ['self', '*'],
+	geolocation: ['self'],
+	gyroscope: [],
+	magnetometer: [],
+	microphone: ['self'],
+	midi: [],
+	payment: ['self'],
+	'picture-in-picture': ['self', '*'],
+	'publickey-credentials-get': [],
+	'screen-wake-lock': [],
+	'sync-xhr': ['self'],
+	usb: [],
+	'xr-spatial-tracking': [],
 };
 
 const isSSG = process.env.NUXT_STATIC === 'true';
@@ -121,7 +142,7 @@ export default defineNuxtConfig({
 		componentIslands: true,
 		clientFallback: true,
 		typedPages: true,
-		payloadExtraction: isSSG ? false : 'client',
+		payloadExtraction: /*isSSG ? false : */ 'client',
 		nitroAutoImports: true,
 		prefetchPreloadTags: true,
 		watcher: 'builder',
@@ -389,15 +410,7 @@ export default defineNuxtConfig({
 			xDownloadOptions: 'noopen',
 			xFrameOptions: 'SAMEORIGIN',
 			xPermittedCrossDomainPolicies: 'none',
-			permissionsPolicy: {
-				'picture-in-picture': ['self', '*'],
-				fullscreen: ['self', '*'],
-				autoplay: ['self', '*'],
-				geolocation: ['self'],
-				camera: ['self'],
-				microphone: ['self'],
-				payment: ['self'],
-			},
+			permissionsPolicy,
 		},
 		requestSizeLimiter: {
 			maxRequestSizeInBytes: 2000000,
@@ -499,6 +512,30 @@ export default defineNuxtConfig({
 		css: false,
 	},
 	hooks: {
+		'modules:before'() {
+			const nuxt = useNuxt();
+			const headers = nuxt.options.security?.headers;
+			if (!headers || typeof headers !== 'object') return;
+			const policy = headers.permissionsPolicy;
+			if (policy === undefined) return;
+			const configuredPolicy = policy === false ? false : { ...policy };
+			nuxt.hook('modules:done', () => {
+				for (const resolvedHeaders of [
+					nuxt.options.security?.headers,
+					nuxt.options.runtimeConfig.security?.headers,
+				]) {
+					if (
+						resolvedHeaders &&
+						typeof resolvedHeaders === 'object'
+					) {
+						resolvedHeaders.permissionsPolicy =
+							configuredPolicy === false
+								? false
+								: { ...configuredPolicy };
+					}
+				}
+			});
+		},
 		'nitro:config'(nitroConfig) {
 			if (process.env.NUXT_PROFILE === '1') {
 				nitroConfig.plugins ||= [];

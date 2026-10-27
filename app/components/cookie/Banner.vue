@@ -9,6 +9,13 @@ const handleSettings = () => {
 };
 
 const { t } = useMultiLang(["cookies"]);
+const mobileActionBarOffsets = useState<Record<string, number>>(
+	"myelophone:mobile-action-bar-offsets",
+	() => ({}),
+);
+const mobileActionBarOffset = computed(() =>
+	Math.max(0, ...Object.values(mobileActionBarOffsets.value)),
+);
 </script>
 
 <template>
@@ -23,7 +30,10 @@ const { t } = useMultiLang(["cookies"]);
 	>
 		<div
 			v-if="isBannerVisible"
-			class="fixed bottom-4 left-4 right-4 z-60 md:right-auto md:left-6 md:bottom-6 max-w-100 mx-auto md:m-0"
+			class="cookie-banner fixed bottom-4 left-4 right-4 z-60 md:right-auto md:left-6 md:bottom-6 max-w-100 mx-auto md:m-0"
+			:style="{
+				'--cookie-mobile-action-offset': `${mobileActionBarOffset}px`,
+			}"
 			data-nosnippet
 		>
 			<div
@@ -68,3 +78,16 @@ const { t } = useMultiLang(["cookies"]);
 		</div>
 	</Transition>
 </template>
+
+<style scoped>
+@media (width < 768px) {
+	.cookie-banner {
+		bottom: calc(1rem + var(--cookie-mobile-action-offset, 0px));
+		max-block-size: calc(
+			100dvh - var(--cookie-mobile-action-offset, 0px) - 2rem
+		);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+}
+</style>

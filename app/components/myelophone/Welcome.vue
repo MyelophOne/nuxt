@@ -67,16 +67,7 @@
 			>
 		</p>
 		<p class="max-w-xl mb-6 font-semibold dark:opacity-70">
-			<button @click="settingsStore.toggleTheme" class="mb-2">
-				{{ t("myelophone.toggleTheme") }}
-				<span class="dark:hidden"
-					><UiIcon
-						name="solar:moon-stars-line-duotone"
-						class="theme-icon" /></span
-				><span class="hidden dark:inline"
-					><UiIcon name="solar:sun-broken" class="theme-icon"
-				/></span>
-			</button>
+			<UiThemeToggle show-label />
 		</p>
 		<p
 			class="text-sm max-w-xl mb-6 opacity-30 hover:opacity-100 transition-opacity duration-500 sticky top-[100vh]"
@@ -87,8 +78,6 @@
 </template>
 
 <script setup lang="ts">
-const pinia = useNuxtApp().$pinia;
-const settingsStore = useSettingsStore(pinia);
 const nuxtVersion = useNuxtVersion();
 
 const config = useRuntimeConfig();
@@ -97,11 +86,3 @@ const { t } = useMultiLang(["myelophone"]);
 
 const version = config.public?.version || "unknown";
 </script>
-
-<style scoped>
-.theme-icon {
-	width: 1.5rem;
-	height: 1.5rem;
-	vertical-align: middle;
-}
-</style>

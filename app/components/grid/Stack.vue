@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { getYoutubeEmbed, getYoutubePoster } from "~/utils/ytVideo";
-
 interface Props {
 	as?: string;
 	id?: string;
@@ -134,7 +132,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<div
+	<component
 		ref="rootRef"
 		:is="as"
 		:id="id"
@@ -207,7 +205,7 @@ onUnmounted(() => {
 		</video>
 
 		<slot />
-	</div>
+	</component>
 </template>
 
 <style>

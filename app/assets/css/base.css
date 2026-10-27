@@ -91,27 +91,14 @@ h4 {
 	line-height: 1.35;
 }
 
-a:not([class*='text-']),
 h6:not([class*='text-']),
 li:not([class*='text-']),
-p:not([class*='text-']),
-span:not([class*='text-']) {
+p:not([class*='text-']) {
 	font-size: 1rem;
 }
 
-p a,
-p span,
-a span,
-li a,
-li span,
-span[class^='text-'] {
-	font-size: inherit;
-}
-
-a,
 li,
-p,
-span {
+p {
 	line-height: 1.35;
 }
 

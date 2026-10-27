@@ -423,6 +423,8 @@ Every discovered post is added to `/sitemap.xml` and the Nitro prerender route l
 
 Global styles are loaded by the base `app.vue`. Tailwind scans Vue files across the layer and consumer project. The theme is driven by `data-theme="light|dark"` and these CSS variables:
 
+Inline text and links retain native font-size and line-height inheritance. Nested heading/button text therefore follows its parent, while explicit typography utilities can still set a different size. Do not add blanket inline resets that force every `span` to a body-text size.
+
 ```css
 :root {
  --ui-bg: #f7f7f7;
@@ -432,16 +434,23 @@ Global styles are loaded by the base `app.vue`. Tailwind scans Vue files across 
 }
 ```
 
-Use the settings store to switch or synchronize themes:
+Use the auto-imported `UiThemeToggle` for a visible theme control:
 
 ```vue
-<script setup lang="ts">
-const settings = useSettingsStore();
-</script>
+<UiThemeToggle />
+<UiThemeToggle label="Switch theme" class="my-theme-control" />
+<UiThemeToggle show-label />
+<UiThemeToggle show-label label="Switch theme" />
+```
 
-<template>
- <UiButton label="Toggle theme" @click="settings.toggleTheme()" />
-</template>
+Its optional `label` overrides the existing localized `myelophone.toggleTheme` name. `showLabel` defaults to `false` (icon only); `show-label` renders the same localized or custom label beside the icon. `MyelophoneWelcome` uses this visible-text variant. It composes `UiButton` and `UiIcon`, renders a native 44px-minimum button with `aria-pressed`, and delegates all state/persistence to `useSettingsStore`. Persisted theme state is loaded after hydration; the existing head script applies the color scheme before paint. Attributes such as `class`, `id` and `disabled` reach the underlying button. Icon visibility follows the existing theme classes through wrappers: putting `hidden` directly on `UiIcon` conflicts with the unlayered `.app-icon` display rule. Consumers must not recreate the switch or mount a second theme provider.
+
+Use the settings store directly for programmatic theme changes:
+
+```ts
+const settings = useSettingsStore();
+// In an existing client interaction, when a specific theme is required:
+settings.setTheme('dark');
 ```
 
 The choice is stored locally, synchronized across tabs, reflected in the browser theme color, and initialized before paint to reduce theme flashing.
@@ -710,7 +719,7 @@ When adding another complete page or large ready page fragment:
 8. Put visual defaults in a typed appearance object, convert it with `readyCssVariables()`, and bind the result to the root element.
 9. Forward `$attrs` and merge `$attrs.style` after the default root variables.
 10. Add named slots only where arbitrary site markup is genuinely useful; prefer typed content overrides for normal changes.
-11. Add a separate route under `playground/pages/` for development. Do not replace framework or application pages merely to demonstrate the component.
+11. Add a separate route under `playground/app/pages/` for Nuxt 4 development. Verify the resolved source directory and route discovery; do not replace framework or application pages merely to demonstrate the component.
 12. Run type checking and a production build before considering the ready component complete.
 
 ## Reveal animations
@@ -2046,6 +2055,23 @@ All components below are auto-imported. Standard `$attrs` and the documented slo
 
 ### UI primitives
 
+#### Mobile bottom actions
+
+Place `UiMobileActionBar` once, at the end of a page or layout (after the page/footer content). It fixes its default slot to the bottom of screens narrower than 768 CSS pixels; on larger screens and in print it occupies no space. Supply **one to three direct action elements**: existing `UiButton` components, links, or custom buttons/icons. Each action gets equal width and at least a 48px touch target. The rounded panel floats 0.5rem above the viewport edge, respecting the device safe area. Use short labels for three actions; longer labels can wrap. At enlarged text sizes, actions reflow into fewer columns to keep labels readable. Give icon-only actions an accessible name.
+
+```vue
+<UiMobileActionBar label="Связаться с нами">
+  <UiButton as="a" href="https://wa.me/1234567890">WhatsApp ↗</UiButton>
+  <UiButton as="a" href="tel:+1234567890">Позвонить</UiButton>
+</UiMobileActionBar>
+```
+
+`label` is required and names the accessible action group. `reserveSpace` defaults to `true`: an in-flow spacer follows the measured panel height plus its bottom gap, including wrapped labels and the device safe area. Put the component after all content so the last content can scroll above it. Set `:reserve-space="false"` when the surrounding layout already reserves space. The server/no-JS spacer uses a 5rem plus safe-area estimate; after mounting, a cleaned-up `ResizeObserver` tracks the actual height. Visibility is CSS-only, so SSR and initial hydration use identical markup.
+
+The existing cookie banner automatically sits 1rem above the mobile panel, including its safe area. Its desktop position is preserved; hiding or unmounting the panel releases this offset. No extra consent component or configuration is needed.
+
+Standard attributes/classes/styles reach the outer wrapper. Override `--mobile-action-bar-bg`, `--mobile-action-bar-text`, `--mobile-action-bar-border`, `--mobile-action-bar-radius`, `--mobile-action-bar-action-radius`, `--mobile-action-bar-shadow`, `--mobile-action-bar-gap`, `--mobile-action-bar-bottom` or `--mobile-action-bar-z-index` there. Defaults follow `--ui-bg` and `--ui-text`, with a subtle border and shadow; the stacking level is 40, below modal overlays. The bottom offset is included in the measured spacer and cookie-banner clearance. Mount outside ancestors with `transform`, `filter`, `perspective` or containment that changes the containing block for fixed elements. The component does not add contact data, own click handlers, or replace consent/dialog UI. Playground: `/mobile-action-bar`.
+
 | Component            | Purpose and principal props/events                                                                                      |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `UiAccordion`        | `items[{ label, content, defaultOpen }]`, `multiple`, `faq`, `ui`; item/header/content scoped slots.                    |
@@ -2923,6 +2949,7 @@ To validate forms @myelophonenuxt uses Valibot.
 - Lazy route/component/media behavior and selective route preloading.
 - Per-locale translation chunks and build-time unused-key removal.
 - Strict CSP with nonces, HSTS, content-type/frame/referrer/download/DNS/cross-origin/permissions headers.
+- `Permissions-Policy` uses an explicit directive list, preserved after security module defaults are merged.
 - 2 MB general request and 10 MB upload limits.
 - In-process rate limit of 150 tokens per five minutes.
 - Console log/error/debug/trace removal from production bundles.
