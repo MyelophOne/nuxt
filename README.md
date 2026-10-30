@@ -858,6 +858,8 @@ tn("products.items", 12_500); // compact, locale-aware {count}
 
 Missing active-locale translations fall back to the default locale when that namespace is available, and unresolved values return the full translation key. Interpolated numbers use locale-aware `Intl.NumberFormat` formatting.
 
+Matching namespace files are deep-merged in layer → application → playground order. Application locales can add service translations (such as `cookies.googleMaps.name`) or override individual defaults without copying the complete layer dictionary. Non-overridden layer keys are retained.
+
 Namespaces are loaded lazily with `import.meta.glob`, cached in shared Nuxt state, loaded again when the active locale changes, and SSR-serialized for hydration. Set `myelophone.bundleTranslations: false` to group translation assets into separate per-locale chunks; keep it `true` to use the normal bundle grouping.
 
 ### Dynamic keys and tree shaking
@@ -3029,3 +3031,8 @@ Author: [Aliaksandr Ivanou](https://github.com/aleksivanou).
 Copyright © 2026 Aliaksandr Ivanou. All rights reserved.
 
 This project is licensed under the **PolyForm Noncommercial License 1.0.0**. Commercial use is not granted by that license. Read [LICENSE](LICENSE) before using, redistributing, or building on the project.
+
+
+ViewImgSlider image items accept optional alt, width and height in addition to type and uri. Images use the registered SafeNuxtImg component and are present in SSR output; omitted dimensions default to 1600×900.
+
+ImageItem also accepts an optional sizes value. ViewImgSlider defaults to `xs:100vw lg:1600px`, so responsive candidates use configured breakpoints rather than the 1w/2w fallback produced by a standalone `100vw` in the current image pipeline.

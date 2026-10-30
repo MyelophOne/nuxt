@@ -1,5 +1,5 @@
 <script setup lang="ts">
-export type ImageItem = { type: "image"; uri: string };
+export type ImageItem = { type: "image"; uri: string; alt?: string; width?: number; height?: number; sizes?: string };
 export type VideoItem = { type: "video"; uri: string; poster?: string };
 export type MediaItem = ImageItem | VideoItem;
 
@@ -124,9 +124,13 @@ const setVideoRef = (el: any, index: number) => {
 	>
 		<div ref="scrollerRef" class="scroller" @scroll.passive="onScroll">
 			<div v-for="(item, index) in media" :key="index" class="slide">
-				<ImgWithLoader
+				<SafeNuxtImg
 					v-if="item.type === 'image'"
 					:src="item.uri"
+					:alt="item.alt || ''"
+					:width="item.width || 1600"
+					:height="item.height || 900"
+					:sizes="item.sizes || 'xs:100vw lg:1600px'"
 					class="media-content"
 					loading="lazy"
 					draggable="false"

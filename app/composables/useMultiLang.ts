@@ -126,15 +126,18 @@ export function useMultiLang(namespaces: string | string[]) {
 		if (translationsState.value[lang]?.[ns]) return;
 
 		const targetSuffix = `locales/${lang}/${ns}.json`;
-		const matchEntry = Object.entries(allLocales).find(([filePath]) =>
+		// Layer defaults are extended by application and then playground locales.
+		const entries = Object.entries(allLocales).filter(([filePath]) =>
 			filePath.replace(/\\/g, '/').endsWith(targetSuffix),
 		);
-
-		if (!matchEntry) return;
+		if (!entries.length) return;
 
 		try {
-			const mod: any = await matchEntry[1]();
-			const data = expandDottedKeys(mod.default || mod);
+			const data: TranslationMap = {};
+			for (const [, load] of entries) {
+				const mod: any = await load();
+				deepMerge(data, expandDottedKeys(mod.default || mod));
+			}
 
 			if (!translationsState.value[lang]) {
 				translationsState.value[lang] = {};
