@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
+defineOptions({ inheritAttrs: false });
+const attrs = useAttrs();
 const props = defineProps({
 	modelValue: [String, Number],
 	id: {
@@ -20,22 +23,41 @@ const props = defineProps({
 		default: "end",
 	},
 	disabled: Boolean,
+	phoneFilter: Boolean,
 });
 
 const emit = defineEmits(["update:modelValue"]);
 
-const generatedId = ref<string | undefined>(undefined);
+const generatedId = useId();
+const inputId = computed(() => props.id || generatedId);
+const inputAttrs = () =>
+	Object.fromEntries(
+		Object.entries(attrs).filter(
+			([key]) => key !== "class" && key !== "style",
+		),
+	);
 
-onMounted(() => {
-	if (!props.id && !generatedId.value) {
-		generatedId.value = `input-${Math.random().toString(36).slice(2)}`;
+function onInput(event: Event) {
+	const input = event.target as HTMLInputElement;
+	if (props.phoneFilter) {
+		const caret = input.selectionStart;
+		const position =
+			caret === null
+				? null
+				: cleanUiPhone(input.value.slice(0, caret)).length;
+		input.value = cleanUiPhone(input.value);
+		if (position !== null && props.type === "tel")
+			input.setSelectionRange(position, position);
 	}
-});
-
-const inputId = computed(() => props.id || generatedId.value);
+	emit("update:modelValue", input.value);
+}
 
 const hasValue = computed(
-	() => props.modelValue != null && props.modelValue !== "",
+	() =>
+		(props.modelValue != null && props.modelValue !== "") ||
+		["date", "time", "datetime-local", "month", "week"].includes(
+			props.type,
+		),
 );
 
 const iconClasses = computed(
@@ -52,19 +74,20 @@ const inputPadding = computed(() => {
 </script>
 
 <template>
-	<label :for="inputId" class="relative block">
+	<label
+		:for="inputId"
+		class="relative block"
+		:class="attrs.class"
+		:style="attrs.style as StyleValue"
+	>
 		<input
+			v-bind="inputAttrs()"
 			:id="inputId"
 			:type="type"
 			:value="modelValue"
 			:placeholder="placeholder"
 			:disabled="disabled"
-			@input="
-				emit(
-					'update:modelValue',
-					($event.target as HTMLInputElement).value,
-				)
-			"
+			@input="onInput"
 			class="peer w-full h-11 rounded-md border bg-(--ui-bg) text-(--ui-text) transition-all sm:text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 disabled:opacity-60 disabled:cursor-not-allowed mb-2 leading-6 pt-2.5 pb-2.5"
 			:class="inputPadding"
 		/>

@@ -10,6 +10,7 @@ import defaultBlog from './app/modules/default-blog/index.ts';
 import defaultSitemap from './app/modules/default-sitemap/index.ts';
 
 import { cleanEmptyCssPlugin } from './vite/plugins/clean-css.ts';
+import { migrateCssSourcemap } from './vite/utils/css-sourcemap.ts';
 import {
 	blogContentPlugin,
 	defaultBlogContentDirectories,
@@ -112,7 +113,6 @@ export default defineNuxtConfig({
 		'nuxt-link-checker',
 		'nuxt-seo-utils',
 		'nuxt-og-image',
-		'@nuxtjs/fontaine',
 		'@nuxt/scripts',
 		'@nuxt/image',
 		'@nuxt/fonts',
@@ -140,9 +140,8 @@ export default defineNuxtConfig({
 		restoreState: true,
 		viewTransition: true,
 		componentIslands: true,
-		clientFallback: true,
 		typedPages: true,
-		payloadExtraction: /*isSSG ? false : */ 'client',
+		payloadExtraction: 'client',
 		nitroAutoImports: true,
 		prefetchPreloadTags: true,
 		watcher: 'builder',
@@ -221,6 +220,10 @@ export default defineNuxtConfig({
 	},
 	vite: {
 		clearScreen: false,
+		ssr: {
+			// Colada must share the bundled Pinia instance and injection symbol.
+			noExternal: ['@pinia/colada'],
+		},
 		build: {
 			cssMinify: 'esbuild',
 			sourcemap: process.env.NODE_ENV === 'development',
@@ -254,9 +257,6 @@ export default defineNuxtConfig({
 					],
 				},
 			},
-		},
-		css: {
-			devSourcemap: true,
 		},
 		plugins: [
 			{
@@ -368,7 +368,7 @@ export default defineNuxtConfig({
 		},
 		optimizeDeps: {
 			exclude: ['vue'],
-			include: ['@vue/devtools-core', '@vue/devtools-kit'],
+			include: ['@vue/devtools-kit'],
 		},
 	},
 	security: {
@@ -512,6 +512,7 @@ export default defineNuxtConfig({
 		css: false,
 	},
 	hooks: {
+		'vite:extendConfig': migrateCssSourcemap,
 		'modules:before'() {
 			const nuxt = useNuxt();
 			const headers = nuxt.options.security?.headers;

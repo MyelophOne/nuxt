@@ -1,155 +1,288 @@
-<template>
-	<div class="lightbox-grid">
-		<div
-			v-for="(img, index) in images"
-			:key="index"
-			:class="['pic-item', itemClass]"
-			:style="itemStyle"
-			@click="showImg(index)"
-		>
-			<SafeImgWithLoader
-				:src="extractSrc(img)"
-				:alt="extractTitle(img)"
-				crossorigin="anonymous"
-				:class="imgClass"
-				:style="[{ cursor: 'pointer' }, imgStyle]"
-			/>
-		</div>
+<script setup lang="ts">
+import type { CSSProperties } from "vue";
+type LightboxImage = string | Partial<GalleryImage>;
+type ClassValue =
+	string | Record<string, unknown> | (string | Record<string, unknown>)[];
+const props = withDefaults(
+	defineProps<{
+		images: LightboxImage[];
+		itemStyle?: CSSProperties | CSSProperties[];
+		imgStyle?: CSSProperties | CSSProperties[];
+		itemClass?: ClassValue;
+		imgClass?: ClassValue;
+		lightboxProps?: Record<string, unknown>;
+		visible?: boolean;
+		index?: number;
+		layout?: "default" | "mosaic" | "single";
+		maxPreviews?: number;
+		label?: string;
+		allLabel?: string;
+		priority?: boolean;
+	}>(),
+	{
+		images: () => [],
+		itemStyle: () => ({}),
+		imgStyle: () => ({ maxWidth: "100%" }),
+		itemClass: "",
+		imgClass: "",
+		lightboxProps: () => ({}),
+		layout: "default",
+		maxPreviews: 9,
+	},
+);
+const emit = defineEmits<{
+	"update:visible": [value: boolean];
+	"update:index": [value: number];
+	open: [index: number];
+	hide: [];
+}>();
+const { t } = useMultiLang("reusable-ui");
+const VueEasyLightbox = defineAsyncComponent(() => import("vue-easy-lightbox"));
+const internalVisible = ref(false);
+const internalIndex = ref(0);
+const openedOnce = ref(false);
+let opener: HTMLElement | null = null;
+const visibleRef = computed(() => props.visible ?? internalVisible.value);
+const indexRef = computed(() => props.index ?? internalIndex.value);
+const viewerVisible = computed(
+	() => props.lightboxProps.visible ?? visibleRef.value,
+);
+const previews = computed(() =>
+	props.images.slice(
+		0,
+		props.layout === "single"
+			? 1
+			: props.layout === "mosaic"
+				? Math.max(1, Math.floor(props.maxPreviews) || 1)
+				: undefined,
+	),
+);
+const extractSrc = (image: LightboxImage) =>
+	typeof image === "string" ? image : image.src || "";
+const extractAlt = (image: LightboxImage) =>
+	typeof image === "string" ? "" : (image.alt ?? image.title ?? "");
+function showImg(index: number, event?: Event) {
+	if (index < 0 || index >= props.images.length) return;
+	opener =
+		event?.currentTarget instanceof HTMLElement
+			? event.currentTarget
+			: document.activeElement instanceof HTMLElement
+				? document.activeElement
+				: null;
+	internalIndex.value = index;
+	internalVisible.value = true;
+	openedOnce.value = true;
+	emit("update:index", index);
+	emit("update:visible", true);
+	emit("open", index);
+}
+function onHide() {
+	internalVisible.value = false;
+	emit("update:visible", false);
+	emit("hide");
+	if (opener?.isConnected) opener.focus({ preventScroll: true });
+}
+function onIndexChange(_oldIndex: number, newIndex: number) {
+	internalIndex.value = newIndex;
+	emit("update:index", newIndex);
+}
+watch(viewerVisible, (value, previous) => {
+	if (value) {
+		openedOnce.value = true;
+		if (
+			!previous &&
+			import.meta.client &&
+			document.activeElement instanceof HTMLElement
+		)
+			opener = document.activeElement;
+	}
+});
+watch(
+	() => props.images.length,
+	(length) => {
+		if (!length && visibleRef.value && !props.lightboxProps.imgs) onHide();
+		else if (length && indexRef.value >= length) {
+			internalIndex.value = length - 1;
+			emit("update:index", length - 1);
+		}
+	},
+);
+defineExpose({ open: showImg, close: onHide });
+</script>
 
+<template>
+	<div
+		class="lightbox-grid"
+		:class="{
+			'lightbox-mosaic': layout === 'mosaic',
+			'lightbox-single': layout === 'single',
+		}"
+		:aria-label="label || t('reusable-ui.gallery')"
+	>
+		<slot name="previews" :images="images" :open="showImg">
+			<UiButton
+				v-for="(img, position) in previews"
+				:key="`${extractSrc(img)}-${position}`"
+				as="a"
+				:href="extractSrc(img)"
+				target="_blank"
+				rel="noopener noreferrer"
+				variant="ghost"
+				:class="['pic-item', itemClass]"
+				:style="itemStyle"
+				aria-haspopup="dialog"
+				:aria-label="
+					t('reusable-ui.openImage', { number: position + 1 })
+				"
+				@click.prevent="showImg(position, $event)"
+			>
+				<SafeNuxtImg
+					:src="extractSrc(img)"
+					:alt="extractAlt(img)"
+					:width="typeof img === 'object' ? img.width || 1200 : 1200"
+					:height="typeof img === 'object' ? img.height || 800 : 800"
+					:sizes="
+						typeof img === 'object'
+							? img.sizes || 'xs:100vw lg:800px'
+							: 'xs:100vw lg:800px'
+					"
+					:loading="priority && position === 0 ? 'eager' : 'lazy'"
+					:preload="priority && position === 0"
+					:fetchpriority="
+						priority && position === 0 ? 'high' : undefined
+					"
+					:class="imgClass"
+					:style="imgStyle"
+				/>
+			</UiButton>
+			<UiButton
+				v-if="layout !== 'default' && images.length > 1"
+				type="button"
+				class="lightbox-all"
+				variant="outline"
+				leading-icon="lucide:images"
+				:label="
+					allLabel ||
+					t('reusable-ui.allImages', { count: images.length })
+				"
+				@click="showImg(0, $event)"
+			/>
+		</slot>
 		<ClientOnly>
 			<VueEasyLightbox
+				v-if="openedOnce || viewerVisible"
 				:visible="visibleRef"
 				:imgs="images"
 				:index="indexRef"
 				v-bind="lightboxProps"
 				@hide="onHide"
+				@on-index-change="onIndexChange"
 			>
-				<template #loading>
-					<div class="lightbox-loader-overlay">
-						<svg
-							width="32"
-							height="32"
-							viewBox="0 0 32 32"
-							xmlns="http://www.w3.org/2000/svg"
-							class="loadersvg-lightbox"
-						>
-							<g fill="none" fill-rule="evenodd">
-								<g fill="var(--loader-fill-color, #fff)">
-									<path
-										d="M16 32a16 16 0 110-32 16 16 0 010 32zm0-2a14 14 0 100-28 14 14 0 000 28z"
-										fill-rule="nonzero"
-										opacity=".1"
-									/>
-									<path
-										d="M16 2V0A16 16 0 000 16h2A14 14 0 0116 2z"
-									/>
-								</g>
-							</g>
-						</svg>
-					</div>
-				</template>
+				<template #loading
+					><div class="lightbox-loader-overlay">
+						<span class="loadersvg-lightbox" /></div
+				></template>
 			</VueEasyLightbox>
 		</ClientOnly>
 	</div>
 </template>
 
-<script setup lang="ts">
-interface LightboxImg {
-	src?: string;
-	title?: string;
-	alt?: string;
-}
-import type { PropType, CSSProperties } from "vue";
-const VueEasyLightbox = defineAsyncComponent(() => import("vue-easy-lightbox"));
-
-const props = defineProps({
-	images: {
-		type: Array as PropType<(string | LightboxImg)[]>,
-		required: true,
-		default: () => [],
-	},
-	itemStyle: {
-		type: [Object, Array] as PropType<CSSProperties | CSSProperties[]>,
-		default: () => ({}),
-	},
-	imgStyle: {
-		type: [Object, Array] as PropType<CSSProperties | CSSProperties[]>,
-		default: () => ({ maxWidth: "100%" }),
-	},
-	itemClass: {
-		type: [String, Object, Array] as PropType<
-			| string
-			| Record<string, unknown>
-			| (string | Record<string, unknown>)[]
-		>,
-		default: "",
-	},
-	imgClass: {
-		type: [String, Object, Array] as PropType<
-			| string
-			| Record<string, unknown>
-			| (string | Record<string, unknown>)[]
-		>,
-		default: "",
-	},
-	lightboxProps: { type: Object, default: () => ({}) },
-});
-
-const visibleRef = ref(false);
-const indexRef = ref(0);
-
-const extractSrc = (img: any) =>
-	typeof img === "string" ? img : img?.src || "";
-const extractTitle = (img: any) =>
-	typeof img === "object" ? img.title || "" : "";
-
-const showImg = (index: number) => {
-	indexRef.value = index;
-	visibleRef.value = true;
-};
-const onHide = () => (visibleRef.value = false);
-</script>
-
 <style scoped>
+.lightbox-grid {
+	width: 100%;
+	position: relative;
+}
+.pic-item {
+	display: block;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: var(--gallery-radius, 0.75rem);
+	overflow: hidden;
+	background: var(--ui-bg);
+}
+.pic-item :deep(img) {
+	display: block;
+	width: 100%;
+	height: auto;
+	transition: transform 0.3s ease;
+}
+.pic-item:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
+}
+.lightbox-mosaic {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: var(--gallery-gap, 0.625rem);
+}
+.lightbox-mosaic .pic-item:first-child {
+	grid-column: span 3;
+	grid-row: span 2;
+}
+.lightbox-mosaic .pic-item {
+	min-height: 0;
+}
+.lightbox-mosaic .pic-item :deep(img),
+.lightbox-single .pic-item :deep(img) {
+	height: 100%;
+	object-fit: cover;
+	aspect-ratio: 3 / 2;
+}
+.lightbox-mosaic .pic-item:only-of-type {
+	grid-column: 1 / -1;
+}
+.lightbox-all {
+	position: absolute;
+	right: 1rem;
+	bottom: 1rem;
+	max-width: calc(100% - 2rem);
+	white-space: normal;
+}
 .lightbox-loader-overlay {
 	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100vw;
-	height: 100vh;
+	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	pointer-events: none;
-	z-index: 9999;
 }
-
 .loadersvg-lightbox {
-	animation: rotate 0.8s linear infinite;
+	width: 2rem;
+	height: 2rem;
+	border: 3px solid transparent;
+	border-top-color: var(--loader-fill-color, currentColor);
+	border-radius: 50%;
+	animation: lightbox-rotate 0.8s linear infinite;
 }
-
-@keyframes rotate {
-	from {
-		transform: rotate(0deg);
-	}
+@keyframes lightbox-rotate {
 	to {
 		transform: rotate(360deg);
 	}
 }
-
-:deep(.vel-loading) {
-	background: transparent !important;
-	display: block !important;
+@media (hover: hover) and (pointer: fine) {
+	.pic-item:hover :deep(img) {
+		transform: scale(1.03);
+	}
 }
-
-.lightbox-grid {
-	width: 100%;
+@media (prefers-reduced-motion: reduce) {
+	.pic-item :deep(img) {
+		transition: none;
+	}
+	.pic-item:hover :deep(img) {
+		transform: none;
+	}
+	.loadersvg-lightbox {
+		animation: none;
+	}
 }
-
-.pic-item {
-	transition: opacity 0.2s;
-}
-.pic-item:hover {
-	opacity: 0.8;
+@media (max-width: 639px) {
+	.lightbox-mosaic {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.lightbox-mosaic .pic-item:first-child {
+		grid-column: 1 / -1;
+		grid-row: auto;
+	}
 }
 </style>

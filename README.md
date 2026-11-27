@@ -425,6 +425,8 @@ Global styles are loaded by the base `app.vue`. Tailwind scans Vue files across 
 
 Inline text and links retain native font-size and line-height inheritance. Nested heading/button text therefore follows its parent, while explicit typography utilities can still set a different size. Do not add blanket inline resets that force every `span` to a body-text size.
 
+Font resolution and fallback metrics are handled by `@nuxt/fonts`. Do not also register `@nuxtjs/fontaine`: its legacy CSS transform breaks Tailwind's `font-family: var(..., ...)` declarations. The default system-font stack and local `color-emoji` face remain defined in `app/assets/css/tailwind.css` and `app/assets/css/base.css`.
+
 ```css
 :root {
  --ui-bg: #f7f7f7;
@@ -450,7 +452,7 @@ Use the settings store directly for programmatic theme changes:
 ```ts
 const settings = useSettingsStore();
 // In an existing client interaction, when a specific theme is required:
-settings.setTheme('dark');
+settings.setTheme("dark");
 ```
 
 The choice is stored locally, synchronized across tabs, reflected in the browser theme color, and initialized before paint to reduce theme flashing.
@@ -2962,6 +2964,66 @@ To validate forms @myelophonenuxt uses Valibot.
 
 Review the security and performance defaults against each application's threat model. In particular, CORS currently permits all origins, CSRF and SRI are disabled, inline styles are allowed by CSP, and the rate-limit store is process-local.
 
+## Reusable data-driven components
+
+Interactive examples: **`/reusable-components` in the playground**, including light/dark and locale controls. The examples use local artwork and fixed sample data; no Gelena backend or new dependency is required.
+
+### Extended existing components
+
+- **`UiLightBox`** remains the gallery/viewer owner. Original `images`, `itemStyle`, `imgStyle`, `itemClass`, `imgClass`, and `lightboxProps` remain supported. Images accept strings or `{ src, alt?, title?, width?, height?, sizes? }`. Added `layout="default|mosaic|single"` (default: original list), `maxPreviews=9` for mosaic, `label`, `allLabel`, and opt-in `priority` for the first/LCP image. Previews are SSR images with original-file links; only the viewer is client-only and loaded on first open. Do not add a second lightbox implementation.
+  - Optional `v-model:visible` and `v-model:index`; events: `open(index)`, `hide`, `update:visible`, `update:index`. Exposed methods: `open(index, event?)`, `close()`. The `previews` slot receives `{ images, open }` for custom arrangements. `lightboxProps` still overrides viewer props for existing consumers; do not mix its `visible/index` with the new controlled models. Viewer close restores focus to the opener. The `--gallery-radius` and `--gallery-gap` CSS variables customize previews.
+- **`ConsentGoogleMap`** adds `embedUrl?: string` and an `empty` slot. An explicitly supplied URL takes precedence over `address`/`placeId`; invalid URLs never fall back to an address. Only HTTPS `www.google.com` / `maps.google.com` embed paths (`/maps/embed`, `/maps/d/.../embed`, or `/maps?output=embed`) are accepted; credentials and non-default ports are rejected. Query/route parameters are preserved. Functional consent and application CSP still apply.
+- **`ViewCurrencySelect`** adds standalone `v-model` + `currencies: string[]`, `label`, `disabled`, and `change(code)`. Supplying a string `modelValue` selects standalone mode without initializing or mutating the cart. Omitting it preserves cart-backed behavior. Choose the mode at component creation; do not switch a mounted instance between modes. The `trigger` slot additionally receives `{ currency, open }`; existing class props remain supported.
+- **`UiInput`** forwards non-style native attributes and listeners (`name`, `required`, `min`, `max`, `autocomplete`, `aria-*`, etc.) to the actual input. `class` and `style` remain on the label wrapper. IDs are stable through SSR/hydration. Optional `phoneFilter` filters characters and limits digits to 15; it is not number validation and is not enabled by `type="tel"` alone. Use `type="tel" phone-filter` to retain caret position while filtering. Date/time labels remain floated even for empty native date fields.
+- Shared **`UiModal`** now labels dialogs, cycles keyboard focus, restores opener focus, and supports an optional localized `closeLabel`. **`UiCheckbox`** uses per-instance SSR-stable IDs and visible keyboard focus, including when options change.
+
+```vue
+<UiLightBox
+ v-model:visible="galleryOpen"
+ v-model:index="galleryIndex"
+ :images="images"
+ layout="mosaic"
+ :lightbox-props="{ teleport: 'body', scrollDisabled: true }"
+/>
+<ConsentGoogleMap :embed-url="googleEmbedUrl" title="Route map" />
+<ViewCurrencySelect v-model="currency" :currencies="['EUR', 'USD', 'JPY']" />
+```
+
+### New compositions
+
+All components below auto-import normally, use scoped styles and existing primitives, and do not fetch data, modify routes, convert prices, or initialize application-specific stores. Default interface strings live in the `reusable-ui` namespace (en/ru/pl); labels can be overridden with props. Data contracts are in `app/types/reusable-ui.ts`.
+
+| Component             | Contract                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UiDateRange`         | `v-model:from` / `v-model:to` date-only `YYYY-MM-DD` strings (`''` clears). Native browser calendars inside `UiModal`; no calendar library. Props: `min`, `max`, `allowPartial=false`, `disabled`, `locale`, `title`, `placeholder`, `fromLabel`, `toLabel`, `applyLabel`, `resetLabel`, `invalidLabel`. Draft edits commit only on Apply; close/Escape discard them. Reset immediately clears both values. Emits `apply({from,to})`, `reset`. No implicit today restriction, UTC conversion, or persistence. Supply valid date-only bounds. |
+| `UiMultiSelectDialog` | Array `v-model` of strings/numbers, `options: { value, label, description?, disabled? }[]`; value types are preserved. Props: `title`, `placeholder`, `description`, `disabled`, `applyLabel`, `resetLabel`, `emptyLabel`. Apply commits the draft; close discards it; Reset immediately commits `[]`. Emits `apply(values)`, `reset`. Options need unique values.                                                                                                                                                                           |
+| `ViewFilterDialog`    | Flat serializable `v-model` record, required `defaults` reset record. Values: string, number, boolean, null, or string/number arrays. Slot receives `{ draft, set(key,value) }`; use `set` rather than mutating the draft. Props: `title`, `label`, `disabled`, `applyLabel`, `resetLabel`. Apply emits `update:modelValue` and `apply(value)`; Reset emits `update:modelValue` and `reset(value)` and closes. Close discards edits. Caller owns URL sync and fetching. Do not put a nested form in its slot.                                |
+| `ViewAsyncState`      | `status: idle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | pending | success                                                                                                                                                                                            | error`, optional `data`, `error`, explicit `empty`, `retainData=false`, `retryable=true`, `loadingLabel`, `errorLabel`, `emptyLabel`, `retryLabel`. Slots: `pending`, `error({error,retry})`, `empty({data,retry})`, default `{data,status,retry}`. Emits `retry`; no HTTP client or guessed collection schema. Pending/idle wins by default; `retainData` allows existing data to remain visible during refresh. Errors then take precedence over empty/data. |
+| `UiPrice`             | `amount`, `currency`, `divisor=1` (use 100 for cents), `locale`, `currencyDisplay`, `minimumFractionDigits`, `maximumFractionDigits`. Optional `from`, `approximate`, `unit`, `reference`, `fromLabel`, `approximateLabel`, `onRequestLabel`. Null/non-finite/malformed amounts render the `unavailable` slot or localized fallback; zero is a valid price. Currency fraction digits use Intl defaults, including JPY. No conversion, markup or automatic rounding-up. CSS: `--price-weight`.                                                |
+| `ViewExchangeRates`   | `items: {code,rate,scale?,date?}[]`, `base`, optional `label`, `locale`, `fractionDigits=4`, `sourceLabel`, HTTPS `sourceUrl`, `emptyLabel`. Each item represents `scale` (default 1) units of `code` equal to `rate` units of `base`; date is optional `YYYY-MM-DD`. Rejects non-positive/non-finite rates/scales. Caller owns fetching, freshness and polling.                                                                                                                                                                             |
+| `ViewArticleCard`     | Required `title`, locale-aware internal `to`; optional `image: {src,alt?,width?,height?,sizes?}`, `excerpt`, `publishedAt`, `locale`, `timeZone='UTC'`, `readLabel`, `variant=default                                                                                                                                                                                                                                                                                                                                                        | lead    | compact`. Slots: `meta`, default. Composes `UiCard`, `UiLangLink`, `SafeNuxtImg`. No CMS fields or routes inferred. CSS: `--article-padding`, `--article-title-size`, `--article-lead-title-size`. |
+| `ViewImageTile`       | Required `title`, `src`; optional `alt`, internal `to`, `description`, `actionLabel`, `width`, `height`, `sizes`. Slots: `before`, default. No link is created without `to`. A linked tile uses a stretched title link; keep its content non-interactive (no nested actions). CSS: `--tile-height`, `--tile-text`, `--tile-overlay`, `--tile-padding`, `--tile-title-size`; maintain text contrast when overriding the overlay.                                                                                                              |
+| `ViewMetricCard`      | Required `label`, numeric/string `value`; optional `icon`, `description`, `locale`. Slots: `icon`, default `{value,formatted}`, `footer`. Composes `UiCard`; numbers are locale-formatted. CSS: `--metric-size`.                                                                                                                                                                                                                                                                                                                             |
+| `ViewBarChart`        | Required `label`, `items: {id,label,value}[]`; optional `locale`, `emptyLabel`, `empty` slot. A simple horizontal single-series non-negative comparison, with always-visible labels and values. Ignores invalid/negative numbers; all-zero values are valid. Long series use normal document flow, not unreadable narrow columns. No animation/chart dependency. CSS: `--chart-color`, `--chart-bar-height`.                                                                                                                                 |
+| `ViewValueList`       | Required `items: {id,label,value}[]` with unique IDs; optional `label`, `locale`, `emptyLabel`. Native description list; numbers are locale-formatted. Slots: `label({item})`, `value({item,formatted})`, `empty`.                                                                                                                                                                                                                                                                                                                           |
+
+```vue
+<UiDateRange v-model:from="from" v-model:to="to" />
+<UiMultiSelectDialog v-model="selected" :options="options" title="Categories" />
+<ViewAsyncState
+ :status="status"
+ :data="data"
+ :error="error"
+ :empty="!data?.items.length"
+ @retry="refresh()"
+>
+  <template #default="{ data }">{{ data }}</template>
+</ViewAsyncState>
+<UiPrice :amount="129900" :divisor="100" currency="EUR" from unit="/ item" />
+```
+
+`playground/app/pages/reusable-components/` covers empty/error/zero/disabled states, draft cancel/apply/reset, native input forwarding, lightbox index control and consent. Regression cases are in `tests/reusable-components.spec.ts`; browser/build/type validation is required before release. The fixture does not claim live rates, successful submission, authentication or backend connectivity.
+
 ## Project structure
 
 ```text
@@ -3031,7 +3093,6 @@ Author: [Aliaksandr Ivanou](https://github.com/aleksivanou).
 Copyright © 2026 Aliaksandr Ivanou. All rights reserved.
 
 This project is licensed under the **PolyForm Noncommercial License 1.0.0**. Commercial use is not granted by that license. Read [LICENSE](LICENSE) before using, redistributing, or building on the project.
-
 
 ViewImgSlider image items accept optional alt, width and height in addition to type and uri. Images use the registered SafeNuxtImg component and are present in SSR output; omitted dimensions default to 1600×900.
 

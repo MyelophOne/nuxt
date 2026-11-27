@@ -1,6 +1,7 @@
 <script setup lang="ts">
 type Props = {
 	address?: string;
+	embedUrl?: string;
 	placeId?: string;
 	language?: string;
 	region?: string;
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const mapSrc = computed(() => {
+	if (props.embedUrl !== undefined) return googleMapsEmbedUrl(props.embedUrl);
 	const query = props.placeId ? `place_id:${props.placeId}` : props.address;
 
 	if (!query) {
@@ -37,7 +39,7 @@ const { t } = useMultiLang(["interface"]);
 
 <template>
 	<div class="h-100 w-full">
-		<CookieConsentWrapper category="functional">
+		<CookieConsentWrapper category="functional" service-name="Google Maps">
 			<iframe
 				v-if="mapSrc"
 				:src="mapSrc"
@@ -52,7 +54,9 @@ const { t } = useMultiLang(["interface"]);
 				v-else
 				class="flex h-full w-full items-center justify-center rounded-xl bg-gray-100"
 			>
-				{{ t("interface.noGoogleMapAddress") }}
+				<slot name="empty">{{
+					t("interface.noGoogleMapAddress")
+				}}</slot>
 			</div>
 		</CookieConsentWrapper>
 	</div>

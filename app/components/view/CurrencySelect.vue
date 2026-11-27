@@ -11,36 +11,48 @@
 			},
 		]"
 		@mousedown.stop
+		@keydown.esc.stop.prevent="close(true)"
 	>
 		<button
+			ref="trigger"
 			type="button"
 			class="currency-trigger"
 			:class="triggerClass"
 			@click.stop="toggleDropdown"
+			:disabled="disabled"
+			:aria-label="label || t('reusable-ui.currency')"
+			:aria-expanded="isOpen"
+			:aria-controls="uid"
 		>
-			<slot name="trigger">
+			<slot name="trigger" :currency="currentCurrency" :open="isOpen">
 				<span class="currency-content">
 					<span class="currency-symbol">{{
-						getSymbol(cart.currency)
+						getSymbol(currentCurrency)
 					}}</span>
-					<span class="currency-code">{{ cart.currency }}</span>
+					<span class="currency-code">{{ currentCurrency }}</span>
 				</span>
 			</slot>
 			<span class="currency-arrow"></span>
 		</button>
 
-		<div v-if="isOpen" class="currency-dropdown" :class="dropdownClass">
+		<div
+			v-if="isOpen"
+			:id="uid"
+			class="currency-dropdown"
+			:class="dropdownClass"
+		>
 			<div class="currency-dropdown-scroll">
 				<button
-					v-for="c in currencies"
+					v-for="c in availableCurrencies"
 					:key="c"
 					type="button"
 					class="currency-option"
 					:class="[
 						optionClass,
-						{ 'is-selected': cart.currency === c },
+						{ 'is-selected': currentCurrency === c },
 					]"
 					@click="selectCurrency(c)"
+					:aria-pressed="currentCurrency === c"
 				>
 					<span class="currency-symbol-mini">{{ getSymbol(c) }}</span>
 					<span class="currency-code">{{ c }}</span>
@@ -52,14 +64,27 @@
 
 <script setup lang="ts">
 const props = defineProps<{
+	modelValue?: string;
+	currencies?: string[];
+	label?: string;
+	disabled?: boolean;
 	containerClass?: string;
 	triggerClass?: string;
 	dropdownClass?: string;
 	optionClass?: string;
 }>();
-
+const emit = defineEmits<{
+	"update:modelValue": [value: string];
+	change: [value: string];
+}>();
+const { t } = useMultiLang("reusable-ui");
+const uid = useId();
+const trigger = ref<HTMLButtonElement | null>(null);
 const pinia = useNuxtApp().$pinia;
-const cart = useCartStore(pinia);
+const cart = props.modelValue === undefined ? useCartStore(pinia) : undefined;
+const currentCurrency = computed(
+	() => props.modelValue ?? cart?.currency ?? "",
+);
 
 const currencySymbols: Record<string, string> = {
 	USD: "$",
@@ -91,7 +116,9 @@ const currencySymbols: Record<string, string> = {
 
 const getSymbol = (code: string) => currencySymbols[code] || "";
 
-const currencies = computed(() => Object.keys(cart.exchangeRates || {}));
+const availableCurrencies = computed(() => [
+	...new Set(props.currencies ?? Object.keys(cart?.exchangeRates || {})),
+]);
 
 const isOpen = ref(false);
 const isDropUp = ref(false);
@@ -99,6 +126,7 @@ const isDropRight = ref(false);
 const selectWrapper = ref<HTMLElement | null>(null);
 
 const toggleDropdown = () => {
+	if (props.disabled) return;
 	if (!isOpen.value) checkPosition();
 	isOpen.value = !isOpen.value;
 };
@@ -111,22 +139,36 @@ const checkPosition = () => {
 };
 
 const selectCurrency = (currency: string) => {
-	cart.setCurrency(currency);
-	isOpen.value = false;
+	if (props.disabled) return;
+	if (props.modelValue === undefined) cart?.setCurrency(currency);
+	emit("update:modelValue", currency);
+	emit("change", currency);
+	close(true);
 };
 
-const close = () => {
+const close = (restoreFocus = false) => {
 	isOpen.value = false;
+	if (restoreFocus) trigger.value?.focus({ preventScroll: true });
 };
+const onOutsideClick = (event: MouseEvent) => {
+	if (!selectWrapper.value?.contains(event.target as Node)) close();
+};
+const onResize = () => close();
+watch(
+	() => props.disabled,
+	(value) => {
+		if (value) close();
+	},
+);
 
 onMounted(() => {
-	window.addEventListener("click", close);
-	window.addEventListener("resize", close);
+	window.addEventListener("click", onOutsideClick);
+	window.addEventListener("resize", onResize);
 });
 
 onBeforeUnmount(() => {
-	window.removeEventListener("click", close);
-	window.removeEventListener("resize", close);
+	window.removeEventListener("click", onOutsideClick);
+	window.removeEventListener("resize", onResize);
 });
 </script>
 
@@ -229,11 +271,29 @@ onBeforeUnmount(() => {
 	align-items: center;
 	gap: 8px;
 	text-transform: uppercase;
-	transition: all 0.2s;
+	transition:
+		background 0.2s,
+		color 0.2s;
 }
 
 .currency-option:hover {
 	background: var(--ui-hover);
+}
+
+.currency-trigger:focus-visible,
+.currency-option:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+.currency-trigger:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+@media (prefers-reduced-motion: reduce) {
+	.currency-trigger,
+	.currency-option {
+		transition: none;
+	}
 }
 
 .currency-option.is-selected {

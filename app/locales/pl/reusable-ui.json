@@ -1,0 +1,23 @@
+{
+  "apply": "Zastosuj",
+  "reset": "Wyczyść",
+  "cancel": "Anuluj",
+  "choose": "Wybierz opcje",
+  "empty": "Brak danych",
+  "loading": "Ładowanie…",
+  "error": "Nie udało się wczytać danych",
+  "retry": "Spróbuj ponownie",
+  "dates": "Wybierz daty",
+  "fromDate": "Data początkowa",
+  "toDate": "Data końcowa",
+  "invalidRange": "Podaj prawidłowe daty w odpowiedniej kolejności i dozwolonym zakresie.",
+  "openImage": "Otwórz zdjęcie {number}",
+  "allImages": "Wszystkie zdjęcia ({count})",
+  "gallery": "Galeria zdjęć",
+  "fromPrice": "Od",
+  "approximate": "Około",
+  "onRequest": "Cena na zapytanie",
+  "currency": "Waluta",
+  "filters": "Filtry",
+  "rates": "Kursy walut"
+}

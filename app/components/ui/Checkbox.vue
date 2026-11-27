@@ -24,7 +24,7 @@
 						class="relative flex size-5 shrink-0 items-center justify-center rounded border-2 transition-colors duration-200"
 						:class="[
 							'peer-checked:bg-blue-600 peer-checked:border-blue-600',
-							'peer-disabled:opacity-60 peer-disabled:cursor-not-allowed',
+							'peer-disabled:opacity-60 peer-disabled:cursor-not-allowed peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2',
 							'border-gray-300 dark:border-gray-600',
 							'bg-(--ui-bg) mt-0.5',
 						]"
@@ -92,20 +92,9 @@ const emit = defineEmits<{
 	(e: "update:modelValue", value: (string | number)[]): void;
 }>();
 
-const idMap = ref<Map<string | number, string>>(new Map());
-let counter = 0;
-
-onMounted(() => {
-	props.options.forEach((opt) => {
-		if (!idMap.value.has(opt.value)) {
-			idMap.value.set(opt.value, `cb-${++counter}`);
-		}
-	});
-});
-
-const getInputId = (value: string | number): string => {
-	return idMap.value.get(value) || `cb-${value}`;
-};
+const uid = useId();
+const getInputId = (value: string | number): string =>
+	`${uid}-${typeof value}-${encodeURIComponent(String(value))}`;
 
 const model = computed<(string | number)[]>({
 	get: () => props.modelValue,
@@ -113,6 +102,11 @@ const model = computed<(string | number)[]>({
 });
 
 const toggle = (value: string | number) => {
+	if (
+		props.disabled ||
+		props.options.find((option) => option.value === value)?.disabled
+	)
+		return;
 	const current = [...model.value];
 	const index = current.indexOf(value);
 	if (index > -1) {

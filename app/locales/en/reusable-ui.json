@@ -1,0 +1,23 @@
+{
+  "apply": "Apply",
+  "reset": "Reset",
+  "cancel": "Cancel",
+  "choose": "Choose options",
+  "empty": "No items",
+  "loading": "Loading…",
+  "error": "Could not load data",
+  "retry": "Try again",
+  "dates": "Choose dates",
+  "fromDate": "Start date",
+  "toDate": "End date",
+  "invalidRange": "Enter valid dates in order and within the allowed range.",
+  "openImage": "Open image {number}",
+  "allImages": "All photos ({count})",
+  "gallery": "Image gallery",
+  "fromPrice": "From",
+  "approximate": "Approximately",
+  "onRequest": "Price on request",
+  "currency": "Currency",
+  "filters": "Filters",
+  "rates": "Exchange rates"
+}

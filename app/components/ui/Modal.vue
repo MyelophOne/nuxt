@@ -5,6 +5,7 @@ interface Props {
 	width?: string;
 	preventClose?: boolean;
 	bodyClass?: string;
+	closeLabel?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -16,6 +17,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(["update:modelValue", "close"]);
 const uid = useId();
+const { t } = useMultiLang("interface");
+const panel = ref<HTMLElement | null>(null);
+let opener: HTMLElement | null = null;
+const focusable = () =>
+	Array.from(
+		panel.value?.querySelectorAll<HTMLElement>(
+			"a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]",
+		) || [],
+	).filter(
+		(element) =>
+			element.tabIndex >= 0 && element.getClientRects().length > 0,
+	);
 const { register, unregister, isTop } = useModalState();
 const isMounted = ref(false);
 
@@ -23,10 +36,22 @@ onMounted(() => {
 	isMounted.value = true;
 });
 watch(
-	() => props.modelValue,
-	(isOpen) => {
-		if (isOpen) register(uid);
-		else unregister(uid);
+	() => props.modelValue && isMounted.value,
+	async (isOpen) => {
+		if (isOpen) {
+			opener =
+				document.activeElement instanceof HTMLElement
+					? document.activeElement
+					: null;
+			register(uid);
+			await nextTick();
+			if (props.modelValue)
+				(focusable()[0] || panel.value)?.focus({ preventScroll: true });
+		} else {
+			unregister(uid);
+			if (opener?.isConnected) opener.focus({ preventScroll: true });
+			opener = null;
+		}
 	},
 );
 onUnmounted(() => unregister(uid));
@@ -39,7 +64,35 @@ const handleBackdropClick = () => {
 	if (isTop(uid)) close();
 };
 const handleEsc = (e: KeyboardEvent) => {
-	if (e.key === "Escape" && props.modelValue && isTop(uid)) close();
+	if (!props.modelValue || !isTop(uid)) return;
+	if (e.key === "Escape") {
+		e.preventDefault();
+		close();
+	}
+	if (e.key !== "Tab") return;
+	const elements = focusable();
+	const first = elements[0];
+	const last = elements[elements.length - 1];
+	if (!first) {
+		e.preventDefault();
+		panel.value?.focus();
+		return;
+	}
+	if (
+		e.shiftKey &&
+		(document.activeElement === first ||
+			!panel.value?.contains(document.activeElement))
+	) {
+		e.preventDefault();
+		last?.focus();
+	} else if (
+		!e.shiftKey &&
+		(document.activeElement === last ||
+			!panel.value?.contains(document.activeElement))
+	) {
+		e.preventDefault();
+		first.focus();
+	}
 };
 
 onMounted(() => {
@@ -67,6 +120,9 @@ onUnmounted(() => {
 				class="relative z-80"
 				aria-modal="true"
 				role="dialog"
+				:aria-labelledby="
+					title || $slots.header ? `${uid}-title` : undefined
+				"
 				data-nosnippet
 			>
 				<div
@@ -88,12 +144,15 @@ onUnmounted(() => {
 							leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
 						>
 							<div
+								ref="panel"
+								tabindex="-1"
 								class="relative transform overflow-hidden rounded-xl text-left shadow-2xl transition-all w-full bg-(--ui-bg) text-(--ui-text) border border-neutral-200 dark:border-neutral-800"
 								:class="[width]"
 								@click.stop
 							>
 								<div
 									v-if="title || $slots.header"
+									:id="`${uid}-title`"
 									class="flex items-center justify-between px-6 py-4 border-b border-neutral-200/50 dark:border-neutral-800/50"
 								>
 									<slot name="header">
@@ -106,8 +165,12 @@ onUnmounted(() => {
 
 									<button
 										v-if="!preventClose"
+										type="button"
+										:aria-label="
+											closeLabel || t('interface.close')
+										"
 										@click="close"
-										class="ml-4 -mr-1 rounded-md p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors focus:outline-none"
+										class="ml-4 -mr-1 rounded-md p-2 hover:bg-black/5 dark:hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
 									>
 										<svg
 											class="h-5 w-5 opacity-50 hover:opacity-100"
