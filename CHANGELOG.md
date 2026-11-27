@@ -1,3 +1,7 @@
+## 📦 Release 0.23.0 (2026-11-27)
+### ✨ Features
+- update dependencies, fix errors
+
 ## 📦 Release 0.22.3 (2026-10-30)
 ### 🐛 Bug Fixes
 - icons issue and cookie i18n
